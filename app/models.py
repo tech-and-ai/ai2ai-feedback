@@ -34,20 +34,21 @@ class SessionEndRequest(BaseModel):
     session_id: str = Field(..., description="ID of the session to end")
 
 # Multi-agent models
-class MultiAgentSessionCreateRequest(BaseModel):
-    """Request model for creating a multi-agent session"""
-    num_agents: int = Field(..., description="Number of AI agents to participate (max 10)")
+class UnifiedDiscussionCreateRequest(BaseModel):
+    """Request model for creating a discussion session with any number of agents"""
+    num_agents: int = Field(1, description="Number of AI agents to participate (default: 1, max: 10)")
     system_prompt: Optional[str] = Field(None, description="Optional system prompt for the session")
     title: Optional[str] = Field(None, description="Optional title for the session")
     tags: Optional[List[str]] = Field(None, description="Optional list of tags for categorization")
     agent_names: Optional[List[str]] = Field(None, description="Optional names for the agents")
     agent_roles: Optional[List[str]] = Field(None, description="Optional roles for the agents")
     agent_models: Optional[List[str]] = Field(None, description="Optional models for the agents")
+    chair_role: Optional[str] = Field("Claude", description="The name of the chair (default: Claude)")
 
     @validator('num_agents')
     def validate_num_agents(cls, v):
-        if v < 2:
-            raise ValueError('num_agents must be at least 2')
+        if v < 1:
+            raise ValueError('num_agents must be at least 1')
         if v > 10:
             raise ValueError('num_agents must be at most 10')
         return v
@@ -70,8 +71,30 @@ class MultiAgentSessionCreateRequest(BaseModel):
             raise ValueError('agent_models must have the same length as num_agents')
         return v
 
+# For backward compatibility
+class MultiAgentSessionCreateRequest(UnifiedDiscussionCreateRequest):
+    """Request model for creating a multi-agent session (legacy)"""
+
+    @validator('num_agents')
+    def validate_num_agents(cls, v):
+        if v < 2:
+            raise ValueError('num_agents must be at least 2')
+        if v > 10:
+            raise ValueError('num_agents must be at most 10')
+        return v
+
+class UnifiedDiscussionMessageRequest(BaseModel):
+    """Request model for sending a message to any discussion session"""
+    session_id: str = Field(..., description="ID of the session to use")
+    message: str = Field(..., description="Message to send to the agents")
+    target_agents: Optional[List[int]] = Field(None, description="Optional list of agent indices to target (0-based)")
+    initiator: Optional[str] = Field("user", description="Who is initiating this message (user or agent index)")
+    context: Optional[str] = Field(None, description="Optional context for the message (used in one-to-one feedback)")
+    question: Optional[str] = Field(None, description="Optional specific question (used in one-to-one feedback)")
+
+# For backward compatibility
 class MultiAgentMessageRequest(BaseModel):
-    """Request model for sending a message to a multi-agent session"""
+    """Request model for sending a message to a multi-agent session (legacy)"""
     session_id: str = Field(..., description="ID of the session to use")
     message: str = Field(..., description="Message to send to the agents")
     target_agents: Optional[List[int]] = Field(None, description="Optional list of agent indices to target (0-based)")
@@ -85,8 +108,17 @@ class AgentResponse(BaseModel):
     response: str = Field(..., description="Response from the agent")
     model: str = Field(..., description="Model used by the agent")
 
+class UnifiedDiscussionMessageResponse(BaseModel):
+    """Response model for any discussion message"""
+    session_id: str = Field(..., description="ID of the session")
+    message: str = Field(..., description="Original message")
+    responses: List[AgentResponse] = Field(..., description="Responses from the agents")
+    metadata: Dict[str, Any] = Field(..., description="Metadata about the response")
+    structured: Optional[Dict[str, str]] = Field(None, description="Optional structured feedback (for one-to-one feedback)")
+
+# For backward compatibility
 class MultiAgentMessageResponse(BaseModel):
-    """Response model for a multi-agent message"""
+    """Response model for a multi-agent message (legacy)"""
     session_id: str = Field(..., description="ID of the session")
     message: str = Field(..., description="Original message")
     responses: List[AgentResponse] = Field(..., description="Responses from the agents")

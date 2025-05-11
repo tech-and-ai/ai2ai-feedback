@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-to-AI Discussion Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .message {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .message-content {
+            white-space: pre-wrap;
+        }
+        .user-message {
+            background-color: #e3f2fd;
+        }
+        .chair-message {
+            background-color: #e8f5e9;
+        }
+        .agent-message {
+            background-color: #fff8e1;
+        }
+        .timestamp {
+            font-size: 0.8em;
+            color: #666;
+        }
+        .participants {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .participant {
+            padding: 8px 12px;
+            background-color: #e0e0e0;
+            border-radius: 16px;
+            font-size: 0.9em;
+        }
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        input, button, select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        input {
+            flex-grow: 1;
+        }
+        button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #388e3c;
+        }
+        #message-container {
+            max-height: 600px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI-to-AI Discussion Viewer</h1>
+        
+        <div class="controls">
+            <input type="text" id="session-id" placeholder="Enter session ID">
+            <button id="connect-btn">Connect</button>
+        </div>
+        
+        <div class="controls">
+            <input type="text" id="message-input" placeholder="Enter message">
+            <select id="sender-type">
+                <option value="user">User</option>
+                <option value="chair">Chair</option>
+            </select>
+            <button id="send-btn">Send</button>
+        </div>
+        
+        <div id="participants-container" class="participants"></div>
+        
+        <div id="message-container"></div>
+    </div>
+
+    <script>
+        let eventSource = null;
+        
+        document.getElementById('connect-btn').addEventListener('click', function() {
+            const sessionId = document.getElementById('session-id').value.trim();
+            if (!sessionId) {
+                alert('Please enter a session ID');
+                return;
+            }
+            
+            connectToSession(sessionId);
+        });
+        
+        document.getElementById('send-btn').addEventListener('click', function() {
+            const sessionId = document.getElementById('session-id').value.trim();
+            const message = document.getElementById('message-input').value.trim();
+            const senderType = document.getElementById('sender-type').value;
+            
+            if (!sessionId || !message) {
+                alert('Please enter a session ID and message');
+                return;
+            }
+            
+            sendMessage(sessionId, message, senderType);
+        });
+        
+        function connectToSession(sessionId) {
+            // Close existing connection if any
+            if (eventSource) {
+                eventSource.close();
+            }
+            
+            // Clear existing messages
+            document.getElementById('message-container').innerHTML = '';
+            document.getElementById('participants-container').innerHTML = '';
+            
+            // Connect to the stream
+            eventSource = new EventSource(`/discussion/stream/${sessionId}`);
+            
+            eventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                processStreamingEvent(data);
+            };
+            
+            eventSource.onerror = function(error) {
+                console.error('EventSource error:', error);
+                eventSource.close();
+                alert('Error connecting to the discussion stream');
+            };
+        }
+        
+        function processStreamingEvent(data) {
+            if (data.type === 'initial_state') {
+                // Display participants
+                displayParticipants(data.participants);
+                
+                // Display history
+                data.history.forEach(message => {
+                    displayMessage(message);
+                });
+            } else if (data.type === 'message') {
+                // Display new message
+                displayMessage(data.content);
+            }
+        }
+        
+        function displayParticipants(participants) {
+            const container = document.getElementById('participants-container');
+            
+            participants.forEach(participant => {
+                const elem = document.createElement('div');
+                elem.className = 'participant';
+                elem.textContent = `${participant.agent_name} (${participant.agent_role})`;
+                container.appendChild(elem);
+            });
+        }
+        
+        function displayMessage(message) {
+            const container = document.getElementById('message-container');
+            
+            const messageElem = document.createElement('div');
+            messageElem.className = 'message';
+            
+            // Determine message type
+            if (message.sender_id === 'user') {
+                messageElem.classList.add('user-message');
+            } else if (message.sender_id === 'chair') {
+                messageElem.classList.add('chair-message');
+            } else {
+                messageElem.classList.add('agent-message');
+            }
+            
+            // Create message header
+            const headerElem = document.createElement('div');
+            headerElem.className = 'message-header';
+            
+            const senderElem = document.createElement('span');
+            senderElem.textContent = message.sender_info ? 
+                `${message.sender_info.agent_name} (${message.sender_info.agent_role})` : 
+                message.sender_id;
+            headerElem.appendChild(senderElem);
+            
+            const timestampElem = document.createElement('span');
+            timestampElem.className = 'timestamp';
+            timestampElem.textContent = new Date(message.timestamp).toLocaleString();
+            headerElem.appendChild(timestampElem);
+            
+            messageElem.appendChild(headerElem);
+            
+            // Create message content
+            const contentElem = document.createElement('div');
+            contentElem.className = 'message-content';
+            contentElem.textContent = message.content;
+            messageElem.appendChild(contentElem);
+            
+            container.appendChild(messageElem);
+            
+            // Scroll to bottom
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function sendMessage(sessionId, message, senderType) {
+            fetch('/discussion/message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    session_id: sessionId,
+                    message: message,
+                    initiator: senderType
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to send message');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Message sent:', data);
+                document.getElementById('message-input').value = '';
+            })
+            .catch(error => {
+                console.error('Error sending message:', error);
+                alert('Error sending message: ' + error.message);
+            });
+        }
+    </script>
+</body>
+</html>

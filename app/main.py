@@ -23,11 +23,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from . import __version__
 from .database import init_db, get_db, create_session, get_session, add_message, add_feedback
+from .multi_agent import router as multi_agent_router
+from .realtime_discussion import router as realtime_discussion_router
+from .unified_discussion import router as unified_discussion_router
 from .models import (
     FeedbackRequest, FeedbackResponse,
     SessionCreateRequest, SessionCreateResponse,
     SessionFeedbackRequest, SessionProcessRequest, ProcessResponse,
-    SessionEndRequest, SessionEndResponse
+    SessionEndRequest, SessionEndResponse,
+    UnifiedDiscussionCreateRequest, UnifiedDiscussionMessageRequest
 )
 from .providers.factory import get_model_provider
 from .utils.feedback_parser import extract_structured_feedback, StreamingFeedbackParser
@@ -54,6 +58,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include routers
+app.include_router(multi_agent_router)
+app.include_router(realtime_discussion_router)
+app.include_router(unified_discussion_router)
 
 # Mount static files directory
 static_dir = Path(__file__).parent.parent / "static"
@@ -93,9 +102,34 @@ async def root():
             {"path": "/session/feedback", "method": "POST", "description": "Get feedback with session context"},
             {"path": "/session/feedback/stream", "method": "POST", "description": "Get streaming feedback with session context"},
             {"path": "/session/process", "method": "POST", "description": "Process text with potential feedback"},
-            {"path": "/session/end", "method": "POST", "description": "End a session"}
+            {"path": "/session/end", "method": "POST", "description": "End a session"},
+            {"path": "/multi-agent", "method": "GET", "description": "Multi-agent conversation interface"},
+            {"path": "/discussion/create", "method": "POST", "description": "Create a unified discussion with any number of agents"},
+            {"path": "/discussion/message", "method": "POST", "description": "Send a message to a unified discussion"},
+            {"path": "/discussion/stream/{session_id}", "method": "GET", "description": "Stream messages from a unified discussion"},
+            {"path": "/realtime-discussion/create", "method": "POST", "description": "Create a real-time discussion with multiple agents"},
+            {"path": "/realtime-discussion/message", "method": "POST", "description": "Send a message to a real-time discussion"},
+            {"path": "/realtime-discussion/stream/{session_id}", "method": "GET", "description": "Stream messages from a real-time discussion"}
         ]
     }
+
+@app.get("/multi-agent-client", response_class=HTMLResponse)
+async def get_multi_agent_client():
+    """Serve the multi-agent client HTML page"""
+    client_path = static_dir / "multi_agent_client.html"
+    if client_path.exists():
+        return client_path.read_text()
+
+    raise HTTPException(status_code=404, detail="Multi-agent client not found")
+
+@app.get("/discussion-client", response_class=HTMLResponse)
+async def get_discussion_client():
+    """Serve the discussion client HTML page"""
+    client_path = static_dir / "discussion_client.html"
+    if client_path.exists():
+        return client_path.read_text()
+
+    raise HTTPException(status_code=404, detail="Discussion client not found")
 
 # Get available models
 @app.get("/models")

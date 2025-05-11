@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Agent Conversation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+        .left-panel {
+            flex: 1;
+            border-right: 1px solid #ccc;
+            padding-right: 20px;
+        }
+        .right-panel {
+            flex: 2;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .agent-response {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .agent-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .agent-content {
+            white-space: pre-wrap;
+        }
+        .task-list {
+            margin-top: 20px;
+        }
+        .task-item {
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .task-header {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .task-status {
+            display: inline-block;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+            color: white;
+        }
+        .status-pending {
+            background-color: #f39c12;
+        }
+        .status-in-progress {
+            background-color: #3498db;
+        }
+        .status-completed {
+            background-color: #2ecc71;
+        }
+        .status-failed {
+            background-color: #e74c3c;
+        }
+        .conversation {
+            margin-top: 20px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+        .message {
+            margin-bottom: 15px;
+        }
+        .user-message {
+            text-align: right;
+        }
+        .user-message .message-content {
+            background-color: #dcf8c6;
+            display: inline-block;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+        .agent-message .message-content {
+            background-color: #f0f0f0;
+            display: inline-block;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+        .message-meta {
+            font-size: 12px;
+            color: #777;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Multi-Agent Conversation System</h1>
+    
+    <div class="container">
+        <div class="left-panel">
+            <h2>Create New Session</h2>
+            <form id="session-form">
+                <div class="form-group">
+                    <label for="session-title">Session Title</label>
+                    <input type="text" id="session-title" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="num-agents">Number of Agents (2-10)</label>
+                    <input type="number" id="num-agents" min="2" max="10" value="3" required>
+                </div>
+                
+                <div id="agent-config">
+                    <!-- Agent configuration will be added here dynamically -->
+                </div>
+                
+                <div class="form-group">
+                    <label for="system-prompt">System Prompt (Optional)</label>
+                    <textarea id="system-prompt" rows="3"></textarea>
+                </div>
+                
+                <button type="submit">Create Session</button>
+            </form>
+            
+            <h2>Active Sessions</h2>
+            <div id="session-list">
+                <!-- Active sessions will be listed here -->
+                <p>No active sessions</p>
+            </div>
+            
+            <h2>Tasks</h2>
+            <div id="task-list" class="task-list">
+                <!-- Tasks will be listed here -->
+                <p>No tasks available</p>
+            </div>
+        </div>
+        
+        <div class="right-panel">
+            <h2>Conversation</h2>
+            <div id="session-info">
+                <p>No active session selected</p>
+            </div>
+            
+            <div id="conversation" class="conversation">
+                <!-- Conversation messages will be displayed here -->
+            </div>
+            
+            <div class="form-group">
+                <label for="message">Message</label>
+                <textarea id="message" rows="3" disabled></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Target Agents</label>
+                <div id="target-agents">
+                    <!-- Target agent checkboxes will be added here -->
+                </div>
+            </div>
+            
+            <button id="send-button" disabled>Send Message</button>
+        </div>
+    </div>
+    
+    <script>
+        // Global variables
+        let currentSessionId = null;
+        let sessions = {};
+        let agents = {};
+        
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up event listeners
+            document.getElementById('session-form').addEventListener('submit', createSession);
+            document.getElementById('num-agents').addEventListener('change', updateAgentConfig);
+            document.getElementById('send-button').addEventListener('click', sendMessage);
+            
+            // Initialize agent configuration
+            updateAgentConfig();
+            
+            // Load sessions from localStorage
+            loadSessions();
+        });
+        
+        // Update agent configuration based on number of agents
+        function updateAgentConfig() {
+            const numAgents = parseInt(document.getElementById('num-agents').value);
+            const agentConfig = document.getElementById('agent-config');
+            
+            // Clear existing configuration
+            agentConfig.innerHTML = '';
+            
+            // Add configuration for each agent
+            for (let i = 0; i < numAgents; i++) {
+                const agentHtml = `
+                    <div class="agent-config-item">
+                        <h3>Agent ${i+1}</h3>
+                        <div class="form-group">
+                            <label for="agent-name-${i}">Name</label>
+                            <input type="text" id="agent-name-${i}" value="Agent ${i+1}">
+                        </div>
+                        <div class="form-group">
+                            <label for="agent-role-${i}">Role</label>
+                            <input type="text" id="agent-role-${i}" value="Assistant ${i+1}">
+                        </div>
+                        <div class="form-group">
+                            <label for="agent-model-${i}">Model (Optional)</label>
+                            <input type="text" id="agent-model-${i}" placeholder="Default model">
+                        </div>
+                    </div>
+                `;
+                
+                agentConfig.innerHTML += agentHtml;
+            }
+        }
+        
+        // Create a new session
+        async function createSession(event) {
+            event.preventDefault();
+            
+            const title = document.getElementById('session-title').value;
+            const numAgents = parseInt(document.getElementById('num-agents').value);
+            const systemPrompt = document.getElementById('system-prompt').value;
+            
+            // Collect agent configuration
+            const agentNames = [];
+            const agentRoles = [];
+            const agentModels = [];
+            
+            for (let i = 0; i < numAgents; i++) {
+                agentNames.push(document.getElementById(`agent-name-${i}`).value);
+                agentRoles.push(document.getElementById(`agent-role-${i}`).value);
+                
+                const model = document.getElementById(`agent-model-${i}`).value;
+                agentModels.push(model || null);
+            }
+            
+            // Create session request
+            const request = {
+                num_agents: numAgents,
+                title: title,
+                tags: ["multi-agent"],
+                system_prompt: systemPrompt || null,
+                agent_names: agentNames,
+                agent_roles: agentRoles,
+                agent_models: agentModels.filter(m => m !== null)
+            };
+            
+            try {
+                // Send request to create session
+                const response = await fetch('/multi-agent/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(request)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to create session: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                // Store session information
+                const sessionId = data.session_id;
+                sessions[sessionId] = {
+                    id: sessionId,
+                    title: title,
+                    numAgents: numAgents,
+                    agents: agentNames.map((name, i) => ({
+                        index: i,
+                        name: name,
+                        role: agentRoles[i],
+                        model: agentModels[i]
+                    })),
+                    messages: []
+                };
+                
+                // Save sessions to localStorage
+                saveSessions();
+                
+                // Update session list
+                updateSessionList();
+                
+                // Select the new session
+                selectSession(sessionId);
+                
+                // Reset form
+                document.getElementById('session-form').reset();
+                updateAgentConfig();
+                
+                alert(`Session created: ${sessionId}`);
+            } catch (error) {
+                console.error('Error creating session:', error);
+                alert(`Error creating session: ${error.message}`);
+            }
+        }
+        
+        // Load sessions from localStorage
+        function loadSessions() {
+            const savedSessions = localStorage.getItem('multiAgentSessions');
+            if (savedSessions) {
+                sessions = JSON.parse(savedSessions);
+                updateSessionList();
+            }
+        }
+        
+        // Save sessions to localStorage
+        function saveSessions() {
+            localStorage.setItem('multiAgentSessions', JSON.stringify(sessions));
+        }
+        
+        // Update the session list
+        function updateSessionList() {
+            const sessionList = document.getElementById('session-list');
+            
+            if (Object.keys(sessions).length === 0) {
+                sessionList.innerHTML = '<p>No active sessions</p>';
+                return;
+            }
+            
+            sessionList.innerHTML = '';
+            
+            for (const sessionId in sessions) {
+                const session = sessions[sessionId];
+                
+                const sessionHtml = `
+                    <div class="session-item" data-session-id="${sessionId}">
+                        <h3>${session.title}</h3>
+                        <p>${session.numAgents} agents</p>
+                        <button onclick="selectSession('${sessionId}')">Select</button>
+                        <button onclick="deleteSession('${sessionId}')">Delete</button>
+                    </div>
+                `;
+                
+                sessionList.innerHTML += sessionHtml;
+            }
+        }
+        
+        // Select a session
+        function selectSession(sessionId) {
+            currentSessionId = sessionId;
+            const session = sessions[sessionId];
+            
+            // Update session info
+            document.getElementById('session-info').innerHTML = `
+                <h3>${session.title}</h3>
+                <p>Session ID: ${sessionId}</p>
+                <p>${session.numAgents} agents</p>
+            `;
+            
+            // Update target agents
+            const targetAgents = document.getElementById('target-agents');
+            targetAgents.innerHTML = '';
+            
+            for (const agent of session.agents) {
+                targetAgents.innerHTML += `
+                    <div>
+                        <input type="checkbox" id="target-agent-${agent.index}" value="${agent.index}" checked>
+                        <label for="target-agent-${agent.index}">${agent.name} (${agent.role})</label>
+                    </div>
+                `;
+            }
+            
+            // Enable message input and send button
+            document.getElementById('message').disabled = false;
+            document.getElementById('send-button').disabled = false;
+            
+            // Display conversation
+            displayConversation();
+            
+            // Fetch tasks for this session
+            fetchTasks(sessionId);
+        }
+        
+        // Delete a session
+        function deleteSession(sessionId) {
+            if (confirm(`Are you sure you want to delete session ${sessionId}?`)) {
+                delete sessions[sessionId];
+                saveSessions();
+                updateSessionList();
+                
+                if (currentSessionId === sessionId) {
+                    currentSessionId = null;
+                    document.getElementById('session-info').innerHTML = '<p>No active session selected</p>';
+                    document.getElementById('conversation').innerHTML = '';
+                    document.getElementById('message').disabled = true;
+                    document.getElementById('send-button').disabled = true;
+                    document.getElementById('target-agents').innerHTML = '';
+                }
+            }
+        }
+        
+        // Send a message to the current session
+        async function sendMessage() {
+            if (!currentSessionId) {
+                alert('No session selected');
+                return;
+            }
+            
+            const message = document.getElementById('message').value.trim();
+            if (!message) {
+                alert('Please enter a message');
+                return;
+            }
+            
+            // Get target agents
+            const targetAgents = [];
+            document.querySelectorAll('#target-agents input:checked').forEach(checkbox => {
+                targetAgents.push(parseInt(checkbox.value));
+            });
+            
+            // Create message request
+            const request = {
+                session_id: currentSessionId,
+                message: message,
+                target_agents: targetAgents.length > 0 ? targetAgents : null,
+                initiator: 'user'
+            };
+            
+            try {
+                // Send request
+                const response = await fetch('/multi-agent/message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(request)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to send message: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                // Add message to session
+                sessions[currentSessionId].messages.push({
+                    role: 'user',
+                    content: message,
+                    timestamp: new Date().toISOString()
+                });
+                
+                // Add agent responses
+                for (const agentResponse of data.responses) {
+                    sessions[currentSessionId].messages.push({
+                        role: 'agent',
+                        agent_index: agentResponse.agent_index,
+                        agent_name: agentResponse.agent_name,
+                        content: agentResponse.response,
+                        timestamp: new Date().toISOString()
+                    });
+                }
+                
+                // Save sessions
+                saveSessions();
+                
+                // Display conversation
+                displayConversation();
+                
+                // Clear message input
+                document.getElementById('message').value = '';
+                
+                // Fetch tasks for this session
+                fetchTasks(currentSessionId);
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert(`Error sending message: ${error.message}`);
+            }
+        }
+        
+        // Display the conversation for the current session
+        function displayConversation() {
+            if (!currentSessionId) {
+                return;
+            }
+            
+            const conversation = document.getElementById('conversation');
+            conversation.innerHTML = '';
+            
+            const messages = sessions[currentSessionId].messages;
+            
+            for (const message of messages) {
+                let messageHtml = '';
+                
+                if (message.role === 'user') {
+                    messageHtml = `
+                        <div class="message user-message">
+                            <div class="message-content">${message.content}</div>
+                            <div class="message-meta">User • ${formatTimestamp(message.timestamp)}</div>
+                        </div>
+                    `;
+                } else if (message.role === 'agent') {
+                    messageHtml = `
+                        <div class="message agent-message">
+                            <div class="message-content">${message.content}</div>
+                            <div class="message-meta">${message.agent_name} • ${formatTimestamp(message.timestamp)}</div>
+                        </div>
+                    `;
+                }
+                
+                conversation.innerHTML += messageHtml;
+            }
+            
+            // Scroll to bottom
+            conversation.scrollTop = conversation.scrollHeight;
+        }
+        
+        // Fetch tasks for a session
+        async function fetchTasks(sessionId) {
+            try {
+                const response = await fetch(`/multi-agent/tasks/${sessionId}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch tasks: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                // Display tasks
+                displayTasks(data.tasks);
+            } catch (error) {
+                console.error('Error fetching tasks:', error);
+                document.getElementById('task-list').innerHTML = '<p>Error fetching tasks</p>';
+            }
+        }
+        
+        // Display tasks
+        function displayTasks(tasks) {
+            const taskList = document.getElementById('task-list');
+            
+            if (!tasks || tasks.length === 0) {
+                taskList.innerHTML = '<p>No tasks available</p>';
+                return;
+            }
+            
+            taskList.innerHTML = '';
+            
+            for (const task of tasks) {
+                let statusClass = '';
+                switch (task.status) {
+                    case 'pending':
+                        statusClass = 'status-pending';
+                        break;
+                    case 'in_progress':
+                        statusClass = 'status-in-progress';
+                        break;
+                    case 'completed':
+                        statusClass = 'status-completed';
+                        break;
+                    case 'failed':
+                        statusClass = 'status-failed';
+                        break;
+                }
+                
+                const taskHtml = `
+                    <div class="task-item">
+                        <div class="task-header">
+                            ${task.title}
+                            <span class="task-status ${statusClass}">${task.status}</span>
+                        </div>
+                        <div class="task-details">
+                            <p><strong>Assigned to:</strong> ${task.assigned_to || 'Unassigned'}</p>
+                            <p><strong>Created by:</strong> ${task.created_by}</p>
+                            <p><strong>Created at:</strong> ${formatTimestamp(task.created_at)}</p>
+                        </div>
+                    </div>
+                `;
+                
+                taskList.innerHTML += taskHtml;
+            }
+        }
+        
+        // Format timestamp
+        function formatTimestamp(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleString();
+        }
+    </script>
+</body>
+</html>

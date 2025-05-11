@@ -11,7 +11,7 @@ from typing import List, Optional, Dict, Any
 
 from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, ForeignKey, Boolean, Float
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import sessionmaker, relationship, backref
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.future import select
@@ -51,6 +51,7 @@ class Session(Base):
     # Relationships
     messages = relationship("Message", back_populates="session", cascade="all, delete-orphan")
     agents = relationship("Agent", back_populates="session", cascade="all, delete-orphan")
+    tasks = relationship("Task", back_populates="session", cascade="all, delete-orphan")
 
 class Agent(Base):
     """Agent model for storing information about AI agents in a multi-agent session"""
@@ -142,6 +143,55 @@ class Reference(Base):
     last_accessed = Column(DateTime, default=datetime.utcnow)
     access_count = Column(Integer, default=0)
     tags = Column(String, nullable=True)
+
+class Task(Base):
+    """Task model for storing delegated tasks"""
+    __tablename__ = "tasks"
+
+    id = Column(String, primary_key=True)
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=False)
+    status = Column(String, nullable=False)  # "pending", "in_progress", "completed", "failed"
+    created_by = Column(String, nullable=False)  # Agent ID or "user"
+    assigned_to = Column(String, nullable=True)  # Agent ID
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    completed_at = Column(DateTime, nullable=True)
+    result = Column(Text, nullable=True)
+    parent_task_id = Column(String, ForeignKey("tasks.id", ondelete="CASCADE"), nullable=True)
+    session_id = Column(String, ForeignKey("sessions.id", ondelete="CASCADE"), nullable=True)
+
+    # Relationships
+    subtasks = relationship("Task", backref=backref("parent", remote_side=[id]))
+    session = relationship("Session", back_populates="tasks")
+    context_entries = relationship("TaskContext", back_populates="task", cascade="all, delete-orphan")
+    updates = relationship("TaskUpdate", back_populates="task", cascade="all, delete-orphan")
+
+class TaskContext(Base):
+    """Model for storing context information for tasks"""
+    __tablename__ = "task_contexts"
+
+    id = Column(Integer, primary_key=True)
+    task_id = Column(String, ForeignKey("tasks.id", ondelete="CASCADE"))
+    key = Column(String, nullable=False)  # Context key (e.g., "research_findings", "code_snippet")
+    value = Column(Text, nullable=False)  # Context value
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    task = relationship("Task", back_populates="context_entries")
+
+class TaskUpdate(Base):
+    """Model for storing task progress updates"""
+    __tablename__ = "task_updates"
+
+    id = Column(Integer, primary_key=True)
+    task_id = Column(String, ForeignKey("tasks.id", ondelete="CASCADE"))
+    agent_id = Column(String, nullable=False)  # Agent that provided the update
+    content = Column(Text, nullable=False)  # Update content
+    timestamp = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    task = relationship("Task", back_populates="updates")
 
 # Database initialization
 async def init_db():
