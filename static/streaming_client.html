@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-to-AI Streaming Feedback Client</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            color: #333;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+        .input-panel, .output-panel {
+            flex: 1;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .input-panel {
+            background-color: #f8f9fa;
+        }
+        .output-panel {
+            background-color: #fff;
+        }
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            background-color: #f1f1f1;
+        }
+        .section h3 {
+            margin-top: 0;
+        }
+        .raw-output {
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            background-color: #f8f8f8;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .status.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: #4CAF50;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>AI-to-AI Streaming Feedback Client</h1>
+    
+    <div class="container">
+        <div class="input-panel">
+            <h2>Input</h2>
+            
+            <div>
+                <label for="session-id">Session ID (optional):</label>
+                <input type="text" id="session-id" placeholder="Leave empty for direct feedback">
+            </div>
+            
+            <div>
+                <label for="context">Context:</label>
+                <textarea id="context" placeholder="Enter the context or reasoning..."></textarea>
+            </div>
+            
+            <div>
+                <label for="question">Question:</label>
+                <textarea id="question" placeholder="Enter your specific question or area of uncertainty..."></textarea>
+            </div>
+            
+            <button id="submit-btn">Get Streaming Feedback</button>
+            <button id="create-session-btn">Create New Session</button>
+            <button id="end-session-btn" disabled>End Session</button>
+        </div>
+        
+        <div class="output-panel">
+            <h2>Output</h2>
+            
+            <div class="status info" id="status">Ready to receive feedback.</div>
+            
+            <div class="section">
+                <h3>FEEDBACK_SUMMARY</h3>
+                <div id="feedback-summary"></div>
+            </div>
+            
+            <div class="section">
+                <h3>REASONING_ASSESSMENT</h3>
+                <div id="reasoning-assessment"></div>
+            </div>
+            
+            <div class="section">
+                <h3>KNOWLEDGE_GAPS</h3>
+                <div id="knowledge-gaps"></div>
+            </div>
+            
+            <div class="section">
+                <h3>SUGGESTED_APPROACH</h3>
+                <div id="suggested-approach"></div>
+            </div>
+            
+            <div class="section">
+                <h3>ADDITIONAL_CONSIDERATIONS</h3>
+                <div id="additional-considerations"></div>
+            </div>
+            
+            <div>
+                <h3>Raw Output</h3>
+                <div class="raw-output" id="raw-output"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const submitBtn = document.getElementById('submit-btn');
+            const createSessionBtn = document.getElementById('create-session-btn');
+            const endSessionBtn = document.getElementById('end-session-btn');
+            const sessionIdInput = document.getElementById('session-id');
+            const contextInput = document.getElementById('context');
+            const questionInput = document.getElementById('question');
+            const statusDiv = document.getElementById('status');
+            const rawOutputDiv = document.getElementById('raw-output');
+            
+            // Section divs
+            const feedbackSummaryDiv = document.getElementById('feedback-summary');
+            const reasoningAssessmentDiv = document.getElementById('reasoning-assessment');
+            const knowledgeGapsDiv = document.getElementById('knowledge-gaps');
+            const suggestedApproachDiv = document.getElementById('suggested-approach');
+            const additionalConsiderationsDiv = document.getElementById('additional-considerations');
+            
+            let eventSource = null;
+            
+            // Create a new session
+            createSessionBtn.addEventListener('click', async function() {
+                try {
+                    const response = await fetch('/session/create', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({})
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    sessionIdInput.value = data.session_id;
+                    endSessionBtn.disabled = false;
+                    
+                    updateStatus('Session created successfully!', 'success');
+                } catch (error) {
+                    updateStatus(`Error creating session: ${error.message}`, 'error');
+                }
+            });
+            
+            // End the current session
+            endSessionBtn.addEventListener('click', async function() {
+                const sessionId = sessionIdInput.value.trim();
+                
+                if (!sessionId) {
+                    updateStatus('No session ID provided.', 'error');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('/session/end', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            session_id: sessionId
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        sessionIdInput.value = '';
+                        endSessionBtn.disabled = true;
+                        updateStatus('Session ended successfully!', 'success');
+                    } else {
+                        updateStatus('Failed to end session.', 'error');
+                    }
+                } catch (error) {
+                    updateStatus(`Error ending session: ${error.message}`, 'error');
+                }
+            });
+            
+            // Get streaming feedback
+            submitBtn.addEventListener('click', function() {
+                const sessionId = sessionIdInput.value.trim();
+                const context = contextInput.value.trim();
+                const question = questionInput.value.trim();
+                
+                if (!context || !question) {
+                    updateStatus('Please provide both context and question.', 'error');
+                    return;
+                }
+                
+                // Clear previous output
+                clearOutput();
+                
+                // Close any existing event source
+                if (eventSource) {
+                    eventSource.close();
+                }
+                
+                // Determine the endpoint based on whether a session ID is provided
+                const endpoint = sessionId ? '/session/feedback/stream' : '/feedback/stream';
+                
+                // Prepare the request body
+                const requestBody = sessionId ? 
+                    { session_id: sessionId, context, question } : 
+                    { context, question };
+                
+                // Show loading status
+                updateStatus('Requesting feedback...', 'info');
+                statusDiv.innerHTML += '<div class="loading"></div>';
+                submitBtn.disabled = true;
+                
+                // Make the request
+                fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    // Set up event source for streaming response
+                    const url = new URL(endpoint, window.location.origin);
+                    url.searchParams.append('_', Date.now()); // Prevent caching
+                    
+                    eventSource = new EventSource(url);
+                    
+                    eventSource.onmessage = function(event) {
+                        const data = JSON.parse(event.data);
+                        processStreamingEvent(data);
+                    };
+                    
+                    eventSource.onerror = function(error) {
+                        console.error('EventSource error:', error);
+                        eventSource.close();
+                        updateStatus('Error receiving streaming feedback.', 'error');
+                        submitBtn.disabled = false;
+                    };
+                })
+                .catch(error => {
+                    updateStatus(`Error: ${error.message}`, 'error');
+                    submitBtn.disabled = false;
+                });
+            });
+            
+            // Process streaming events
+            function processStreamingEvent(data) {
+                // Append to raw output
+                rawOutputDiv.innerHTML += JSON.stringify(data) + '\n';
+                rawOutputDiv.scrollTop = rawOutputDiv.scrollHeight;
+                
+                switch (data.type) {
+                    case 'metadata':
+                        updateStatus(`Connected to ${data.content.source_model}`, 'info');
+                        break;
+                    
+                    case 'chunk':
+                        // Raw chunks are handled in the raw output
+                        break;
+                    
+                    case 'section_update':
+                        // Update the specific section
+                        updateSection(data.section, data.content);
+                        break;
+                    
+                    case 'structured':
+                        // Update all sections with the final structured content
+                        for (const [section, content] of Object.entries(data.content)) {
+                            updateSection(section, content);
+                        }
+                        break;
+                    
+                    case 'done':
+                        updateStatus('Feedback completed!', 'success');
+                        submitBtn.disabled = false;
+                        if (eventSource) {
+                            eventSource.close();
+                            eventSource = null;
+                        }
+                        break;
+                    
+                    case 'error':
+                        updateStatus(`Error: ${data.content}`, 'error');
+                        submitBtn.disabled = false;
+                        if (eventSource) {
+                            eventSource.close();
+                            eventSource = null;
+                        }
+                        break;
+                }
+            }
+            
+            // Update a specific section
+            function updateSection(section, content) {
+                let sectionDiv;
+                
+                switch (section) {
+                    case 'FEEDBACK_SUMMARY':
+                        sectionDiv = feedbackSummaryDiv;
+                        break;
+                    case 'REASONING_ASSESSMENT':
+                        sectionDiv = reasoningAssessmentDiv;
+                        break;
+                    case 'KNOWLEDGE_GAPS':
+                        sectionDiv = knowledgeGapsDiv;
+                        break;
+                    case 'SUGGESTED_APPROACH':
+                        sectionDiv = suggestedApproachDiv;
+                        break;
+                    case 'ADDITIONAL_CONSIDERATIONS':
+                        sectionDiv = additionalConsiderationsDiv;
+                        break;
+                    default:
+                        return;
+                }
+                
+                if (sectionDiv) {
+                    sectionDiv.innerHTML = content;
+                }
+            }
+            
+            // Update status message
+            function updateStatus(message, type) {
+                statusDiv.textContent = message;
+                statusDiv.className = `status ${type}`;
+            }
+            
+            // Clear all output sections
+            function clearOutput() {
+                feedbackSummaryDiv.innerHTML = '';
+                reasoningAssessmentDiv.innerHTML = '';
+                knowledgeGapsDiv.innerHTML = '';
+                suggestedApproachDiv.innerHTML = '';
+                additionalConsiderationsDiv.innerHTML = '';
+                rawOutputDiv.innerHTML = '';
+                updateStatus('Ready to receive feedback.', 'info');
+            }
+        });
+    </script>
+</body>
+</html>
