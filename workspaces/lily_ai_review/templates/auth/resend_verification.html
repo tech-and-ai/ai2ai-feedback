@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Resend Verification Email - Research Assistant{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <!-- Background Elements -->
+    <div class="absolute inset-0 z-0">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="w-full max-w-md relative z-10">
+        <div class="glass-effect rounded-xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700 animate-fadeIn">
+            <!-- Card Header -->
+            <div class="px-6 py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-lg font-medium text-gray-900 dark:text-white">Resend Verification Email</h2>
+                    <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-6 bg-white dark:bg-gray-800">
+                <div class="space-y-6">
+                    <div class="flex justify-center">
+                        <div class="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                            <svg class="w-8 h-8 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <h2 class="text-2xl font-bold text-center gradient-text">Resend Verification Email</h2>
+
+                    {% if success %}
+                    <div class="mb-4 p-3 bg-green-100 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-green-600 dark:text-green-400 text-sm">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-green-500 dark:text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-green-600 dark:text-green-400">
+                                    {{ message|default:"Verification email has been sent. Please check your inbox." }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if error %}
+                    <div class="mb-4 p-3 bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
+                        {{ error }}
+                    </div>
+                    {% endif %}
+
+                    {% if not success %}
+                    <form method="post" action="/auth/resend-verification" class="space-y-6">
+                        <!-- CSRF Token (Hidden) -->
+                        {% if csrf_token %}
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        {% endif %}
+
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email address</label>
+                            <div class="mt-1">
+                                <input id="email" name="email" type="email" autocomplete="email" required value="{{ email|default:'' }}" class="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-800 dark:text-white">
+                            </div>
+                        </div>
+
+                        <div>
+                            <button type="submit" class="w-full btn-primary">
+                                Resend Verification Email
+                            </button>
+                        </div>
+                    </form>
+                    {% endif %}
+
+                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-blue-500 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-blue-600 dark:text-blue-400">
+                                    If you don't see the verification email, please check your spam folder. The verification link will expire in 24 hours.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Back to Login Button -->
+                    <a href="/auth/login" class="w-full btn-secondary block text-center">
+                        Back to Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

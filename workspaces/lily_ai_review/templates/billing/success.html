@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Payment Successful - Lily AI Research Assistant{% endblock %}
+
+{% block head %}
+<script>
+    // Redirect to dashboard after 5 seconds
+    let secondsLeft = 5;
+
+    function updateCountdown() {
+        const countdownElement = document.getElementById('countdown');
+        if (countdownElement) {
+            countdownElement.textContent = secondsLeft;
+
+            if (secondsLeft <= 0) {
+                window.location.href = "/dashboard";
+            } else {
+                secondsLeft--;
+                setTimeout(updateCountdown, 1000);
+            }
+        }
+    }
+
+    // Start the countdown when the page loads
+    window.onload = function() {
+        updateCountdown();
+    };
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 dashboard-content">
+    <!-- Page Header -->
+    <header class="bg-white dark:bg-gray-800 shadow">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Payment Successful</h1>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 max-w-2xl mx-auto">
+            <div class="flex flex-col items-center text-center">
+                <!-- Success Icon -->
+                <div class="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mb-6">
+                    <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Thank You For Your Purchase!</h2>
+                <p class="text-gray-600 dark:text-gray-300 mb-2">Your subscription has been activated successfully.</p>
+                <p class="text-gray-600 dark:text-gray-300 mb-6">Redirecting to dashboard in <span id="countdown" class="font-bold text-blue-600">5</span> seconds...</p>
+
+                {% if session_details %}
+                    <div class="w-full bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
+                        <div class="text-left">
+                            <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                                <span class="font-medium">Amount:</span> £{{ session_details.amount_total|default('--') }}
+                            </p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300">
+                                <span class="font-medium">Transaction ID:</span> {{ session_id|default('--') }}
+                            </p>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="flex flex-col sm:flex-row gap-4 mt-4">
+                    <a href="/dashboard" class="inline-flex items-center justify-center px-5 py-2 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                        Go to Dashboard
+                    </a>
+                    <a href="/research-paper" class="inline-flex items-center justify-center px-5 py-2 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
+                        Create New Research Paper
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

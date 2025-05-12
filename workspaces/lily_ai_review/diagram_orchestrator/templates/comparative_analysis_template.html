@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparative Analysis</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            /* Set portrait orientation - A4 dimensions in pixels (at 96 DPI) */
+            width: 794px;  /* 210mm at 96 DPI */
+            height: 1123px; /* 297mm at 96 DPI */
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+        .container {
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+        h1 {
+            text-align: center;
+            color: #444;
+            margin-bottom: 8px;
+            font-size: 20px;
+            line-height: 1.3;
+            font-weight: bold;
+        }
+        .description {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #555;
+            font-size: 14px;
+            line-height: 1.4;
+            max-width: 720px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .comparison-table {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            height: 980px; /* Set explicit height to use more vertical space */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            table-layout: fixed; /* Fixed table layout for better control */
+            height: 95%; /* Use most of the container height */
+        }
+        th, td {
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+            overflow: hidden;
+            font-size: 13.5px;
+            white-space: pre-line; /* This preserves line breaks and prevents text from wrapping mid-word */
+            line-height: 1.4;
+            vertical-align: top;
+            height: auto;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            color: #333;
+            font-size: 14px;
+        }
+        th:first-child {
+            width: 20%;
+            background-color: #f8f9fa;
+        }
+        th:not(:first-child) {
+            width: 26.66%;
+            text-align: center;
+        }
+        td:not(:first-child) {
+            text-align: left;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .approach-header {
+            font-weight: bold;
+            color: white;
+            padding: 8px 6px;
+            font-size: 14px;
+            overflow: hidden;
+            white-space: pre-line;
+        }
+        .approach-1 {
+            background-color: #3498db;
+        }
+        .approach-2 {
+            background-color: #e74c3c;
+        }
+        .approach-3 {
+            background-color: #9b59b6;
+        }
+        .rating {
+            font-weight: bold;
+        }
+        .high {
+            color: #27ae60;
+        }
+        .medium {
+            color: #f39c12;
+        }
+        .low {
+            color: #c0392b;
+        }
+        .notes {
+            font-size: 12px;
+            color: #555;
+            font-style: italic;
+            display: block;
+            margin-top: 5px;
+        }
+        .legend {
+            margin-top: 12px;
+            font-size: 13px;
+            color: #555;
+            line-height: 1.3;
+            text-align: center;
+            padding: 5px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{title}</h1>
+        <p class="description">
+            {description}
+        </p>
+
+        <div class="comparison-table">
+            <table id="comparison-table">
+                <thead>
+                    <tr id="header-row">
+                        <th>Criteria</th>
+                        <!-- Approach headers will be added here by JavaScript -->
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <!-- Table rows will be added here by JavaScript -->
+                </tbody>
+            </table>
+
+            <div class="legend">
+                <p><strong>Rating:</strong> <span class="high">High</span> = Strong | <span class="medium">Medium</span> = Moderate | <span class="low">Low</span> = Limited</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get the comparative analysis data from the template
+            var analysisData = {json_data};
+
+            // Function to add line breaks at appropriate points
+            function addLineBreaks(text, maxCharsPerLine) {
+                if (!text) return text;
+
+                // Split text into words
+                var words = text.split(' ');
+                var lines = [];
+                var currentLine = '';
+
+                // Build lines word by word
+                words.forEach(function(word) {
+                    // If adding this word would exceed the max length, start a new line
+                    if (currentLine.length + word.length + 1 > maxCharsPerLine) {
+                        // Don't create very short lines at the end
+                        if (currentLine.length < maxCharsPerLine * 0.5 && lines.length > 0) {
+                            // If the current line is very short, try to combine with previous line
+                            var lastLine = lines.pop();
+                            if (lastLine.length + currentLine.length + 1 <= maxCharsPerLine * 1.3) {
+                                lines.push(lastLine + ' ' + currentLine);
+                                currentLine = word;
+                            } else {
+                                lines.push(lastLine);
+                                lines.push(currentLine);
+                                currentLine = word;
+                            }
+                        } else {
+                            lines.push(currentLine);
+                            currentLine = word;
+                        }
+                    } else {
+                        currentLine += (currentLine ? ' ' : '') + word;
+                    }
+                });
+
+                // Add the last line
+                if (currentLine) {
+                    lines.push(currentLine);
+                }
+
+                // Join lines with line breaks
+                return lines.join('\n');
+            }
+
+            // Add approach headers
+            var headerRow = document.getElementById('header-row');
+            if (analysisData.approaches && analysisData.approaches.length > 0) {
+                // Ensure we have exactly 3 approaches
+                var approaches = analysisData.approaches.slice(0, 3);
+
+                approaches.forEach(function(approach, index) {
+                    var th = document.createElement('th');
+                    th.className = 'approach-header approach-' + (index + 1);
+
+                    // Add line breaks to approach names
+                    th.textContent = addLineBreaks(approach, 25);
+
+                    headerRow.appendChild(th);
+                });
+            }
+
+            // Add table rows for each criteria
+            var tableBody = document.getElementById('table-body');
+            if (analysisData.criteria && analysisData.criteria.length > 0) {
+                // Allow up to 10 criteria
+                var criteria = analysisData.criteria.slice(0, 10);
+
+                criteria.forEach(function(criteria, criteriaIdx) {
+                    var tr = document.createElement('tr');
+
+                    // Add criteria cell
+                    var tdCriteria = document.createElement('td');
+                    var strong = document.createElement('strong');
+
+                    // Add line breaks to criteria names
+                    strong.textContent = addLineBreaks(criteria, 25);
+
+                    tdCriteria.appendChild(strong);
+                    tr.appendChild(tdCriteria);
+
+                    // Add cells for each approach
+                    if (analysisData.cells && analysisData.cells[criteriaIdx]) {
+                        // Ensure we have exactly 3 cells per row
+                        var cells = analysisData.cells[criteriaIdx].slice(0, 3);
+
+                        cells.forEach(function(cell) {
+                            var td = document.createElement('td');
+
+                            // Add rating class if available
+                            if (cell.rating) {
+                                td.className = 'rating ' + cell.rating;
+                            }
+
+                            // Add line breaks to cell content - ensure max 3 lines
+                            td.textContent = addLineBreaks(cell.content, 25);
+
+                            // Add notes if available
+                            if (cell.notes) {
+                                var span = document.createElement('span');
+                                span.className = 'notes';
+
+                                // Add line breaks to notes - ensure max 1 line
+                                span.textContent = addLineBreaks(cell.notes, 25);
+
+                                td.appendChild(span);
+                            }
+
+                            tr.appendChild(td);
+                        });
+                    }
+
+                    tableBody.appendChild(tr);
+                });
+            }
+
+            // Check for any overflow issues and adjust if needed
+            setTimeout(function() {
+                var table = document.getElementById('comparison-table');
+                var tableHeight = table.offsetHeight;
+                var container = document.querySelector('.comparison-table');
+                var maxHeight = container.offsetHeight - 60; // Allow space for legend
+
+                if (tableHeight > maxHeight) {
+                    // Calculate how much we need to reduce
+                    var reductionFactor = maxHeight / tableHeight;
+
+                    // Apply progressive reduction based on severity
+                    if (reductionFactor < 0.85) {
+                        // Significant overflow - reduce padding and font size substantially
+                        var cells = table.querySelectorAll('th, td');
+                        cells.forEach(function(cell) {
+                            cell.style.padding = '4px 6px';
+                            cell.style.fontSize = '12px';
+                            cell.style.lineHeight = '1.3';
+                        });
+
+                        // Further reduce header font size
+                        var headers = table.querySelectorAll('th');
+                        headers.forEach(function(header) {
+                            header.style.fontSize = '12px';
+                            header.style.padding = '4px 5px';
+                        });
+
+                        // Further reduce notes font size
+                        var notes = table.querySelectorAll('.notes');
+                        notes.forEach(function(note) {
+                            note.style.fontSize = '10px';
+                            note.style.marginTop = '2px';
+                            note.style.lineHeight = '1.2';
+                        });
+                    } else {
+                        // Minor overflow - make smaller adjustments
+                        var cells = table.querySelectorAll('th, td');
+                        cells.forEach(function(cell) {
+                            cell.style.padding = '6px 8px';
+                            cell.style.fontSize = '13px';
+                        });
+                    }
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>

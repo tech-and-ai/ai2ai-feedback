@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Research Assistant{% endblock %}
+
+{% block head %}
+<!-- Google reCAPTCHA script -->
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('register-form');
+
+    // Hide loading indicator
+    document.getElementById('recaptcha-loading').classList.add('hidden');
+
+    // Show ready indicator
+    document.getElementById('recaptcha-ready').classList.remove('hidden');
+
+    // Handle form submission
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        // The g-recaptcha-response will be automatically filled by the reCAPTCHA widget
+        console.log('Form submitted with reCAPTCHA');
+      });
+    }
+  });
+
+  // Callback function for reCAPTCHA
+  function onRecaptchaSuccess(token) {
+    console.log('reCAPTCHA verified');
+    document.getElementById('register-form').submit();
+  }
+
+  function onRecaptchaError() {
+    console.error('reCAPTCHA error');
+    document.getElementById('recaptcha-ready').classList.add('hidden');
+    document.getElementById('recaptcha-error').classList.remove('hidden');
+  }
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="w-full overflow-hidden sentry-bg">
+    <!-- Interactive background elements -->
+    <div class="orb-container">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+        <div class="orb orb-5"></div>
+        <div class="orb orb-6"></div>
+    </div>
+    <div class="spotlight"></div>
+
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 text-white">
+        <div class="w-full max-w-md">
+            <div class="glass-effect rounded-lg shadow-xl overflow-hidden border border-indigo-800">
+                <!-- Header Tabs -->
+                <div class="px-6 py-4 flex border-b border-indigo-800">
+                    <a href="/auth/login" class="text-xl font-medium text-gray-300 hover:text-white px-2">Sign In</a>
+                    <span class="text-xl font-medium text-indigo-400 border-b-2 border-indigo-400 pb-1 ml-4 px-2">Sign Up</span>
+                    <div class="ml-auto">
+                        <div class="w-10 h-10 rounded-full bg-indigo-900 flex items-center justify-center">
+                            <svg class="w-6 h-6 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Body -->
+                <div class="p-8">
+                    <div class="space-y-6">
+                        <h2 class="text-3xl font-bold text-center text-indigo-400">Create Your Account</h2>
+                        <p class="text-center text-gray-300">Join to get started with your research</p>
+
+                    {% if error %}
+                    <div class="bg-red-900/20 border border-red-800 rounded-lg p-3">
+                        <div class="flex items-center">
+                            <svg class="h-5 w-5 text-red-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p class="text-sm text-red-400">{{ error }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Google Sign Up Button -->
+                    <div class="grid grid-cols-1 gap-3">
+                        <a href="/auth/oauth/google" class="flex items-center justify-center py-4 px-4 rounded-md border border-indigo-600 bg-white hover:bg-gray-100 transition-colors shadow-md">
+                            <svg width="24" height="24" class="mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+                                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                            </svg>
+                            <span class="text-gray-800 font-medium text-lg">Create account with Google</span>
+                        </a>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="relative">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-indigo-600 opacity-30"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-2 bg-indigo-900 text-white font-medium">Or sign up with email</span>
+                        </div>
+                    </div>
+
+                    <form action="/auth/register" method="post" id="register-form" class="space-y-6">
+                        <!-- CSRF Token (Hidden) -->
+                        {% if csrf_token %}
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        {% endif %}
+
+                        <!-- Name Input -->
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-300 mb-2">Full Name</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-indigo-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <input id="name" name="name" type="text" value="{{ form_data.name if form_data else '' }}" class="block w-full bg-indigo-900 bg-opacity-30 border border-indigo-800 rounded-md py-3 pl-10 pr-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="John Doe">
+                            </div>
+                        </div>
+
+                        <!-- Username Input -->
+                        <div>
+                            <label for="username" class="block text-sm font-medium text-gray-300 mb-2">Username</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-indigo-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <input id="username" name="username" type="text" required value="{{ form_data.username if form_data else '' }}" class="block w-full bg-indigo-900 bg-opacity-30 border border-indigo-800 rounded-md py-3 pl-10 pr-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="johndoe">
+                            </div>
+                        </div>
+
+                        <!-- Email Input -->
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-indigo-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                                    </svg>
+                                </div>
+                                <input id="email" name="email" type="email" required value="{{ form_data.email if form_data else '' }}" class="block w-full bg-indigo-900 bg-opacity-30 border border-indigo-800 rounded-md py-3 pl-10 pr-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="you@example.com">
+                            </div>
+                        </div>
+
+                        <!-- Password Input -->
+                        <div>
+                            <label for="password" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-indigo-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <input id="password" name="password" type="password" required class="block w-full bg-indigo-900 bg-opacity-30 border border-indigo-800 rounded-md py-3 pl-10 pr-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="••••••••">
+                            </div>
+                        </div>
+
+                        <!-- Confirm Password Input -->
+                        <div>
+                            <label for="confirm_password" class="block text-sm font-medium text-gray-300 mb-2">Confirm Password</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-indigo-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <input id="confirm_password" name="confirm_password" type="password" required class="block w-full bg-indigo-900 bg-opacity-30 border border-indigo-800 rounded-md py-3 pl-10 pr-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="••••••••">
+                            </div>
+                        </div>
+
+                        <!-- Terms and Conditions -->
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input id="terms" name="terms" type="checkbox" required class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-indigo-300 rounded bg-indigo-900 bg-opacity-30">
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="terms" class="text-gray-300">
+                                    I agree to the <a href="/terms" class="text-indigo-400 hover:text-indigo-300">Terms of Service</a> and <a href="/privacy" class="text-indigo-400 hover:text-indigo-300">Privacy Policy</a>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- reCAPTCHA widget -->
+                        <div class="flex justify-center my-4">
+                            <div class="g-recaptcha" data-sitekey="{{ recaptcha_site_key }}" data-callback="onRecaptchaSuccess" data-error-callback="onRecaptchaError"></div>
+                        </div>
+
+                        <!-- reCAPTCHA status indicator -->
+                        <div id="recaptcha-status" class="text-center text-sm text-gray-400 mt-2">
+                            <span id="recaptcha-loading">Initializing reCAPTCHA...</span>
+                            <span id="recaptcha-ready" class="hidden text-green-400">reCAPTCHA ready</span>
+                            <span id="recaptcha-error" class="hidden text-red-400">reCAPTCHA error</span>
+                        </div>
+
+                        <!-- reCAPTCHA status is now handled in the main script -->
+                        {% if captcha_error %}
+                        <div class="mt-2 text-center text-sm text-red-400">
+                            {{ captcha_error }}
+                        </div>
+                        {% endif %}
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Create Account
+                        </button>
+                    </form>
+
+                    <!-- Sign In Link -->
+                    <div class="text-center mt-4">
+                        <p class="text-sm text-gray-300">
+                            Already have an account?
+                            <a href="/auth/login" class="font-medium text-indigo-400 hover:text-indigo-300">Sign in</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

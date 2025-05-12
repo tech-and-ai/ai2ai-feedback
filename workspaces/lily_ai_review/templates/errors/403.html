@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Permission Denied - Lily AI Research Assistant{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 dashboard-content flex items-center justify-center">
+    <div class="max-w-md w-full mx-auto p-6">
+        <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden">
+            <div class="p-6">
+                <div class="flex flex-col items-center text-center">
+                    <!-- Error Icon -->
+                    <div class="w-16 h-16 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mb-6">
+                        <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                    
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Permission Denied</h2>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">
+                        {% if error %}
+                            {{ error }}
+                        {% else %}
+                            You don't have permission to access this feature. Please upgrade your subscription.
+                        {% endif %}
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 mt-4">
+                        <a href="/subscription" class="inline-flex items-center justify-center px-5 py-2 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                            View Subscription Options
+                        </a>
+                        <a href="/dashboard" class="inline-flex items-center justify-center px-5 py-2 border border-gray-300 dark:border-gray-600 text-base font-medium rounded-md text-gray-700 dark:text-white bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                            Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

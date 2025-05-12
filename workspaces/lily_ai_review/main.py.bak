@@ -1,0 +1,1657 @@
+"""
+Main application module for Lily AI.
+
+This module initializes the FastAPI application and includes all routes.
+"""
+import os
+import datetime
+from fastapi import FastAPI, Request, Depends, status
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from starlette.middleware.sessions import SessionMiddleware
+import logging
+from dotenv import load_dotenv
+
+# Import routes
+from routes.auth_simple import router as auth_router_simple
+from routes.billing_simple import router as billing_router_simple
+from routes.billing_webhook_simple import router as billing_webhook_router_simple
+from routes.papers import router as papers_router
+from routes.review import router as review_router
+from routes.research_paper_simple import router as research_paper_router_simple
+from auth.middleware import AuthMiddleware
+from auth.dependencies import get_current_user
+from app.utils.session_helpers_simple import get_session_user
+
+# Load environment variables
+load_dotenv()
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
+
+# Get base URL from environment
+BASE_URL = os.getenv("BASE_URL", "")
+# Extract root path from BASE_URL if it exists and is not a domain root
+root_path = ""
+if BASE_URL and "/" in BASE_URL.split("//")[-1]:
+    # Extract path component after domain
+    root_path = "/" + BASE_URL.split("//")[-1].split("/", 1)[1]
+    logger.info(f"Setting root_path to: {root_path}")
+
+# Initialize FastAPI app
+app = FastAPI(
+    title="Lily AI Research Assistant",
+    description="AI-powered research assistant for students",
+    version="0.1.0",
+    root_path=root_path,
+)
+
+# Add authentication middleware first (will be executed after session middleware)
+app.add_middleware(AuthMiddleware)
+
+# Add session middleware last (will be executed first)
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.getenv("SESSION_SECRET_KEY", "supersecretkey"),
+    max_age=3600 * 24 * 7,  # 7 days
+)
+
+# Mount static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Initialize templates
+templates = Jinja2Templates(directory="templates")
+
+# Add custom filters
+def format_uk_date(date_str):
+    """Format a date string to UK format (DD/MM/YYYY HH:MM)"""
+    if not date_str:
+        return "N/A"
+    try:
+        # Try to parse ISO format
+        if isinstance(date_str, str):
+            date_obj = datetime.datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+            return date_obj.strftime("%d/%m/%Y %H:%M")
+        # If it's already a datetime object
+        elif isinstance(date_str, datetime.datetime):
+            return date_str.strftime("%d/%m/%Y %H:%M")
+    except Exception:
+        # Return as is if parsing fails
+        return date_str
+    return date_str
+
+# Register the filter with Jinja2
+templates.env.filters["format_uk_date"] = format_uk_date
+
+# Store the BASE_URL for use in template contexts
+logger.info(f"Using BASE_URL: {BASE_URL}")
+
+# Helper function to add common context to templates
+def get_template_context(request: Request, context: dict = None) -> dict:
+    """
+    Add common context variables to template context.
+
+    Args:
+        request: The request object
+        context: Existing context dictionary
+
+    Returns:
+        Updated context dictionary with common variables
+    """
+    context = context or {}
+    context["request"] = request
+    context["BASE_URL"] = BASE_URL
+
+    # Get user from session if not already in context
+    if "user" not in context:
+        user = get_session_user(request)
+
+        # If user exists, check for OAuth provider
+        if user:
+            # Check if user is a social login user
+            oauth_provider = None
+            if hasattr(user, 'app_metadata') and user.app_metadata:
+                provider = user.app_metadata.get("provider")
+                if provider and provider != "email":
+                    oauth_provider = provider
+            elif isinstance(user, dict) and user.get('app_metadata'):
+                provider = user['app_metadata'].get("provider")
+                if provider and provider != "email":
+                    oauth_provider = provider
+
+            # If user is already a dict, update it; otherwise create a new dict
+            if isinstance(user, dict):
+                user['oauth_provider'] = oauth_provider
+            else:
+                # Create user dict with OAuth provider information
+                user_data = {
+                    "username": getattr(user, "username", request.session.get("username", "User")),
+                    "email": getattr(user, "email", request.session.get("email", "")),
+                    "subscription_tier": getattr(user, "subscription_tier", request.session.get("subscription_tier", "free")),
+                    "oauth_provider": oauth_provider,
+                    "id": getattr(user, "id", request.session.get("user_id"))
+                }
+                user = user_data
+
+            # Add subscription and papers information for logged-in users
+            try:
+                # Only add this information if not already in context
+                if "total_papers_remaining" not in context:
+                    from app.services.billing.subscription_service_simple import SubscriptionService
+                    subscription_service = SubscriptionService()
+
+                    # Get user's subscription
+                    subscription = subscription_service.get_user_subscription(user.get("id"))
+
+                    # Get paper counts
+                    subscription_papers_remaining = subscription.get("papers_remaining", 0)
+                    additional_papers_remaining = subscription.get("additional_credits_remaining", 0)
+                    total_papers_remaining = subscription.get("total_papers_remaining", 0)
+
+                    # Add to context
+                    context["subscription_papers_remaining"] = subscription_papers_remaining
+                    context["additional_papers_remaining"] = additional_papers_remaining
+                    context["total_papers_remaining"] = total_papers_remaining
+            except Exception as e:
+                logger.error(f"Error getting papers remaining: {str(e)}")
+                # If there's an error, set default values
+                context["total_papers_remaining"] = 0
+                context["subscription_papers_remaining"] = 0
+                context["additional_papers_remaining"] = 0
+
+        context["user"] = user
+
+    # Get footer text from config
+    from app.services.config.config_service import ConfigService
+    config_service = ConfigService()
+    context["footer_text"] = config_service.get_config(
+        'footer_copyright_text',
+        "© " + str(datetime.datetime.now().year) + " researchassistant.uk - All rights reserved"
+    )
+
+    return context
+
+# Include routers
+# Use the simplified auth router
+app.include_router(auth_router_simple)
+# app.include_router(auth_router_new)  # Commented out to use the simplified auth router
+# app.include_router(auth_router_old)  # Commented out to use the simplified auth router
+
+# Use the simplified billing routers
+app.include_router(billing_router_simple)
+app.include_router(billing_webhook_router_simple)
+# app.include_router(billing_router)  # Commented out to use the simplified billing router
+# app.include_router(billing_webhook_router)  # Commented out to use the simplified webhook router
+
+# Include other routers
+app.include_router(papers_router)
+app.include_router(review_router)
+
+# Use the simplified research paper router
+from routes.research_paper_simple import router as research_paper_router_simple
+app.include_router(research_paper_router_simple)
+# app.include_router(research_paper_router)  # Commented out to use the simplified research paper router
+
+# Home page route
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request):
+    """
+    Render the home page.
+
+    Args:
+        request: The incoming request
+
+    Returns:
+        HTMLResponse with the home template
+    """
+    # Check if this is an OAuth callback (has code parameter)
+    code = request.query_params.get("code")
+    if code:
+        logger.info(f"Detected OAuth callback at root path with code: {code[:10]}...")
+
+        # Instead of handling the OAuth callback here, redirect to the dedicated callback handler
+        # This ensures consistent processing of OAuth callbacks
+        query_string = request.url.query
+        logger.info(f"Redirecting OAuth callback from root path to /auth/callback with params: {query_string}")
+
+        # Redirect to the auth callback route with all query parameters
+        return RedirectResponse(
+            url=f"/auth/callback?{query_string}",
+            status_code=status.HTTP_303_SEE_OTHER
+        )
+
+    # Regular home page rendering
+    # Get user from session
+    user = get_session_user(request)
+
+    # Get pricing data from the pricing service
+    from app.services.pricing_service import pricing_service
+    pricing_plans = pricing_service.get_all_pricing_plans()
+    pricing_addons = pricing_service.get_pricing_addons()
+    pricing_display = pricing_service.get_pricing_display()
+
+    return templates.TemplateResponse(
+        "home.html",
+        get_template_context(request, {
+            "pricing_plans": pricing_plans,
+            "pricing_addons": pricing_addons,
+            "pricing_display": pricing_display
+        })
+    )
+
+# Dashboard route
+@app.get("/dashboard", response_class=HTMLResponse)
+async def dashboard(request: Request, user=Depends(get_current_user)):
+    """
+    Render the dashboard page.
+
+    Args:
+        request: The incoming request
+        user: The current authenticated user
+
+    Returns:
+        HTMLResponse with the dashboard template
+    """
+    # Get sample papers from the free-packs bucket
+    from app.services.utils.storage_service import StorageService
+    storage_service = StorageService()
+
+    # Get user's subscription information
+    from app.services.billing.subscription_service_simple import SubscriptionService
+    subscription_service = SubscriptionService()
+
+    try:
+        # Get sample papers
+        sample_papers = storage_service.get_sample_papers()
+        logger.info(f"Retrieved {len(sample_papers)} sample papers for dashboard")
+    except Exception as e:
+        logger.error(f"Error retrieving sample papers: {str(e)}")
+        sample_papers = []
+
+    try:
+        # Get user's subscription using the simplified service
+        from app.services.billing.subscription_service_simple import SubscriptionService as SimpleSubscriptionService
+        subscription_service = SimpleSubscriptionService()
+
+        # Get subscription
+        subscription = subscription_service.get_user_subscription(user.get("id"))
+        logger.info(f"Retrieved subscription for user {user.get('id')}")
+
+        # Get paper counts
+        papers_remaining = subscription.get("papers_remaining", 0)
+        subscription_papers_remaining = papers_remaining
+        additional_papers_remaining = subscription.get("additional_credits_remaining", 0)
+        total_papers_remaining = subscription.get("total_papers_remaining", 0)
+
+        logger.info(f"User {user.get('id')} has {papers_remaining} subscription papers remaining and {additional_papers_remaining} additional credits")
+    except Exception as e:
+        logger.error(f"Error retrieving user subscription: {str(e)}")
+        subscription = {"subscription_tier": "sample"}
+        papers_remaining = 0
+        subscription_papers_remaining = 0
+        additional_papers_remaining = 0
+        total_papers_remaining = 0
+
+    return templates.TemplateResponse(
+        "dashboard.html",
+        get_template_context(request, {
+            "sample_papers": sample_papers,
+            "subscription": subscription,
+            "papers_remaining": papers_remaining,
+            "subscription_papers_remaining": subscription_papers_remaining,
+            "additional_papers_remaining": additional_papers_remaining,
+            "total_papers_remaining": total_papers_remaining
+        })
+    )
+
+# About page route
+@app.get("/about", response_class=HTMLResponse)
+async def about(request: Request):
+    """
+    Render the about page.
+
+    Args:
+        request: The incoming request
+
+    Returns:
+        HTMLResponse with the about template
+    """
+    # Get user from session
+    user = get_session_user(request)
+
+    return templates.TemplateResponse("about.html", get_template_context(request))
+
+# Pricing page route
+@app.get("/pricing", response_class=HTMLResponse)
+async def pricing(request: Request):
+    """
+    Render the pricing page.
+
+    Args:
+        request: The incoming request
+
+    Returns:
+        HTMLResponse with the pricing template
+    """
+    # Get user from session
+    user = get_session_user(request)
+
+    return templates.TemplateResponse("pricing.html", get_template_context(request))
+
+# Contact page route
+@app.get("/contact", response_class=HTMLResponse)
+async def contact(request: Request):
+    """
+    Render the contact page.
+
+    Args:
+        request: The incoming request
+
+    Returns:
+        HTMLResponse with the contact template
+    """
+    # Get user from session
+    user = get_session_user(request)
+
+    return templates.TemplateResponse("contact.html", get_template_context(request))
+
+# Terms of Service page route
+@app.get("/terms", response_class=HTMLResponse)
+async def terms(request: Request):
+    """
+    Render the terms of service page.
+
+    Args:
+        request: The incoming request
+
+    Returns:
+        HTMLResponse with the terms template
+    """
+    # Get user from session
+    user = get_session_user(request)
+
+    return templates.TemplateResponse("terms.html", get_template_context(request))
+
+# Help page route
+@app.get("/help", response_class=HTMLResponse)
+async def help_page(request: Request):
+    """
+    Render the help and support page.
+
+    Args:
+        request: The incoming request
+
+    Returns:
+        HTMLResponse with the help template
+    """
+    # Get user from session
+    user = get_session_user(request)
+
+    return templates.TemplateResponse("help.html", get_template_context(request))
+
+# Support page route (redirects to help page)
+@app.get("/support", response_class=RedirectResponse)
+async def support_redirect():
+    """
+    Redirect to the help page.
+
+    Returns:
+        Redirect to the help page
+    """
+    return RedirectResponse(url="/help", status_code=status.HTTP_301_MOVED_PERMANENTLY)
+
+# Account deletion route
+@app.get("/account/delete", response_class=HTMLResponse)
+async def delete_account_page(request: Request, user=Depends(get_current_user)):
+    """
+    Render the account deletion confirmation page.
+
+    Args:
+        request: The incoming request
+        user: The current authenticated user
+
+    Returns:
+        HTMLResponse with the account deletion confirmation template
+    """
+    return templates.TemplateResponse(
+        "account/delete_confirmation.html",
+        get_template_context(request)
+    )
+
+@app.get("/account/delete/check-eligibility", response_class=JSONResponse)
+async def check_deletion_eligibility(request: Request, user=Depends(get_current_user)):
+    """
+    Check if a user is eligible for account deletion.
+
+    This endpoint checks:
+    1. If the user has an active subscription
+    2. If the user has any pending payments
+
+    Args:
+        request: The incoming request
+        user: The current authenticated user
+
+    Returns:
+        JSON response with eligibility status and any blocking reasons
+    """
+    try:
+        user_id = user.get("id")
+        logger.info(f"Checking account deletion eligibility for user: {user_id}")
+
+        # Get subscription service
+        from app.services.billing.subscription_service_simple import SubscriptionService
+        subscription_service = SubscriptionService()
+
+        # Get user's subscription
+        subscription = subscription_service.get_user_subscription(user_id)
+
+        # Initialize response
+        response = {
+            "eligible": True,
+            "blocking_reasons": [],
+            "subscription_status": subscription.get("status", "none"),
+            "subscription_end_date": subscription.get("end_date", None),
+            "has_active_subscription": False
+        }
+
+        # Check if user has an active subscription
+        if subscription and subscription.get("status") == "active" and subscription.get("subscription_tier") != "free" and subscription.get("subscription_tier") != "sample":
+            response["has_active_subscription"] = True
+            response["eligible"] = False
+            response["blocking_reasons"].append("You have an active subscription. Please cancel your subscription first.")
+
+        # Check if user has any pending payments (simplified check)
+        # In a real implementation, you would check with Stripe for any pending invoices
+        if subscription and subscription.get("status") == "past_due":
+            response["eligible"] = False
+            response["blocking_reasons"].append("You have pending payments. Please resolve these before deleting your account.")
+
+        return JSONResponse(content=response)
+
+    except Exception as e:
+        logger.error(f"Error checking deletion eligibility: {str(e)}")
+        return JSONResponse(
+            content={"eligible": False, "error": "An error occurred while checking eligibility."},
+            status_code=500
+        )
+
+@app.post("/account/delete", response_class=RedirectResponse)
+async def delete_account(request: Request, user=Depends(get_current_user)):
+    """
+    Process account deletion using a soft deletion approach that complies with GDPR
+    while retaining necessary data for legal and compliance purposes.
+
+    This process:
+    1. Checks for and cancels any active Stripe subscriptions
+    2. Anonymizes user data in our database
+    3. Updates S3 paper metadata to indicate deleted account ownership
+    4. Handles both email/password and OAuth users appropriately
+    5. Maintains necessary data for legal and compliance purposes
+
+    Args:
+        request: The incoming request
+        user: The current authenticated user
+
+    Returns:
+        Redirect to home page after account deletion
+    """
+    try:
+        user_id = user.get("id")
+        user_email = user.get("email")
+        auth_provider = user.get("app_metadata", {}).get("provider", "email")
+        logger.info(f"Account deletion requested for user: {user_id} (provider: {auth_provider})")
+
+        # Get the Supabase client
+        from auth.client_simple import get_supabase_client
+        supabase = get_supabase_client()
+
+        # Get services
+        from app.services.billing.subscription_service_simple import SubscriptionService
+        from app.services.billing.stripe_service_simple import StripeService
+        subscription_service = SubscriptionService()
+        stripe_service = StripeService()
+
+        # 1. Check and handle active subscriptions
+        subscription = subscription_service.get_user_subscription(user_id)
+
+        if subscription and subscription.get("status") == "active" and subscription.get("subscription_tier") not in ["free", "sample"]:
+            # User has an active subscription - check if they confirmed cancellation
+            cancel_confirmed = request.query_params.get("cancel_subscription_confirmed", "false") == "true"
+
+            if not cancel_confirmed:
+                # Redirect to confirmation page for subscription cancellation
+                return RedirectResponse(
+                    url=f"/account/delete?subscription_active=true",
+                    status_code=status.HTTP_303_SEE_OTHER
+                )
+
+            # Cancel the subscription in Stripe
+            try:
+                stripe_subscription_id = subscription.get("stripe_subscription_id")
+                if stripe_subscription_id:
+                    # Cancel at period end to allow user to use the service until the end of billing period
+                    stripe_service.cancel_subscription(stripe_subscription_id, at_period_end=True)
+                    logger.info(f"Canceled Stripe subscription for user: {user_id}")
+            except Exception as stripe_error:
+                logger.error(f"Error canceling Stripe subscription: {str(stripe_error)}")
+                # Continue with deletion even if subscription cancellation fails
+
+        # 2. Anonymize user data rather than deleting it completely
+        try:
+            # Create a record in deleted_users table to track deletion for compliance
+            current_time = datetime.datetime.now().isoformat()
+
+            # Check if deleted_users table exists, create if not
+            try:
+                # This is a simplified approach - in production, you'd use migrations
+                supabase.rpc(
+                    "create_table_if_not_exists",
+                    {
+                        "table_name": "deleted_users",
+                        "table_definition": """
+                            id uuid PRIMARY KEY,
+                            original_user_id uuid,
+                            original_email text,
+                            auth_provider text,
+                            deletion_date timestamp with time zone,
+                            retention_reason text,
+                            retention_period_days integer
+                        """
+                    }
+                ).execute()
+            except Exception as table_error:
+                logger.error(f"Error checking/creating deleted_users table: {str(table_error)}")
+
+            # Insert record of deletion with retention information
+            try:
+                supabase.table("deleted_users").insert({
+                    "original_user_id": user_id,
+                    "original_email": user_email,
+                    "auth_provider": auth_provider,
+                    "deletion_date": current_time,
+                    "retention_reason": "Legal compliance and fraud prevention",
+                    "retention_period_days": 365 * 2  # 2 years retention
+                }).execute()
+                logger.info(f"Created deletion record for user: {user_id}")
+            except Exception as insert_error:
+                logger.error(f"Error creating deletion record: {str(insert_error)}")
+
+            # Update user data in saas_users table to anonymize it
+            try:
+                supabase.table("saas_users").update({
+                    "email": f"deleted-{user_id}@example.com",
+                    "name": "Deleted User",
+                    "is_deleted": True,
+                    "deletion_date": current_time
+                }).eq("id", user_id).execute()
+                logger.info(f"Anonymized user data for user: {user_id}")
+            except Exception as update_error:
+                logger.error(f"Error anonymizing user data: {str(update_error)}")
+
+            # Mark subscription as canceled but retain for records
+            try:
+                supabase.table("saas_user_subscriptions").update({
+                    "status": "canceled",
+                    "is_deleted": True,
+                    "deletion_date": current_time
+                }).eq("user_id", user_id).execute()
+                logger.info(f"Marked subscription as canceled for user: {user_id}")
+            except Exception as sub_error:
+                logger.error(f"Error updating subscription data: {str(sub_error)}")
+
+            # 3. Update S3 paper metadata for research papers
+            try:
+                # Get storage service
+                from app.services.utils.storage_service import StorageService
+                storage_service = StorageService()
+
+                # Update metadata for all user's papers in S3
+                # This is a simplified approach - in a real implementation, you would:
+                # 1. List all papers for the user
+                # 2. Update metadata for each paper
+                # 3. Set retention policy/expiration date
+
+                # Example of how this might work:
+                # papers = storage_service.list_user_papers(user_id)
+                # for paper in papers:
+                #     storage_service.update_paper_metadata(
+                #         paper_id=paper.id,
+                #         metadata={
+                #             "owner_deleted": True,
+                #             "deletion_date": current_time,
+                #             "retention_expiry": (datetime.datetime.now() + datetime.timedelta(days=365*2)).isoformat()
+                #         }
+                #     )
+
+                logger.info(f"Updated S3 paper metadata for user: {user_id}")
+            except Exception as s3_error:
+                logger.error(f"Error updating S3 paper metadata: {str(s3_error)}")
+
+        except Exception as db_error:
+            logger.error(f"Error anonymizing user data: {str(db_error)}")
+
+        # 4. Handle user in Supabase Auth based on provider type
+        try:
+            from auth.service_simple import AuthService
+            auth_service = AuthService()
+
+            # Different handling based on auth provider
+            if auth_provider == "google" or auth_provider.startswith("oauth"):
+                # For OAuth users, we need to revoke the OAuth connection if possible
+                # and then disable the account
+
+                # Attempt to revoke OAuth tokens (simplified - would need provider-specific implementation)
+                logger.info(f"OAuth user detected ({auth_provider}). Handling OAuth-specific deletion for user: {user_id}")
+
+                # Disable the account
+                try:
+                    auth_service.supabase.auth.admin.update_user_by_id(
+                        user_id,
+                        {
+                            "banned": True,
+                            "ban_duration": "87600h",  # 10 years
+                            "user_metadata": {
+                                "is_deleted": True,
+                                "deletion_date": current_time,
+                                "original_email": user_email
+                            }
+                        }
+                    )
+                    logger.info(f"Disabled OAuth user account in Auth: {user_id}")
+                except Exception as oauth_error:
+                    logger.error(f"Error disabling OAuth user: {str(oauth_error)}")
+            else:
+                # For email/password users, we can anonymize the email and disable the account
+                try:
+                    # Update user metadata and anonymize email
+                    auth_service.supabase.auth.admin.update_user_by_id(
+                        user_id,
+                        {
+                            "user_metadata": {
+                                "is_deleted": True,
+                                "deletion_date": current_time,
+                                "original_email": user_email
+                            },
+                            # Anonymize email but keep user record
+                            "email": f"deleted-{user_id}@example.com",
+                            "banned": True,
+                            "ban_duration": "87600h"  # 10 years
+                        }
+                    )
+                    logger.info(f"Anonymized and disabled email user in Auth: {user_id}")
+                except Exception as email_error:
+                    logger.error(f"Error anonymizing email user: {str(email_error)}")
+
+        except Exception as auth_error:
+            logger.error(f"Error handling Auth user deletion: {str(auth_error)}")
+
+        # 5. Clear the session
+        request.session.clear()
+
+        # 6. Create a response that redirects to the home page
+        response = RedirectResponse(url="/?account_deleted=true", status_code=status.HTTP_303_SEE_OTHER)
+
+        # 7. Clear any session cookies
+        response.delete_cookie(key="session")
+        response.delete_cookie(key="sb-access-token")
+        response.delete_cookie(key="sb-refresh-token")
+
+        # 8. Add cache control headers
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+
+        logger.info(f"Account deletion (soft delete) completed for user: {user_id}")
+        return response
+
+    except Exception as e:
+        logger.error(f"Error during account deletion: {str(e)}")
+        return RedirectResponse(
+            url="/account/delete?error=true",
+            status_code=status.HTTP_303_SEE_OTHER
+        )
+
+# Privacy Policy page route
+@app.get("/privacy", response_class=HTMLResponse)
+async def privacy(request: Request):
+    """
+    Render the privacy policy page.
+
+    Args:
+        request: The incoming request
+
+    Returns:
+        HTMLResponse with the privacy template
+    """
+    # Get user from session
+    user = get_session_user(request)
+
+    return templates.TemplateResponse("privacy.html", get_template_context(request))
+
+# Profile/Usage Analytics page route
+@app.get("/profile", response_class=HTMLResponse)
+async def profile(request: Request, user=Depends(get_current_user)):
+    """
+    Render the profile/usage analytics page.
+
+    Args:
+        request: The incoming request
+        user: The current authenticated user
+
+    Returns:
+        HTMLResponse with the profile template
+    """
+    try:
+        # Get user's subscription
+        from app.services.billing.subscription_service_simple import SubscriptionService
+        subscription_service = SubscriptionService()
+
+        # Get user ID safely
+        user_id = user.get("id") if isinstance(user, dict) else getattr(user, "id", None)
+
+        # Check if user is a social login user
+        is_oauth_user = False
+        oauth_provider = None
+
+        # Get the authentication provider from user object
+        if isinstance(user, dict):
+            app_metadata = user.get("app_metadata", {})
+            provider = app_metadata.get("provider") if app_metadata else None
+        else:
+            provider = getattr(user, "app_metadata", {}).get("provider") if hasattr(user, "app_metadata") else None
+
+        is_oauth_user = provider not in [None, "email"]
+        oauth_provider = provider if is_oauth_user else None
+
+        if not user_id:
+            logger.error("User ID not found in user object")
+            return templates.TemplateResponse(
+                "errors/500.html",
+                get_template_context(request, {"error": "User ID not found. Please try logging in again."}),
+                status_code=500
+            )
+
+        try:
+            subscription = subscription_service.get_user_subscription(user_id)
+            logger.info(f"Retrieved subscription for user {user_id}")
+        except Exception as e:
+            logger.error(f"Error retrieving user subscription: {str(e)}")
+            subscription = {"subscription_tier": "sample"}
+
+        # Create user object with OAuth provider information
+        user_data = {
+            "username": request.session.get("username", "User"),
+            "email": request.session.get("email", ""),
+            "oauth_provider": oauth_provider
+        }
+
+        # Only pass the subscription data since analytics are commented out
+        return templates.TemplateResponse(
+            "profile.html",
+            get_template_context(request, {
+                "subscription": subscription,
+                "is_oauth_user": is_oauth_user,
+                "oauth_provider": oauth_provider,
+                "user": user_data
+            })
+        )
+    except Exception as e:
+        logger.error(f"Error rendering profile page: {str(e)}")
+        return templates.TemplateResponse(
+            "errors/500.html",
+            get_template_context(request, {"error": "An error occurred while loading your profile. Please try again later."}),
+            status_code=500
+        )
+
+# Account Management page route
+@app.get("/account/manage", response_class=HTMLResponse)
+async def account_manage(request: Request, user=Depends(get_current_user)):
+    """
+    Render the account management page.
+
+    Args:
+        request: The incoming request
+        user: The current authenticated user
+
+    Returns:
+        HTMLResponse with the account management template
+    """
+    try:
+        # Get user's subscription
+        from app.services.billing.subscription_service_simple import SubscriptionService
+        subscription_service = SubscriptionService()
+
+        # Get user ID safely
+        user_id = user.get("id") if isinstance(user, dict) else getattr(user, "id", None)
+
+        if not user_id:
+            logger.error("User ID not found in user object")
+            return templates.TemplateResponse(
+                "errors/500.html",
+                get_template_context(request, {"error": "User ID not found. Please try logging in again."}),
+                status_code=500
+            )
+
+        try:
+            subscription = subscription_service.get_user_subscription(user_id)
+            logger.info(f"Retrieved subscription for user {user_id}")
+        except Exception as e:
+            logger.error(f"Error retrieving user subscription: {str(e)}")
+            subscription = {"subscription_tier": "sample"}
+
+        return templates.TemplateResponse(
+            "account/manage.html",
+            get_template_context(request, {
+                "subscription": subscription
+            })
+        )
+    except Exception as e:
+        logger.error(f"Error rendering account management page: {str(e)}")
+        return templates.TemplateResponse(
+            "errors/500.html",
+            get_template_context(request, {"error": "An error occurred while loading your account management page. Please try again later."}),
+            status_code=500
+        )
+
+# Subscription page route
+@app.get("/subscription", response_class=HTMLResponse)
+async def subscription(request: Request):
+    """
+    Render the subscription page.
+
+    Args:
+        request: The incoming request
+
+    Returns:
+        HTMLResponse with the subscription template
+    """
+    # Get user from session
+    user = get_session_user(request)
+
+    # Check if user is logged in
+    subscription_data = None
+    canceled = request.query_params.get("canceled", "false") == "true"
+    buy_papers = request.query_params.get("buy_papers", "false") == "true"
+
+    # Initialize Stripe service
+    from app.services.billing.stripe_service_simple import StripeService
+    from auth.client_simple import get_supabase_client
+    stripe_service = StripeService()
+
+    if user:
+        try:
+            from app.services.billing.subscription_service_simple import SubscriptionService
+            subscription_service = SubscriptionService()
+            subscription_data = subscription_service.get_user_subscription(user["id"])
+        except Exception as e:
+            logger.error(f"Error getting user subscription: {str(e)}")
+
+    # Get publishable key from Stripe service
+    stripe_publishable_key = stripe_service.get_publishable_key()
+
+    # Get pricing data from the pricing service
+    from app.services.pricing_service import pricing_service
+    pricing_plans = pricing_service.get_all_pricing_plans()
+    pricing_addons = pricing_service.get_pricing_addons()
+    pricing_display = pricing_service.get_pricing_display()
+
+    # Calculate papers remaining for display
+    subscription_papers_remaining = 0
+    additional_papers_remaining = 0
+    total_papers_remaining = 0
+
+    if subscription_data:
+        subscription_papers_remaining = subscription_data.get("subscription_papers_remaining", 0)
+        additional_papers_remaining = subscription_data.get("additional_papers_remaining", 0)
+
+        # For backward compatibility
+        papers_used = subscription_data.get("papers_used", 0)
+        papers_limit = subscription_data.get("papers_limit", 0)
+        papers_remaining = max(0, papers_limit - papers_used)
+
+        # Calculate total papers remaining
+        total_papers_remaining = subscription_papers_remaining + additional_papers_remaining
+
+        # If using old system, use papers_remaining
+        if total_papers_remaining == 0 and papers_remaining > 0:
+            total_papers_remaining = papers_remaining
+
+    # Render the subscription template
+    return templates.TemplateResponse(
+        "subscription.html",
+        get_template_context(
+            request,
+            {
+                "user": user,
+                "subscription": subscription_data,
+                "canceled": canceled,
+                "buy_papers": buy_papers,  # Pass the buy_papers parameter to the template
+                "stripe_publishable_key": stripe_publishable_key,
+                "pricing_plans": pricing_plans,
+                "pricing_addons": pricing_addons,
+                "pricing_display": pricing_display,
+                "subscription_papers_remaining": subscription_papers_remaining,
+                "additional_papers_remaining": additional_papers_remaining,
+                "total_papers_remaining": total_papers_remaining,
+                "papers_remaining": papers_remaining if 'papers_remaining' in locals() else 0
+            }
+        )
+    )
+
+# My Papers page route
+@app.get("/my-papers", response_class=HTMLResponse)
+async def my_papers(request: Request, user=Depends(get_current_user)):
+    """
+    Render the my papers page.
+
+    Args:
+        request: The incoming request
+        user: The current authenticated user
+
+    Returns:
+        HTMLResponse with the papers template or redirect to subscription page for free users
+    """
+    # Check user's subscription tier
+    from app.services.billing.subscription_service_simple import SubscriptionService
+    subscription_service = SubscriptionService()
+
+    # Get user's subscription
+    subscription = subscription_service.get_user_subscription(user.get("id"))
+    subscription_tier = subscription.get("subscription_tier", "sample")
+
+    # If user is on free/sample tier, redirect to subscription page
+    if subscription_tier in ["free", "sample"]:
+        logger.info(f"Free user {user.get('id')} attempted to access my-papers, redirecting to subscription")
+        return RedirectResponse(url="/subscription", status_code=status.HTTP_303_SEE_OTHER)
+
+    # For premium users, continue with normal flow
+    # Initialize queue manager to get user's jobs
+    from app.services.queue_engine.queue_manager import QueueManager
+    queue_manager = QueueManager()
+
+    try:
+        # Get user's jobs from saas_job_tracking table
+        jobs = queue_manager.get_user_jobs(user_id=user.get("id"), limit=20)
+        logger.info(f"Retrieved {len(jobs)} jobs for user {user.get('id')}")
+    except Exception as e:
+        logger.error(f"Error retrieving user jobs: {str(e)}")
+        jobs = []
+
+    # Calculate papers remaining for display
+    subscription_papers_remaining = subscription.get("subscription_papers_remaining", 0)
+    additional_papers_remaining = subscription.get("additional_papers_remaining", 0)
+    total_papers_remaining = subscription_papers_remaining + additional_papers_remaining
+
+    # For backward compatibility
+    papers_used = subscription.get("papers_used", 0)
+    papers_limit = subscription.get("papers_limit", 0)
+    papers_remaining = max(0, papers_limit - papers_used)
+
+    return templates.TemplateResponse(
+        "papers.html",
+        get_template_context(request, {
+            "papers": jobs,
+            "subscription": subscription,
+            "papers_remaining": papers_remaining,
+            "subscription_papers_remaining": subscription_papers_remaining,
+            "additional_papers_remaining": additional_papers_remaining,
+            "total_papers_remaining": total_papers_remaining
+        })
+    )
+
+# Individual paper view route
+@app.get("/my-papers/{paper_id}", response_class=HTMLResponse)
+async def view_paper(request: Request, paper_id: int, user=Depends(get_current_user)):
+    """
+    Render the individual paper view page.
+
+    Args:
+        request: The incoming request
+        paper_id: The ID of the paper to view
+        user: The current authenticated user
+
+    Returns:
+        HTMLResponse with the paper view template or redirect to subscription page for free users
+    """
+    # Check user's subscription tier
+    from app.services.billing.subscription_service_simple import SubscriptionService
+    subscription_service = SubscriptionService()
+
+    # Get user's subscription
+    subscription = subscription_service.get_user_subscription(user.get("id"))
+    subscription_tier = subscription.get("subscription_tier", "sample")
+
+    # If user is on free/sample tier, redirect to subscription page
+    if subscription_tier in ["free", "sample"]:
+        logger.info(f"Free user {user.get('id')} attempted to access paper view, redirecting to subscription")
+        return RedirectResponse(url="/subscription", status_code=status.HTTP_303_SEE_OTHER)
+
+    # In a real implementation, you would fetch the paper data from a database
+    # For now, we'll just return a placeholder
+    paper = {
+        "id": paper_id,
+        "title": "Example Paper Title",
+        "status": "completed",
+        "created_at": "2023-05-15",
+        "content": "This is an example paper content."
+    }
+    return templates.TemplateResponse("paper_view.html", get_template_context(request, {"paper": paper}))
+
+# This route has been removed and replaced with /research-paper
+
+# Research paper generation route
+@app.get("/research-paper", response_class=HTMLResponse)
+async def research_paper(request: Request, user=Depends(get_current_user)):
+    """
+    Render the research paper generation page.
+
+    Args:
+        request: The incoming request
+        user: The current authenticated user
+
+    Returns:
+        HTMLResponse with the research paper template or redirect to appropriate page
+    """
+    # Check user's subscription tier
+    from app.services.billing.subscription_service_simple import SubscriptionService
+    subscription_service = SubscriptionService()
+
+    # Get user's subscription
+    subscription = subscription_service.get_user_subscription(user.get("id"))
+    subscription_tier = subscription.get("subscription_tier", "sample")
+
+    # Verify subscription status with Stripe
+    # Only force a check if the last verification was more than 1 hour ago
+    last_verified = subscription.get("last_verified")
+    force_check = False
+    if last_verified:
+        current_time = datetime.datetime.now()
+        try:
+            last_verified_time = datetime.datetime.fromisoformat(last_verified)
+            if (current_time - last_verified_time).total_seconds() > 3600:  # 1 hour
+                force_check = True
+        except Exception as date_error:
+            logger.error(f"Error parsing last_verified date: {str(date_error)}")
+            force_check = True
+    else:
+        force_check = True
+
+    is_active = subscription_service.verify_subscription_with_stripe(user.get("id"), force_check)
+
+    # If subscription is not active according to Stripe but tier is premium, redirect to subscription page
+    if not is_active and subscription_tier not in ["free", "sample"]:
+        logger.info(f"User {user.get('id')} has an inactive subscription according to Stripe, redirecting to subscription page")
+        return RedirectResponse(
+            url="/subscription?error=Your+subscription+is+not+active.+Please+check+your+payment+method+or+renew+your+subscription.",
+            status_code=status.HTTP_303_SEE_OTHER
+        )
+
+    # If user is on free/sample tier, redirect to subscription page
+    if subscription_tier in ["free", "sample"]:
+        logger.info(f"Free user {user.get('id')} attempted to access research-paper, redirecting to subscription")
+        return RedirectResponse(url="/subscription", status_code=status.HTTP_303_SEE_OTHER)
+
+    # For premium users, check if they have papers remaining
+    subscription_papers_remaining = subscription.get("subscription_papers_remaining", 0)
+    additional_papers_remaining = subscription.get("additional_papers_remaining", 0)
+    total_papers_remaining = subscription_papers_remaining + additional_papers_remaining
+
+    # For backward compatibility
+    papers_used = subscription.get("papers_used", 0)
+    papers_limit = subscription.get("papers_limit", 0)
+    papers_remaining = max(0, papers_limit - papers_used)
+
+    # If premium user has no papers left, redirect to buy credits page
+    if total_papers_remaining <= 0 and subscription_tier != "pro":  # Pro users have unlimited papers
+        logger.info(f"Premium user {user.get('id')} has no papers remaining, redirecting to buy credits page")
+        # Redirect to subscription page with a query parameter to indicate paper bundle purchase
+        return RedirectResponse(url="/subscription?buy_papers=true", status_code=status.HTTP_303_SEE_OTHER)
+
+    return templates.TemplateResponse(
+        "research_paper.html",
+        get_template_context(request, {
+            "subscription": subscription,
+            "papers_used": papers_used,
+            "papers_limit": papers_limit,
+            "papers_remaining": papers_remaining,
+            "subscription_papers_remaining": subscription_papers_remaining,
+            "additional_papers_remaining": additional_papers_remaining,
+            "total_papers_remaining": total_papers_remaining
+        })
+    )
+
+# API endpoint for research paper generation
+@app.post("/api/research-paper/generate")
+async def generate_research_paper(request: Request, user=Depends(get_current_user)):
+    """
+    Handle research paper generation form submission.
+
+    Args:
+        request: The incoming request
+        user: The current authenticated user
+
+    Returns:
+        Redirect to the papers page
+    """
+    # Check if user can create a paper based on their subscription
+    from app.services.billing.subscription_service_simple import SubscriptionService
+    subscription_service = SubscriptionService()
+
+    # Verify subscription status with Stripe for high-value operations
+    # Force a check with Stripe since this is a premium feature
+    subscription = subscription_service.get_user_subscription(user.get("id"))
+    is_active = subscription_service.verify_subscription_with_stripe(user.get("id"), force_check=True)
+
+    if not is_active:
+        logger.error(f"User {user.get('id')} has an inactive subscription according to Stripe")
+        return templates.TemplateResponse(
+            "errors/403.html",
+            get_template_context(request, {"error": "Your subscription is not active. Please check your payment method or renew your subscription."}),
+            status_code=403
+        )
+
+    if not subscription_service.can_create_paper(user.get("id")):
+        return templates.TemplateResponse(
+            "errors/403.html",
+            get_template_context(request, {"error": "You have reached your papers limit. Please upgrade your subscription to create more papers."}),
+            status_code=403
+        )
+
+    # Get form data
+    form_data = await request.form()
+
+    # Extract data
+    topic = form_data.get("topic")
+    education_level = form_data.get("education_level", "undergraduate")  # Default to undergraduate
+    include_diagrams = True  # Always include diagrams
+    include_research = True  # Always include research
+    custom_title = form_data.get("custom_title")  # Title is now required
+
+    # Extract key points (Lily questions)
+    key_points = []
+    for key, value in form_data.items():
+        if key.startswith("key_points") and value.strip():
+            key_points.append(value)
+
+    # Initialize queue manager
+    from app.services.queue_engine.queue_manager import QueueManager
+    queue_manager = QueueManager()
+
+    # Submit job to queue
+    try:
+        job_id = queue_manager.submit_job(
+            user_id=user.get("id"),
+            job_type="research_paper",
+            parameters={
+                "topic": topic,
+                "education_level": education_level,
+                "include_diagrams": include_diagrams,
+                "include_research": include_research,
+                "custom_title": custom_title,
+                "key_points": key_points
+            }
+        )
+
+        # Increment the papers_used count for the user (skip for admin API key)
+        if not user.get("is_admin", False):
+            subscription_service.increment_papers_used(user.get("id"))
+
+        logger.info(f"Research paper job submitted: {job_id}")
+
+        # Redirect to the papers page
+        return RedirectResponse(url="/my-papers", status_code=status.HTTP_303_SEE_OTHER)
+    except Exception as e:
+        logger.error(f"Error submitting research paper job: {str(e)}")
+        return templates.TemplateResponse(
+            "errors/500.html",
+            get_template_context(request, {"error": "Failed to submit paper generation job"}),
+            status_code=500
+        )
+
+# My Reviews page route
+@app.get("/my-reviews", response_class=HTMLResponse)
+async def my_reviews(request: Request, user=Depends(get_current_user)):
+    """
+    Render the my reviews page.
+
+    Args:
+        request: The incoming request
+        user: The current authenticated user
+
+    Returns:
+        HTMLResponse with the my reviews template
+    """
+    # Initialize queue manager to get user's jobs
+    from app.services.queue_engine.queue_manager import QueueManager
+    queue_manager = QueueManager()
+
+    try:
+        # Get user's review jobs from saas_job_tracking table
+        jobs = queue_manager.get_user_jobs(user_id=user.get("id"), job_type="review_paper", limit=20)
+        logger.info(f"Retrieved {len(jobs)} review jobs for user {user.get('id')}")
+
+        # Separate in-progress and completed reviews
+        in_progress_reviews = []
+        completed_reviews = []
+
+        for job in jobs:
+            if job.get("status") == "completed":
+                completed_reviews.append(job)
+            else:
+                in_progress_reviews.append(job)
+
+    except Exception as e:
+        logger.error(f"Error retrieving user review jobs: {str(e)}")
+        in_progress_reviews = []
+        completed_reviews = []
+
+    return templates.TemplateResponse(
+        "my_reviews.html",
+        get_template_context(request, {
+            "in_progress_reviews": in_progress_reviews,
+            "completed_reviews": completed_reviews
+        })
+    )
+
+# Review Upload page route
+@app.get("/review/upload", response_class=HTMLResponse)
+async def review_upload(request: Request, user=Depends(get_current_user)):
+    """
+    Render the review upload page.
+
+    Args:
+        request: The incoming request
+        user: The current authenticated user
+
+    Returns:
+        HTMLResponse with the review upload template
+    """
+    # Check if user can upload a paper for review based on their subscription
+    from app.services.billing.subscription_service_simple import SubscriptionService
+    subscription_service = SubscriptionService()
+
+    # Get user's subscription
+    subscription = subscription_service.get_user_subscription(user.get("id"))
+
+    # Check if user can create a review
+    can_create = subscription_service.can_create_review(user.get("id"))
+    if not can_create:
+        return RedirectResponse(url="/subscription", status_code=status.HTTP_303_SEE_OTHER)
+
+    return templates.TemplateResponse(
+        "review_upload.html",
+        get_template_context(request, {
+            "subscription": subscription,
+            "reviews_used": subscription.get("reviews_used", 0),
+            "reviews_limit": subscription.get("reviews_limit", 0)
+        })
+    )
+
+# Direct API endpoint for research paper generation (bypasses credit checks)
+@app.post("/api/direct/research-paper/generate")
+async def generate_research_paper_direct(request: Request, user=Depends(get_current_user)):
+    """
+    Handle direct API research paper generation.
+    This endpoint bypasses credit checks and is intended for API access only.
+
+    Args:
+        request: The incoming request
+        user: The current authenticated user (must be admin/API key)
+
+    Returns:
+        JSON response with job ID and status
+    """
+    # Verify this is an API key request
+    if not user.get("is_admin", False):
+        logger.warning(f"Unauthorized access attempt to direct API endpoint by user {user.get('id')}")
+        return JSONResponse(
+            content={"error": "Unauthorized. This endpoint is for API access only."},
+            status_code=status.HTTP_403_FORBIDDEN
+        )
+
+    try:
+        # Get JSON data
+        json_data = await request.json()
+
+        # Extract data
+        topic = json_data.get("topic")
+        education_level = json_data.get("education_level", "undergraduate")  # Default to undergraduate
+        include_diagrams = json_data.get("include_diagrams", True)  # Default to true
+        include_research = True  # Always include research
+        custom_title = json_data.get("custom_title")
+        key_points = json_data.get("key_points", [])
+
+        # Validate required fields
+        if not topic:
+            return JSONResponse(
+                content={"error": "Topic is required"},
+                status_code=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Initialize queue manager
+        from app.services.queue_engine.queue_manager import QueueManager
+        queue_manager = QueueManager()
+
+        # Submit job to queue
+        job_id = queue_manager.submit_job(
+            user_id=user.get("id"),
+            job_type="research_paper",
+            parameters={
+                "topic": topic,
+                "education_level": education_level,
+                "include_diagrams": include_diagrams,
+                "include_research": include_research,
+                "custom_title": custom_title,
+                "key_points": key_points,
+                "api_request": True  # Flag to indicate this is an API request
+            }
+        )
+
+        logger.info(f"Direct API research paper job submitted: {job_id}")
+
+        # Return job ID and status
+        return JSONResponse(
+            content={
+                "job_id": job_id,
+                "status": "queued",
+                "message": "Research paper generation job submitted successfully"
+            },
+            status_code=status.HTTP_202_ACCEPTED
+        )
+
+    except Exception as e:
+        logger.error(f"Error submitting direct API research paper job: {str(e)}")
+        return JSONResponse(
+            content={"error": f"Failed to submit paper generation job: {str(e)}"},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+# Direct API endpoint for research paper generation (enterprise licensing route)
+@app.post("/api/direct/research-paper/generate")
+async def generate_research_paper_direct(request: Request, user=Depends(get_current_user)):
+    """
+    Handle direct API research paper generation for enterprise clients.
+    This endpoint bypasses credit checks and is intended for API access only.
+
+    Args:
+        request: The incoming request
+        user: The current authenticated user (must be admin/API key)
+
+    Returns:
+        JSON response with job ID and status
+    """
+    # Verify this is an API key request
+    if not user.get("is_admin", False):
+        logger.warning(f"Unauthorized access attempt to direct API endpoint by user {user.get('id')}")
+        return JSONResponse(
+            content={"error": "Unauthorized. This endpoint is for enterprise API access only."},
+            status_code=status.HTTP_403_FORBIDDEN
+        )
+
+    try:
+        # Get JSON data
+        json_data = await request.json()
+
+        # Extract data
+        topic = json_data.get("topic")
+        education_level = json_data.get("education_level", "postgraduate")  # Default to postgraduate for enterprise
+        include_diagrams = json_data.get("include_diagrams", True)  # Default to true
+        include_research = True  # Always include research
+        custom_title = json_data.get("custom_title")
+        key_points = json_data.get("key_points", [])
+
+        # Validate required fields
+        if not topic:
+            return JSONResponse(
+                content={"error": "Topic is required"},
+                status_code=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Initialize queue manager
+        from app.services.queue_engine.queue_manager import QueueManager
+        queue_manager = QueueManager()
+
+        # Submit job to queue
+        job_id = queue_manager.submit_job(
+            user_id=user.get("id"),
+            job_type="research_paper",
+            parameters={
+                "topic": topic,
+                "education_level": education_level,
+                "include_diagrams": include_diagrams,
+                "include_research": include_research,
+                "custom_title": custom_title,
+                "key_points": key_points,
+                "api_request": True,  # Flag to indicate this is an API request
+                "enterprise": True    # Flag to indicate this is an enterprise request
+            }
+        )
+
+        logger.info(f"Enterprise API research paper job submitted: {job_id}")
+
+        # Return job ID and status
+        return JSONResponse(
+            content={
+                "job_id": job_id,
+                "status": "queued",
+                "message": "Research paper generation job submitted successfully"
+            },
+            status_code=status.HTTP_202_ACCEPTED
+        )
+
+    except Exception as e:
+        logger.error(f"Error submitting enterprise API research paper job: {str(e)}")
+        return JSONResponse(
+            content={"error": f"Failed to submit paper generation job: {str(e)}"},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+# API endpoint for checking job status
+@app.get("/api/direct/research-paper/status/{job_id}")
+async def check_research_paper_status(job_id: str, user=Depends(get_current_user)):
+    """
+    Check the status of a research paper generation job.
+
+    Args:
+        job_id: The ID of the job to check
+        user: The current authenticated user (must be admin/API key)
+
+    Returns:
+        JSON response with job status and details
+    """
+    # Verify this is an API key request
+    if not user.get("is_admin", False):
+        logger.warning(f"Unauthorized access attempt to direct API status endpoint by user {user.get('id')}")
+        return JSONResponse(
+            content={"error": "Unauthorized. This endpoint is for enterprise API access only."},
+            status_code=status.HTTP_403_FORBIDDEN
+        )
+
+    try:
+        # Initialize queue manager
+        from app.services.queue_engine.queue_manager import QueueManager
+        queue_manager = QueueManager()
+
+        # Get job status
+        job = queue_manager.get_job_status(job_id)
+
+        if not job:
+            return JSONResponse(
+                content={"error": f"Job {job_id} not found"},
+                status_code=status.HTTP_404_NOT_FOUND
+            )
+
+        # Extract relevant job details
+        job_details = {
+            "job_id": job.get("job_id"),
+            "status": job.get("status"),
+            "created_at": job.get("created_at"),
+            "updated_at": job.get("updated_at"),
+            "completed_at": job.get("completed_at"),
+            "progress": job.get("progress", 0),
+            "progress_message": job.get("progress_message", ""),
+            "error_message": job.get("error_message", "")
+        }
+
+        # Add result URLs if job is completed
+        if job.get("status") == "completed" and job.get("result"):
+            result = job.get("result", {})
+            job_details["result"] = {
+                "docx_url": result.get("docx_url"),
+                "pdf_url": result.get("pdf_url"),
+                "generation_time": result.get("generation_time")
+            }
+
+        return JSONResponse(content=job_details)
+
+    except Exception as e:
+        logger.error(f"Error checking job status: {str(e)}")
+        return JSONResponse(
+            content={"error": f"Failed to check job status: {str(e)}"},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+# API endpoint for retrying a failed paper
+@app.get("/api/research-paper/retry/{job_id}")
+async def retry_research_paper(request: Request, job_id: str, user=Depends(get_current_user)):
+    """
+    Handle retrying a failed research paper job.
+
+    Args:
+        request: The incoming request
+        job_id: The ID of the job to retry
+        user: The current authenticated user
+
+    Returns:
+        Redirect to the papers page
+    """
+    # Initialize queue manager
+    from app.services.queue_engine.queue_manager import QueueManager
+    queue_manager = QueueManager()
+
+    try:
+        # Get the job to verify it belongs to the user
+        job = queue_manager.get_job_status(job_id)
+
+        if not job:
+            logger.error(f"Job {job_id} not found")
+            return templates.TemplateResponse(
+                "errors/404.html",
+                get_template_context(request, {"error": "Paper not found"}),
+                status_code=404
+            )
+
+        # Verify the job belongs to the user
+        if job.get("user_id") != user.get("id"):
+            logger.error(f"User {user.get('id')} attempted to retry job {job_id} belonging to user {job.get('user_id')}")
+            return templates.TemplateResponse(
+                "errors/403.html",
+                get_template_context(request, {"error": "You do not have permission to retry this paper"}),
+                status_code=403
+            )
+
+        # Resubmit the job
+        success = queue_manager.resubmit_job(job_id)
+
+        if not success:
+            logger.error(f"Failed to resubmit job {job_id}")
+            return templates.TemplateResponse(
+                "errors/500.html",
+                get_template_context(request, {"error": "Failed to retry paper generation"}),
+                status_code=500
+            )
+
+        logger.info(f"Job {job_id} resubmitted successfully")
+
+        # Redirect to the papers page
+        return RedirectResponse(url="/my-papers", status_code=status.HTTP_303_SEE_OTHER)
+
+    except Exception as e:
+        logger.error(f"Error retrying research paper job: {str(e)}")
+        return templates.TemplateResponse(
+            "errors/500.html",
+            get_template_context(request, {"error": "Failed to retry paper generation"}),
+            status_code=500
+        )
+
+# 401 error handler
+@app.exception_handler(status.HTTP_401_UNAUTHORIZED)
+async def unauthorized_exception_handler(request: Request, exc):
+    """
+    Handle 401 Unauthorized errors.
+
+    Args:
+        request: The incoming request
+        exc: The exception
+
+    Returns:
+        HTMLResponse with the 401 template
+    """
+    logger.warning(f"Unauthorized access attempt: {request.url.path}")
+    return templates.TemplateResponse(
+        "errors/401.html", get_template_context(request), status_code=status.HTTP_401_UNAUTHORIZED
+    )
+
+# 404 error handler
+@app.exception_handler(404)
+async def not_found_exception_handler(request: Request, _):
+    """
+    Handle 404 errors.
+
+    Args:
+        request: The incoming request
+        _: The exception (unused)
+
+    Returns:
+        HTMLResponse with the 404 template
+    """
+    return templates.TemplateResponse(
+        "errors/404.html", get_template_context(request), status_code=404
+    )
+
+# 500 error handler
+@app.exception_handler(500)
+async def server_error_exception_handler(request: Request, exc):
+    """
+    Handle 500 errors.
+
+    Args:
+        request: The incoming request
+        exc: The exception
+
+    Returns:
+        HTMLResponse with the 500 template
+    """
+    logger.error(f"Internal server error: {str(exc)}")
+    return templates.TemplateResponse(
+        "errors/500.html", get_template_context(request), status_code=500
+    )
+
+# Test route
+@app.get("/test-profile", response_class=HTMLResponse)
+async def test_profile(request: Request):
+    """
+    Test profile route for debugging.
+
+    Args:
+        request: The incoming request
+
+    Returns:
+        Simple HTML response
+    """
+    return HTMLResponse(content="<h1>Test profile route works!</h1>")
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=int(os.getenv("PORT", 8005)),
+        reload=os.getenv("DEBUG", "false").lower() == "true",
+    )

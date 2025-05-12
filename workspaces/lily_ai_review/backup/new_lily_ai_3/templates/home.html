@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Lily AI - Your Research Assistant{% endblock %}
+
+{% block extra_js %}
+{% endblock %}
+
+{% block content %}
+<div class="row align-items-center py-5">
+    <div class="col-lg-6">
+        <h1 class="display-4 fw-bold mb-4">Deep Research with AI Guidance</h1>
+        <p class="lead mb-4">
+            Lily AI helps you conduct in-depth research with AI guidance, providing comprehensive analysis and insights rather than just quick answers.
+        </p>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+            <a href="/register" class="btn btn-primary btn-lg px-4 me-md-2">Get Started</a>
+            <a href="/about" class="btn btn-outline-secondary btn-lg px-4">Learn More</a>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <img src="{{ url_for('static', path='/images/hero.svg') }}" alt="Lily AI Research" class="img-fluid">
+    </div>
+</div>
+
+<div class="row py-5">
+    <div class="col-12 text-center mb-5">
+        <h2 class="display-5 fw-bold">How Lily AI Works</h2>
+        <p class="lead">Our AI-powered research assistant helps you explore topics in depth</p>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center p-4">
+                <div class="feature-icon bg-primary bg-gradient text-white rounded-circle mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                    </svg>
+                </div>
+                <h3 class="card-title">Deep Research</h3>
+                <p class="card-text">Explore topics with comprehensive analysis and multiple perspectives.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center p-4">
+                <div class="feature-icon bg-primary bg-gradient text-white rounded-circle mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-lightbulb" viewBox="0 0 16 16">
+                        <path d="M2 6a6 6 0 1 1 10.174 4.31c-.203.196-.359.4-.453.619l-.762 1.769A.5.5 0 0 1 10.5 13a.5.5 0 0 1 0 1 .5.5 0 0 1 0 1l-.224.447a1 1 0 0 1-.894.553H6.618a1 1 0 0 1-.894-.553L5.5 15a.5.5 0 0 1 0-1 .5.5 0 0 1 0-1 .5.5 0 0 1-.46-.302l-.761-1.77a1.964 1.964 0 0 0-.453-.618A5.984 5.984 0 0 1 2 6zm6-5a5 5 0 0 0-3.479 8.592c.263.254.514.564.676.941L5.83 12h4.342l.632-1.467c.162-.377.413-.687.676-.941A5 5 0 0 0 8 1z"/>
+                    </svg>
+                </div>
+                <h3 class="card-title">AI Guidance</h3>
+                <p class="card-text">Get expert guidance and insights to help you understand complex topics.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center p-4">
+                <div class="feature-icon bg-primary bg-gradient text-white rounded-circle mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-file-earmark-text" viewBox="0 0 16 16">
+                        <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5z"/>
+                        <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5L9.5 0zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/>
+                    </svg>
+                </div>
+                <h3 class="card-title">Comprehensive Papers</h3>
+                <p class="card-text">Generate well-structured research papers with citations and references.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row py-5 bg-light rounded-3 mt-4">
+    <div class="col-12 text-center mb-4">
+        <h2 class="display-5 fw-bold">Try Lily AI Today</h2>
+        <p class="lead">Experience the power of AI-assisted research</p>
+    </div>
+    <div class="col-12 text-center">
+        <a href="/register" class="btn btn-primary btn-lg px-5">Sign Up Now</a>
+    </div>
+</div>
+{% endblock %}

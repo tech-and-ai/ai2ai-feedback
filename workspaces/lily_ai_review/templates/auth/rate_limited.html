@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Rate Limited - Research Assistant{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden sentry-bg">
+    <!-- Background Elements -->
+    <div class="orb-container">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+        <div class="orb orb-5"></div>
+        <div class="orb orb-6"></div>
+    </div>
+    <div class="spotlight"></div>
+
+    <div class="w-full max-w-md relative z-10">
+        <div class="glass-effect rounded-xl shadow-2xl overflow-hidden border border-red-500">
+            <!-- Card Header -->
+            <div class="px-6 py-4 border-b border-red-500 flex justify-between items-center">
+                <h2 class="text-lg font-medium text-white">Rate Limited</h2>
+                <div class="w-10 h-10 rounded-full bg-red-900 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-red-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-6">
+                <div class="space-y-6">
+                    <div class="flex justify-center">
+                        <div class="w-20 h-20 rounded-full bg-red-900 flex items-center justify-center">
+                            <svg class="w-12 h-12 text-red-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <h2 class="text-2xl font-bold text-center text-white">Too Many Attempts</h2>
+
+                    <div class="bg-red-900/20 border border-red-800 rounded-lg p-4">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-red-400">
+                                    You have made too many attempts. Please wait <span id="countdown">{{ retry_after }}</span> seconds before trying again.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Home Link -->
+                    <div class="text-center mt-4">
+                        <p class="text-sm text-gray-300">
+                            You can go back to the
+                            <a href="/" class="font-medium text-indigo-400 hover:text-indigo-300">Home Page</a>
+                            while you wait.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Countdown timer
+    document.addEventListener('DOMContentLoaded', function() {
+        var countdownElement = document.getElementById('countdown');
+        var seconds = parseInt(countdownElement.textContent);
+        
+        var interval = setInterval(function() {
+            seconds--;
+            countdownElement.textContent = seconds;
+            
+            if (seconds <= 0) {
+                clearInterval(interval);
+                window.location.href = '/auth/login';
+            }
+        }, 1000);
+    });
+</script>
+{% endblock %}

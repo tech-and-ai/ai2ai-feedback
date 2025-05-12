@@ -21,10 +21,10 @@ class OpenRouterProvider(ModelProvider):
             model: Model name (defaults to environment variable)
         """
         self.api_key = api_key or os.getenv("OPENROUTER_API_KEY", "")
-        self.model = model or os.getenv("DEFAULT_MODEL", "deepseek-coder-v2:16b")
+        self.model = model or os.getenv("DEFAULT_MODEL", "deepseek-coder")
 
-        if not self.api_key:
-            raise ValueError("OpenRouter API key is required")
+        # No API key required for local endpoint
+        pass
 
     def get_provider_name(self) -> str:
         """
@@ -60,10 +60,7 @@ class OpenRouterProvider(ModelProvider):
                 response = await client.post(
                     "http://192.168.0.77:111434/v1/chat/completions",
                     headers={
-                        "Authorization": f"Bearer {self.api_key}",
-                        "Content-Type": "application/json",
-                        "HTTP-Referer": "https://github.com/tech-and-ai/ai2ai-feedback",
-                        "X-Title": "AI2AI Feedback API"
+                        "Content-Type": "application/json"
                     },
                     json={
                         "model": self.model,
@@ -103,10 +100,7 @@ class OpenRouterProvider(ModelProvider):
                     "POST",
                     "http://192.168.0.77:111434/v1/chat/completions",
                     headers={
-                        "Authorization": f"Bearer {self.api_key}",
-                        "Content-Type": "application/json",
-                        "HTTP-Referer": "https://github.com/tech-and-ai/ai2ai-feedback",
-                        "X-Title": "AI2AI Feedback API"
+                        "Content-Type": "application/json"
                     },
                     json={
                         "model": self.model,

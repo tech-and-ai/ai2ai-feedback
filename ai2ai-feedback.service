@@ -1,0 +1,16 @@
+[Unit]
+Description=AI2AI Feedback System
+After=network.target
+
+[Service]
+User=admin
+WorkingDirectory=/home/admin/projects/ai2ai-feedback
+ExecStart=/home/admin/projects/ai2ai-feedback/venv/bin/python -m app.main
+Restart=always
+RestartSec=10
+Environment=OLLAMA_ENDPOINT=http://ruocco.uk:11434
+Environment=DEFAULT_MODEL=deepseek-coder-v2:16b
+Environment=DEFAULT_PROVIDER=ollama
+
+[Install]
+WantedBy=multi-user.target

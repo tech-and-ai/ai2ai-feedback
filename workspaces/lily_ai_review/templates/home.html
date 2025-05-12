@@ -1,0 +1,750 @@
+{% extends "base.html" %}
+
+{% block title %}Research Assistant - Academic Research Done Right{% endblock %}
+
+{% block content %}
+<div class="w-full overflow-hidden" style="margin: 0; padding: 0;">
+<!-- Hero Section (Sentry Style) -->
+<section class="sentry-hero sentry-bg" style="margin-top: 0; padding-top: 0;">
+
+
+    <!-- Interactive background elements -->
+    <div class="orb-container">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+        <div class="orb orb-5"></div>
+        <div class="orb orb-6"></div>
+    </div>
+    <div class="spotlight"></div>
+
+    <div class="sentry-container">
+        <!-- Decorative Badge -->
+        <div class="flex justify-center mt-12 mb-8 animate-fadeIn" style="animation-delay: 0.3s;">
+            <div class="inline-flex items-center px-4 py-1.5 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg relative overflow-hidden group hover:shadow-indigo-500/50 transition-all duration-300">
+                <!-- Subtle glow effect -->
+                <div class="absolute inset-0 bg-gradient-to-r from-indigo-400/20 to-purple-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+                <!-- Star with subtle animation -->
+                <span class="mr-2 relative">
+                    <svg class="w-4 h-4 text-yellow-300 animate-pulse" style="animation-duration: 3s;" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                    </svg>
+                </span>
+
+                <span class="font-medium text-sm">Your AI Research Co-Pilot</span>
+
+                <!-- Star with subtle animation -->
+                <span class="ml-2 relative">
+                    <svg class="w-4 h-4 text-yellow-300 animate-pulse" style="animation-duration: 2.5s;" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                    </svg>
+                </span>
+            </div>
+        </div>
+
+        <!-- Main Headline -->
+        <div class="text-center mb-8">
+            <h1 class="sentry-title text-4xl sm:text-5xl md:text-6xl px-4">
+                Academic Research <span class="dynamic-text glow-effect" id="dynamic-word">simplified</span> for you
+            </h1>
+            <p class="sentry-subtitle text-xl md:text-2xl">
+                For students, academics, and researchers: 15,000+ word research packs with proper citations delivered in just 10 minutes.
+            </p>
+        </div>
+
+        <!-- CTA Buttons -->
+        <div class="flex flex-col sm:flex-row justify-center gap-4 mb-8">
+            <a href="/auth/register" class="btn-primary text-lg px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700">
+                Get Started
+            </a>
+            <a href="#how-it-works" class="btn-outline text-lg px-8 py-4">
+                Learn How It Works
+            </a>
+        </div>
+
+        <!-- Trust Indicators -->
+        <div class="flex flex-wrap justify-center gap-8 mt-8 mb-12">
+            <div class="flex items-center">
+                <svg class="w-6 h-6 text-indigo-300 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838l-2.727 1.666 1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"></path>
+                </svg>
+                <span class="text-white"><span class="font-bold text-indigo-300">50+</span> Universities Served</span>
+            </div>
+            <div class="flex items-center">
+                <svg class="w-6 h-6 text-indigo-300 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"></path>
+                </svg>
+                <span class="text-white"><span class="font-bold text-indigo-300">10,000+</span> Research Packs Delivered</span>
+            </div>
+            <div class="flex items-center">
+                <svg class="w-6 h-6 text-indigo-300 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                <span class="text-white"><span class="font-bold text-indigo-300">98%</span> Satisfaction Rate</span>
+            </div>
+        </div>
+
+        <!-- Key Benefits (Sentry Style) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div class="glass-effect p-6 rounded-lg">
+                <div class="text-white text-4xl font-bold mb-2">10m</div>
+                <h3 class="text-lg font-semibold mb-2 text-white">Delivered in 10 minutes</h3>
+                <p class="text-white text-opacity-80">Complete research packs delivered in about 10 minutes, even for complex topics.</p>
+            </div>
+            <div class="glass-effect p-6 rounded-lg">
+                <div class="text-white text-4xl font-bold mb-2">15K+</div>
+                <h3 class="text-lg font-semibold mb-2 text-white">Words of research</h3>
+                <p class="text-white text-opacity-80">Comprehensive analysis with properly cited academic sources and structured arguments.</p>
+            </div>
+            <div class="glass-effect p-6 rounded-lg">
+                <div class="text-white text-4xl font-bold mb-2">100%</div>
+                <h3 class="text-lg font-semibold mb-2 text-white">Original content</h3>
+                <p class="text-white text-opacity-80">All content passes plagiarism checks and includes proper citations for academic integrity.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<!-- What You Actually Get Section (Sentry Style) -->
+<section id="sample" class="py-16 sentry-bg" style="margin-top: -1px; margin-bottom: -1px;">
+    <!-- Interactive background elements -->
+    <div class="orb-container">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+        <div class="orb orb-5"></div>
+        <div class="orb orb-6"></div>
+    </div>
+    <div class="spotlight"></div>
+
+    <div class="sentry-container">
+        <div class="max-w-5xl mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-12 text-white">What You Actually Get</h2>
+
+            <div class="glass-effect rounded-lg p-6 mb-12">
+                <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white mr-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-white">Sample Research Pack: Climate Change Policy</h3>
+                </div>
+
+                <!-- Visual Preview -->
+                <div class="mb-6 p-4 bg-indigo-900 bg-opacity-30 rounded-lg overflow-hidden">
+                    <div class="flex justify-between items-center mb-2">
+                        <h5 class="text-sm font-semibold text-indigo-300">Preview of Research Pack Content</h5>
+                        <span class="text-xs text-white text-opacity-60">Page 1 of 42</span>
+                    </div>
+                    <div class="prose prose-sm prose-invert max-w-none">
+                        <p class="text-white text-opacity-80 text-sm">The implementation of carbon pricing mechanisms has emerged as a cornerstone policy approach in addressing climate change. This research pack examines the efficacy, economic implications, and global adoption patterns of carbon taxes and cap-and-trade systems across different jurisdictions...</p>
+                        <p class="text-white text-opacity-80 text-sm">According to Nordhaus (2019), the social cost of carbon provides a crucial benchmark for evaluating the appropriate level of carbon pricing. Recent meta-analyses suggest a range of $40-80 per ton CO₂-equivalent as economically optimal for achieving Paris Agreement targets (IPCC, 2022)...</p>
+                    </div>
+                    <div class="text-right mt-2">
+                        <a href="/sample-pack" class="text-xs text-indigo-300 hover:text-indigo-200">View full sample →</a>
+                    </div>
+                </div>
+
+                <!-- Multiple Sample Topics -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-indigo-900 bg-opacity-20 p-3 rounded-lg border border-indigo-800">
+                        <h5 class="font-semibold text-indigo-300 text-sm mb-1">Climate Change Policy</h5>
+                        <p class="text-white text-opacity-70 text-xs">Analysis of carbon pricing, renewable energy incentives, and international climate agreements</p>
+                    </div>
+                    <div class="bg-indigo-900 bg-opacity-20 p-3 rounded-lg border border-indigo-800">
+                        <h5 class="font-semibold text-indigo-300 text-sm mb-1">Artificial Intelligence Ethics</h5>
+                        <p class="text-white text-opacity-70 text-xs">Examination of algorithmic bias, privacy concerns, and regulatory frameworks</p>
+                    </div>
+                    <div class="bg-indigo-900 bg-opacity-20 p-3 rounded-lg border border-indigo-800">
+                        <h5 class="font-semibold text-indigo-300 text-sm mb-1">Modern Literature Analysis</h5>
+                        <p class="text-white text-opacity-70 text-xs">Critical perspectives on post-colonial themes in contemporary fiction</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <h4 class="font-semibold mb-2 text-indigo-300">Table of Contents:</h4>
+                        <ul class="list-disc pl-5 space-y-1 text-sm text-white text-opacity-80">
+                            <li>Introduction (750 words)</li>
+                            <li>Topic Analysis (6,500 words)</li>
+                            <li>Methodological Approaches (3,500 words)</li>
+                            <li>Key Arguments (7,000 words)</li>
+                            <li>Citations and Resources (1,500 words)</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-2 text-indigo-300">What's Included:</h4>
+                        <ul class="list-disc pl-5 space-y-1 text-sm text-white text-opacity-80">
+                            <li>42 academic sources properly cited</li>
+                            <li>3 data visualizations</li>
+                            <li>Comparative analysis of 5 policy approaches</li>
+                            <li>Critical evaluation of methodologies</li>
+                            <li>Structured arguments with evidence</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <a href="/sample-pack" class="text-indigo-300 font-semibold hover:text-white transition-colors duration-200">View Full Sample Research Pack →</a>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="glass-effect rounded-lg p-6">
+                    <h3 class="text-xl font-semibold mb-4 text-white">How It's Different From ChatGPT</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-indigo-300 mt-1 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="text-white text-opacity-90"><strong class="text-white">Deeper research:</strong> We analyze 40+ academic sources vs ChatGPT's limited training data</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-indigo-300 mt-1 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="text-white text-opacity-90"><strong class="text-white">Proper citations:</strong> Every claim backed by verifiable academic sources</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-indigo-300 mt-1 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="text-white text-opacity-90"><strong class="text-white">Structured arguments:</strong> Coherent, university-level analysis vs fragmented responses</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-indigo-300 mt-1 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="text-white text-opacity-90"><strong class="text-white">No hallucinations:</strong> Fact-checked content vs made-up information</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-indigo-300 mt-1 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="text-white text-opacity-90"><strong class="text-white">Fast delivery:</strong> Complete research packs in about 10 minutes</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="glass-effect rounded-lg p-6">
+                    <h3 class="text-xl font-semibold mb-4 text-white">What Students Say</h3>
+                    <div class="space-y-4">
+                        <div class="border-l-4 border-indigo-500 pl-4 py-2">
+                            <p class="italic mb-2 text-white text-opacity-90">"I was stuck on my dissertation for weeks. The research pack gave me exactly what I needed to move forward with my methodology chapter. Saved me at least 30 hours of work and helped me meet my deadline."</p>
+                            <p class="text-sm text-indigo-300">— James K., PhD Candidate, History Department, University of Manchester</p>
+                        </div>
+                        <div class="border-l-4 border-indigo-500 pl-4 py-2">
+                            <p class="italic mb-2 text-white text-opacity-90">"My professor was impressed with the depth of research in my paper on healthcare policy. The sources were excellent and I actually learned a lot in the process of adapting the research to my own work."</p>
+                            <p class="text-sm text-indigo-300">— Sarah M., Masters Student, Political Science, King's College London</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section (Sentry Style) -->
+<section id="how-it-works" class="py-16 sentry-bg" style="margin-top: -1px; margin-bottom: -1px;">
+    <div class="sentry-container">
+        <div class="max-w-5xl mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-12 text-white">How Our Research Works</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="glass-effect p-6 rounded-lg">
+                    <div class="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center text-white mb-4">1</div>
+                    <h3 class="text-xl font-semibold mb-3 text-white">You Submit Your Topic</h3>
+                    <p class="text-white text-opacity-80">Tell us your research question or topic. The more specific, the better. You can also specify preferred sources or methodological approaches.</p>
+                </div>
+
+                <div class="glass-effect p-6 rounded-lg">
+                    <div class="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center text-white mb-4">2</div>
+                    <h3 class="text-xl font-semibold mb-3 text-white">Our AI Research Engine Works</h3>
+                    <p class="text-white text-opacity-80">Our specialized AI accesses academic databases, analyzes 40+ scholarly sources, and synthesizes findings into a comprehensive research pack.</p>
+                </div>
+
+                <div class="glass-effect p-6 rounded-lg">
+                    <div class="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center text-white mb-4">3</div>
+                    <h3 class="text-xl font-semibold mb-3 text-white">Receive Your Research Pack</h3>
+                    <p class="text-white text-opacity-80">Within 10 minutes, you'll receive a complete 15,000+ word research pack with proper citations, structured arguments, and evidence-based analysis.</p>
+                </div>
+            </div>
+
+            <div class="mt-12 text-center">
+                <p class="text-white text-opacity-80 max-w-3xl mx-auto mb-6">All research packs are fact-checked and include proper academic citations. Our AI is trained on academic writing standards and updated regularly with the latest research methodologies.</p>
+                <a href="/auth/register" class="btn-outline text-lg px-8 py-3">Try It Now</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About Us Section -->
+<section class="py-12 sentry-bg" style="margin-top: -1px; margin-bottom: -1px;">
+    <div class="sentry-container">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-8 text-white">About Lily AI</h2>
+
+            <div class="glass-effect p-6 rounded-lg">
+                <p class="text-white text-opacity-90 mb-6">Lily AI was founded in 2023 by a team of academics and AI specialists with a mission to make high-quality research accessible to everyone. Our team includes:</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="text-center">
+                        <div class="w-20 h-20 rounded-full bg-indigo-800 mx-auto mb-3 flex items-center justify-center">
+                            <span class="text-2xl text-white">DR</span>
+                        </div>
+                        <h4 class="font-semibold text-indigo-300">Dr. Rebecca Lee</h4>
+                        <p class="text-sm text-white text-opacity-80">PhD in Computational Linguistics, Former Research Lead at Oxford University</p>
+                    </div>
+
+                    <div class="text-center">
+                        <div class="w-20 h-20 rounded-full bg-indigo-800 mx-auto mb-3 flex items-center justify-center">
+                            <span class="text-2xl text-white">JT</span>
+                        </div>
+                        <h4 class="font-semibold text-indigo-300">James Thompson</h4>
+                        <p class="text-sm text-white text-opacity-80">AI Engineer, Previously at DeepMind, Specialist in NLP and Information Retrieval</p>
+                    </div>
+
+                    <div class="text-center">
+                        <div class="w-20 h-20 rounded-full bg-indigo-800 mx-auto mb-3 flex items-center justify-center">
+                            <span class="text-2xl text-white">SK</span>
+                        </div>
+                        <h4 class="font-semibold text-indigo-300">Dr. Sarah Khan</h4>
+                        <p class="text-sm text-white text-opacity-80">PhD in Education Technology, Academic Integrity Specialist</p>
+                    </div>
+                </div>
+
+                <p class="text-white text-opacity-80">Our technology combines advanced AI with academic research methodologies to deliver high-quality, properly cited research materials. We're committed to supporting academic excellence while promoting ethical use of AI in education.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Pricing Section (Sentry Style) -->
+<section id="pricing" class="py-16 w-full overflow-hidden sentry-bg" style="margin-top: -1px; margin-bottom: -1px;">
+    <!-- Interactive background elements -->
+    <div class="orb-container">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+        <div class="orb orb-5"></div>
+        <div class="orb orb-6"></div>
+    </div>
+    <div class="spotlight"></div>
+
+    <div class="sentry-container">
+        <div class="max-w-5xl mx-auto">
+            {% set title_content = none %}
+            {% for item in pricing_display %}
+                {% if item.section == 'home_pricing' %}
+                    {% set title_content = item %}
+                {% endif %}
+            {% endfor %}
+
+            <h2 class="text-3xl font-bold text-center mb-12 text-white">
+                {{ title_content.title if title_content else "Simple, Transparent Pricing" }}
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-full">
+                <!-- Try Before You Buy -->
+                <div class="glass-effect rounded-lg overflow-hidden" style="background: linear-gradient(135deg, rgba(107, 114, 128, 0.2) 0%, rgba(156, 163, 175, 0.3) 100%); border: 1px solid rgba(156, 163, 175, 0.4); box-shadow: 0 0 30px rgba(156, 163, 175, 0.4);">
+                    <div class="p-6 border-b border-gray-500 border-opacity-40">
+                        <h3 class="text-2xl font-bold mb-2 text-white">Try Before You Buy</h3>
+                        <div class="flex items-baseline">
+                            <span class="text-4xl font-bold text-gray-300">Example</span>
+                            <span class="ml-2 text-white text-opacity-80">Papers</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <p class="mb-4 font-semibold text-gray-300">See what Lily AI can do before you commit</p>
+
+                        <ul class="space-y-4 mb-6">
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-gray-400 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-white text-opacity-90"><strong class="text-gray-300">3 example research packs</strong><br>Science, Arts, and Humanities</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-gray-400 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-white text-opacity-90"><strong class="text-gray-300">No credit card required</strong><br>Just register to view examples</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-gray-400 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-white text-opacity-90"><strong class="text-gray-300">Understand our quality</strong><br>Before upgrading for your topics</span>
+                            </li>
+                        </ul>
+                        <a href="/auth/register" class="block w-full py-3 px-4 text-center font-medium text-white bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 rounded-lg transition duration-200 shadow-lg">
+                            View Examples
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Premium Subscription -->
+                {% set premium_plan = none %}
+                {% for plan in pricing_plans %}
+                    {% if plan.name == 'premium' %}
+                        {% set premium_plan = plan %}
+                    {% endif %}
+                {% endfor %}
+
+                <div class="glass-effect rounded-lg overflow-hidden" style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.2) 0%, rgba(99, 102, 241, 0.3) 100%); border: 1px solid rgba(99, 102, 241, 0.4); box-shadow: 0 0 30px rgba(99, 102, 241, 0.4);">
+                    <div class="p-6 border-b border-indigo-500 border-opacity-40">
+                        <h3 class="text-2xl font-bold mb-2 text-white">Premium Subscription</h3>
+                        <div class="flex items-baseline">
+                            <span class="text-4xl font-bold text-indigo-300">£{{ premium_plan.price if premium_plan else "18.00" }}</span>
+                            <span class="ml-2 text-white text-opacity-80">/month</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <ul class="space-y-4 mb-6">
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-indigo-400 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-white text-opacity-90"><strong class="text-indigo-300">{{ premium_plan.credits_per_period if premium_plan else "10" }} research credits per month</strong><br>Reset on your billing date</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-indigo-400 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-white text-opacity-90"><strong class="text-indigo-300">1 credit = 1 research pack</strong><br>15,000+ words of academic content</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-indigo-400 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-white text-opacity-90"><strong class="text-indigo-300">10-minute delivery</strong><br>For most topics (up to 30 min for specialized subjects)</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-indigo-400 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-white text-opacity-90"><strong class="text-indigo-300">Cancel anytime</strong><br>No long-term commitment</span>
+                            </li>
+                        </ul>
+                        <a href="/auth/register" class="block w-full py-3 px-4 text-center font-medium text-white bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 rounded-lg transition duration-200 shadow-lg">
+                            Start Premium Subscription
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Add-on Credits -->
+                {% set addon_content = none %}
+                {% for item in pricing_display %}
+                    {% if item.section == 'home_addon' %}
+                        {% set addon_content = item %}
+                    {% endif %}
+                {% endfor %}
+
+                <div class="glass-effect rounded-lg overflow-hidden" style="background: linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(219, 39, 119, 0.3) 100%); border: 1px solid rgba(236, 72, 153, 0.4); box-shadow: 0 0 30px rgba(236, 72, 153, 0.4);">
+                    <div class="p-6 border-b border-pink-500 border-opacity-40">
+                        <h3 class="text-2xl font-bold mb-2 text-white">Add-on Credits</h3>
+                        <div class="flex items-baseline">
+                            <span class="text-4xl font-bold text-pink-300">£1.30-£1.90</span>
+                            <span class="ml-2 text-white text-opacity-80">/credit</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <p class="mb-4 font-semibold text-pink-300">For Premium subscribers who need more than 10 credits per month</p>
+
+                        <div class="mb-4 p-3 bg-pink-900 bg-opacity-20 rounded-lg">
+                            <h4 class="text-sm font-semibold text-pink-300 mb-2">When You Might Need More Credits:</h4>
+                            <ul class="text-xs text-white text-opacity-80 space-y-1">
+                                <li>• Dissertation research requiring multiple topics</li>
+                                <li>• Group projects where credits are shared</li>
+                                <li>• End-of-term rush with multiple papers due</li>
+                                <li>• Comprehensive literature reviews</li>
+                            </ul>
+                        </div>
+                        <ul class="space-y-4 mb-6">
+                            {% if pricing_addons %}
+                                {% for addon in pricing_addons %}
+                                <li class="flex items-start">
+                                    <svg class="w-5 h-5 text-pink-400 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    <span class="text-white text-opacity-90">
+                                        <strong class="text-pink-300">{{ addon.credits }} credits: £{{ "%.2f"|format(addon.price|float) }}</strong>
+                                        {% if addon.credits > 0 %}
+                                            (£{{ "%.2f"|format(addon.price|float / addon.credits) }} each)
+                                        {% endif %}
+                                    </span>
+                                </li>
+                                {% endfor %}
+                            {% else %}
+                                <li class="flex items-start">
+                                    <svg class="w-5 h-5 text-pink-400 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    <span class="text-white text-opacity-90">
+                                        <strong class="text-pink-300">5 credits: £9.50</strong> (£1.90 each)
+                                    </span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-5 h-5 text-pink-400 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    <span class="text-white text-opacity-90">
+                                        <strong class="text-pink-300">10 credits: £17.00</strong> (£1.70 each)
+                                    </span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-5 h-5 text-pink-400 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    <span class="text-white text-opacity-90">
+                                        <strong class="text-pink-300">15 credits: £24.00</strong> (£1.60 each)
+                                    </span>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-5 h-5 text-pink-400 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    <span class="text-white text-opacity-90">
+                                        <strong class="text-pink-300">25 credits: £32.50</strong> (£1.30 each)
+                                    </span>
+                                </li>
+                            {% endif %}
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-pink-400 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-white text-opacity-90"><strong class="text-pink-300">Credits never expire</strong> - Use them whenever you need</span>
+                            </li>
+                        </ul>
+                        <div class="text-center text-white text-opacity-60 text-sm mb-4">
+                            Available to Premium subscribers only
+                        </div>
+                        {% if user %}
+                            <a href="/billing/buy-credits" class="block w-full py-3 px-4 text-center font-medium bg-gradient-to-r from-pink-500 to-pink-600 text-white hover:from-pink-600 hover:to-pink-700 rounded-lg transition duration-200 shadow-lg">
+                                Buy Paper Credits
+                            </a>
+                        {% else %}
+                            <a href="/auth/register" class="block w-full py-3 px-4 text-center font-medium bg-gradient-to-r from-pink-500 to-pink-600 text-white hover:from-pink-600 hover:to-pink-700 rounded-lg transition duration-200 shadow-lg">
+                                Get Started
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Educational Institutions Box -->
+            {% set edu_content = none %}
+            {% for item in pricing_display %}
+                {% if item.section == 'home_edu' %}
+                    {% set edu_content = item %}
+                {% endif %}
+            {% endfor %}
+
+            <div class="max-w-5xl mx-auto mt-16">
+                <div class="glass-effect rounded-lg overflow-hidden">
+                    <div class="p-6 border-b border-white border-opacity-20">
+                        <h3 class="text-2xl font-bold mb-2 text-white">Educational Institutions</h3>
+                        <p class="text-lg text-white text-opacity-80">{{ edu_content.subtitle if edu_content else "Bespoke packages for universities and higher education" }}</p>
+                    </div>
+                    <div class="p-6">
+                        <p class="mb-6 text-white text-opacity-90">{{ edu_content.content if edu_content else "Tailored solutions for universities and higher education institutions worldwide. We support academic development and integrity with flexible options for research support and student learning." }}</p>
+
+                        <div class="mb-6 p-4 bg-indigo-900 bg-opacity-20 rounded-lg">
+                            <h4 class="text-lg font-semibold mb-2 text-white">Institutional Pricing</h4>
+                            <p class="text-white text-opacity-80 mb-3">Starting from <span class="text-indigo-300 font-semibold">£500/month</span> for departmental access with custom solutions available.</p>
+                            <ul class="text-sm text-white text-opacity-80 space-y-1">
+                                <li>• Bulk credit packages (100+ credits)</li>
+                                <li>• Department-wide or university-wide access</li>
+                                <li>• Custom integration with university systems</li>
+                                <li>• Usage analytics and reporting</li>
+                            </ul>
+                        </div>
+
+                        <h4 class="text-lg font-semibold mb-4 text-white">UK & International Universities</h4>
+                        <ul class="space-y-3 mb-6">
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-indigo-300 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-white text-opacity-90">Support for undergraduate, postgraduate, and doctoral research</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-indigo-300 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-white text-opacity-90">Academic integrity and skill development</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-indigo-300 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-white text-opacity-90">Flexible institutional access packages</span>
+                            </li>
+                        </ul>
+
+                        <div class="text-center">
+                            <a href="mailto:sales@lilyai.uk" class="inline-block py-3 px-6 text-center font-medium border border-white text-white hover:bg-white hover:text-indigo-900 rounded-lg transition duration-200">
+                                Request Institutional Information
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Ethical Use Section (Sentry Style) -->
+<section class="py-12 sentry-bg" style="margin-top: -1px; margin-bottom: -1px;">
+    <div class="sentry-container">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-8 text-white">Using Research Packs Ethically</h2>
+
+            <div class="glass-effect p-6 rounded-lg">
+                <p class="text-white text-opacity-90 mb-6">Our research packs are designed to support your academic journey, not replace your own critical thinking and analysis. Here's how to use them ethically:</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-semibold text-indigo-300 mb-3">Recommended Uses:</h4>
+                        <ul class="space-y-2">
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-400 mt-1 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-white text-opacity-90">As a starting point for your own research</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-400 mt-1 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-white text-opacity-90">To understand complex topics quickly</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-400 mt-1 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-white text-opacity-90">To discover relevant sources and citations</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-400 mt-1 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-white text-opacity-90">For background information on unfamiliar topics</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h4 class="font-semibold text-pink-300 mb-3">Not Recommended:</h4>
+                        <ul class="space-y-2">
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-pink-400 mt-1 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                                <span class="text-white text-opacity-90">Submitting as your own work without modification</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-pink-400 mt-1 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                                <span class="text-white text-opacity-90">Using without verifying sources and facts</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-pink-400 mt-1 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                                <span class="text-white text-opacity-90">Relying solely on our research without critical thinking</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <p class="text-white text-opacity-80 mt-6">Always follow your institution's academic integrity policies. Our service is designed to support your learning, not replace it.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section (Sentry Style) -->
+<section id="faq" class="py-16 sentry-bg w-full overflow-hidden" style="margin-top: -1px; margin-bottom: -1px;">
+    <!-- Interactive background elements -->
+    <div class="orb-container">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+        <div class="orb orb-5"></div>
+        <div class="orb orb-6"></div>
+    </div>
+    <div class="spotlight"></div>
+
+    <div class="sentry-container">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-12 text-white">Frequently Asked Questions</h2>
+
+            <div class="space-y-6">
+                <div class="glass-effect p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4 text-white">How long does it take to receive a research pack?</h3>
+                    <p class="text-white text-opacity-90">Most research packs are delivered in about 10 minutes. For highly specialized or complex topics, it may take up to 30 minutes.</p>
+                </div>
+                <div class="glass-effect p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4 text-white">Is the content original?</h3>
+                    <p class="text-white text-opacity-90">Yes, all content is original and passes plagiarism checks. We use proper citations for academic integrity.</p>
+                </div>
+                <div class="glass-effect p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4 text-white">What if I need more than 10 credits per month?</h3>
+                    <p class="text-white text-opacity-90">You can purchase add-on credits starting from £1.30 each (depending on package size). We offer flexible packages of 5, 10, 15, or 25 credits to suit your needs. These credits never expire and can be used whenever you need them.</p>
+                </div>
+                <div class="glass-effect p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4 text-white">Can I cancel my subscription?</h3>
+                    <p class="text-white text-opacity-90">Yes, you can cancel your subscription at any time. There are no long-term commitments.</p>
+                </div>
+                <div class="glass-effect p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4 text-white">Do my purchased credits expire?</h3>
+                    <p class="text-white text-opacity-90">Your purchased credits never expire, but you need an active premium subscription to use them. If your subscription ends, your credits will be saved and become available again when you reactivate your premium subscription.</p>
+                </div>
+                <div class="glass-effect p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4 text-white">What happens to my credits if I cancel my subscription?</h3>
+                    <p class="text-white text-opacity-90">If you cancel your premium subscription, you'll keep any purchased credits, but you won't be able to use them until you resubscribe. Your credits will be waiting for you when you return to premium status.</p>
+                </div>
+                <div class="glass-effect p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4 text-white">What types of topics can I get research packs for?</h3>
+                    <p class="text-white text-opacity-90">We cover a wide range of topics across various disciplines. From humanities to sciences, we have you covered! Just let us know your specific topic or research question.</p>
+                </div>
+                <div class="glass-effect p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4 text-white">How does your research process work?</h3>
+                    <p class="text-white text-opacity-90">Our AI research engine accesses academic databases and scholarly sources to gather information on your topic. It analyzes 40+ relevant academic papers, synthesizes the information, and structures it into a comprehensive research pack with proper citations. Each pack undergoes automated fact-checking to ensure accuracy and originality.</p>
+                </div>
+
+                <div class="glass-effect p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4 text-white">Is using your service considered plagiarism?</h3>
+                    <p class="text-white text-opacity-90">Our research packs are meant to be used as reference materials and starting points for your own work. Using them as intended—to inform your research, understand complex topics, and discover relevant sources—is not plagiarism. However, submitting our content as your own work without proper attribution or significant modification would violate academic integrity policies at most institutions. We encourage ethical use of our service.</p>
+                </div>
+
+                <div class="glass-effect p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4 text-white">What kind of support do you offer?</h3>
+                    <p class="text-white text-opacity-90">We offer 24/7 email support for all users. Premium subscribers also have access to live chat support during business hours (9am-6pm UK time). If you're not satisfied with your research pack, we offer revisions or credit refunds depending on the circumstances. Contact us at support@lilyai.uk for assistance.</p>
+                </div>
+
+                <div class="glass-effect p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4 text-white">How do I get started?</h3>
+                    <p class="text-white text-opacity-90">Simply register for an account to access three complete example research packs covering humanities, arts, and science topics. No credit card is required to view these examples. This lets you understand the quality and depth of our research before committing. If you find our service valuable for your specific research needs, you can subscribe to our Premium plan for £18.00/month, which includes 10 research credits to generate custom research packs on any topic of your choice.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+
+
+</div>
+{% endblock %}

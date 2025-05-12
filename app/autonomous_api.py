@@ -17,6 +17,7 @@ from pydantic import BaseModel, Field
 
 from .database import get_db, Task, TaskContext, TaskUpdate
 from .autonomous_agent import agent_manager, AutonomousAgent
+from .tools.file_operations import FileOperations
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -431,3 +432,24 @@ async def _get_task_with_updates(db: AsyncSession, task_id: str) -> Optional[Dic
     }
 
     return task_dict
+
+@router.get("/workspaces", summary="List all agent workspaces")
+async def list_workspaces():
+    """
+    List all agent workspaces in a user-friendly format.
+
+    This endpoint returns information about all agent workspaces, including:
+    - Path to the workspace
+    - Agent name and role (for named workspaces)
+    - Agent ID (for UUID-based workspaces)
+    - Workspace type (named or UUID-based)
+
+    The response is organized to make it easier for users to navigate and understand
+    the workspace hierarchy.
+    """
+    try:
+        workspaces = FileOperations.list_workspaces()
+        return {"workspaces": workspaces}
+    except Exception as e:
+        logger.error(f"Error listing workspaces: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error listing workspaces: {str(e)}")

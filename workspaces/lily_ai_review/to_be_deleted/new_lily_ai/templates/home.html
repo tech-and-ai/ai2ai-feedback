@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}Lily AI - Your Research Assistant{% endblock %}
+
+{% block head %}
+{{ super() }}
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("{{ url_for('static', path='/images/pattern.svg') }}") repeat;
+        opacity: 0.1;
+        z-index: 0;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .feature-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background-color: #6366F1;
+    }
+
+    .feature-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 12px;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .cta-section {
+        background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+        color: white;
+        border-radius: 12px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section py-5">
+    <div class="container">
+        <div class="row align-items-center py-5">
+            <div class="col-lg-6 hero-content">
+                <h1 class="display-4 fw-bold mb-4">Deep Research with AI Guidance</h1>
+                <p class="lead mb-4">
+                    Lily AI helps you conduct in-depth research with AI guidance, providing comprehensive analysis and insights rather than just quick answers.
+                </p>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                    <a href="/register" class="btn btn-light btn-lg px-4 me-md-2">Sign Up</a>
+                    <a href="/about" class="btn btn-outline-light btn-lg px-4">Learn More</a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center text-lg-end hero-content">
+                <img src="{{ url_for('static', path='/images/hero.svg') }}" alt="Lily AI Research" class="img-fluid" style="max-height: 400px;">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="display-5 fw-bold">How Lily AI Works</h2>
+                <p class="lead">Our AI-powered research assistant helps you explore topics in depth</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm feature-card">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon bg-primary text-white mb-4 mx-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                            </svg>
+                        </div>
+                        <h3 class="fs-4 fw-bold mb-3">Deep Research</h3>
+                        <p class="mb-0">Explore topics with comprehensive analysis and multiple perspectives, going beyond surface-level information.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm feature-card">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon bg-primary text-white mb-4 mx-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-lightbulb" viewBox="0 0 16 16">
+                                <path d="M2 6a6 6 0 1 1 10.174 4.31c-.203.196-.359.4-.453.619l-.762 1.769A.5.5 0 0 1 10.5 13a.5.5 0 0 1 0 1 .5.5 0 0 1 0 1l-.224.447a1 1 0 0 1-.894.553H6.618a1 1 0 0 1-.894-.553L5.5 15a.5.5 0 0 1 0-1 .5.5 0 0 1 0-1 .5.5 0 0 1-.46-.302l-.761-1.77a1.964 1.964 0 0 0-.453-.618A5.984 5.984 0 0 1 2 6zm6-5a5 5 0 0 0-3.479 8.592c.263.254.514.564.676.941L5.83 12h4.342l.632-1.467c.162-.377.413-.687.676-.941A5 5 0 0 0 8 1z"/>
+                            </svg>
+                        </div>
+                        <h3 class="fs-4 fw-bold mb-3">AI Guidance</h3>
+                        <p class="mb-0">Get expert guidance and insights to help you understand complex topics and develop well-structured arguments.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm feature-card">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon bg-primary text-white mb-4 mx-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-file-earmark-text" viewBox="0 0 16 16">
+                                <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5z"/>
+                                <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5L9.5 0zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/>
+                            </svg>
+                        </div>
+                        <h3 class="fs-4 fw-bold mb-3">Comprehensive Papers</h3>
+                        <p class="mb-0">Generate well-structured research papers with citations and references that meet academic standards.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Example Papers Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="display-5 fw-bold">Example Research Papers</h2>
+                <p class="lead">See what Lily AI can create for you</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm feature-card">
+                    <div class="card-body p-4">
+                        <h3 class="fs-4 fw-bold mb-3">Science</h3>
+                        <p class="mb-3">Quantum Computing: Current State and Future Prospects</p>
+                        <a href="#" class="btn btn-outline-primary">View Example</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm feature-card">
+                    <div class="card-body p-4">
+                        <h3 class="fs-4 fw-bold mb-3">Arts</h3>
+                        <p class="mb-3">The Evolution of Impressionism in Modern Art</p>
+                        <a href="#" class="btn btn-outline-primary">View Example</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm feature-card">
+                    <div class="card-body p-4">
+                        <h3 class="fs-4 fw-bold mb-3">Humanities</h3>
+                        <p class="mb-3">The Impact of Social Media on Political Discourse</p>
+                        <a href="#" class="btn btn-outline-primary">View Example</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 my-5">
+    <div class="container">
+        <div class="cta-section p-5">
+            <div class="row text-center">
+                <div class="col-lg-8 mx-auto">
+                    <h2 class="display-5 fw-bold mb-4">Try Lily AI Today</h2>
+                    <p class="lead mb-4">Experience the power of AI-assisted research with our premium subscription</p>
+                    <a href="/register" class="btn btn-light btn-lg px-5">Sign Up Now</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add animation to feature cards on scroll
+        const featureCards = document.querySelectorAll('.feature-card');
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = 1;
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        featureCards.forEach(card => {
+            card.style.opacity = 0;
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            observer.observe(card);
+        });
+    });
+</script>
+{% endblock %}

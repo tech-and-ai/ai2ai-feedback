@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Help & Support - Lily AI Research Assistant{% endblock %}
+
+{% block content %}
+<!-- Background Orbs -->
+<div class="orb-container">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="orb orb-4"></div>
+    <div class="orb orb-5"></div>
+    <div class="orb orb-6"></div>
+    <div class="spotlight"></div>
+</div>
+
+<!-- Page Header -->
+<header class="glass-effect shadow">
+    <div class="container mx-auto px-4 py-6">
+        <div class="flex items-center justify-between">
+            <h1 class="text-2xl font-bold text-white">Help & Support</h1>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<section class="py-8 relative z-10">
+    <div class="container mx-auto px-4 max-w-6xl">
+        <!-- How to Use Section -->
+        <div class="glass-effect rounded-xl p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">How to Use Lily AI</h2>
+
+            <div class="mb-5">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Creating a Research Paper</h3>
+                <ol class="list-decimal list-inside text-gray-800 dark:text-gray-200 space-y-2 mb-3 text-base ml-4">
+                    <li>Click on <strong>New Research Paper</strong> from your dashboard</li>
+                    <li>Enter your research topic in the main field</li>
+                    <li>Add specific questions or areas you want the AI to focus on</li>
+                    <li>Click <strong>Generate Research</strong> to start the process</li>
+                    <li>Wait while our AI analyzes your topic and creates a comprehensive research pack</li>
+                    <li>Once complete, you'll be redirected to view your new research paper</li>
+                </ol>
+            </div>
+
+            <div class="mb-5">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Managing Your Papers</h3>
+                <ul class="list-disc list-inside text-gray-800 dark:text-gray-200 space-y-2 mb-3 text-base ml-4">
+                    <li>Access all your papers from the <strong>My Papers</strong> section</li>
+                    <li>View, download, or share your research papers</li>
+                    <li>Each paper includes a comprehensive analysis, key findings, and references</li>
+                    <li>You can download your papers in PDF format for offline use</li>
+                </ul>
+            </div>
+
+            <div class="mb-5">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Coming Soon: Review Packs</h3>
+                <p class="text-gray-800 dark:text-gray-200 mb-3 text-base">
+                    We're excited to announce our upcoming Review Packs feature! Soon you'll be able to:
+                </p>
+                <ul class="list-disc list-inside text-gray-800 dark:text-gray-200 space-y-2 mb-3 text-base ml-4">
+                    <li>Upload your assignments and papers for AI-powered review</li>
+                    <li>Receive intelligent feedback on structure, clarity, and argumentation</li>
+                    <li>Get suggestions for additional citations and references</li>
+                    <li>Identify areas for improvement with actionable recommendations</li>
+                    <li>Enhance your academic writing with professional polish</li>
+                </ul>
+                <div class="bg-amber-50 dark:bg-amber-900/30 border-l-4 border-amber-500 p-3 rounded-r-lg">
+                    <p class="text-amber-800 dark:text-amber-200 text-sm">
+                        <span class="font-semibold">Coming Soon:</span> We're working hard to bring this feature to you. Stay tuned for updates!
+                    </p>
+                </div>
+            </div>
+
+            <div class="mb-0">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Subscription and Paper Credits</h3>
+                <ul class="list-disc list-inside text-gray-800 dark:text-gray-200 space-y-2 mb-0 text-base ml-4">
+                    <li>Free users have access to sample papers only</li>
+                    <li>Premium users have a monthly allocation of paper credits</li>
+                    <li>You can purchase additional paper credits from the subscription page</li>
+                    <li>Your current subscription status and remaining papers are displayed on your dashboard</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="glass-effect rounded-xl p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">Frequently Asked Questions</h2>
+
+            <div class="space-y-4">
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-1">How accurate is the research?</h3>
+                    <p class="text-gray-700 dark:text-gray-300 text-base">
+                        Lily AI uses advanced AI models to generate research based on the latest available information. While we strive for accuracy, we recommend verifying critical information from primary sources.
+                    </p>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-1">Can I edit my research after it's generated?</h3>
+                    <p class="text-gray-700 dark:text-gray-300 text-base">
+                        Currently, direct editing within the platform is not available. However, you can download your research in PDF format and edit it using your preferred document editor.
+                    </p>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-1">How many papers can I create?</h3>
+                    <p class="text-gray-700 dark:text-gray-300 text-base">
+                        This depends on your subscription tier. Free users can access sample papers only, while Premium users have a monthly allocation of paper credits.
+                    </p>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-1">What if I run out of paper credits?</h3>
+                    <p class="text-gray-700 dark:text-gray-300 text-base">
+                        You can purchase additional paper credits from the subscription page or upgrade your Premium subscription for more credits.
+                    </p>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-1">When will Review Packs be available?</h3>
+                    <p class="text-gray-700 dark:text-gray-300 text-base">
+                        We're working hard to launch Review Packs soon! This exciting feature will allow you to upload your assignments for AI-powered feedback, citation suggestions, and improvements. Stay tuned for announcements on your dashboard.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Support Section -->
+        <div class="glass-effect rounded-xl p-6">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">Contact Support</h2>
+            <p class="text-gray-800 dark:text-gray-200 mb-4 text-base">
+                Need additional help? Our support team is ready to assist you.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <a href="mailto:support@lilyai.uk" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex flex-col items-center justify-center text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-blue-100 dark:border-blue-900 hover:border-blue-300 dark:hover:border-blue-700">
+                    <div class="w-14 h-14 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mb-3">
+                        <svg class="w-7 h-7 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Email Support</h3>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm mb-4">Contact our support team via email</p>
+                    <div class="mt-auto w-full">
+                        <span class="inline-block w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">Email support@lilyai.uk</span>
+                    </div>
+                </a>
+
+                <a href="https://discord.gg/lilyai" target="_blank" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex flex-col items-center justify-center text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-purple-100 dark:border-purple-900 hover:border-purple-300 dark:hover:border-purple-700">
+                    <div class="w-14 h-14 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mb-3">
+                        <svg class="w-7 h-7 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3847-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Join Our Discord</h3>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm mb-4">Get help from our community</p>
+                    <div class="mt-auto w-full">
+                        <span class="inline-block w-full py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors duration-200">Join Discord</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- Return to Dashboard Button -->
+<div class="py-8 text-center sentry-bg">
+    <a href="/dashboard" class="inline-block py-3 px-6 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-medium rounded-lg transition duration-200 shadow-lg">
+        Return to Dashboard
+    </a>
+</div>
+{% endblock %}

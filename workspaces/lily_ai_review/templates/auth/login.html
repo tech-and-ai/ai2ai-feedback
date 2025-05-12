@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{# Import reusable components #}
+{% from "components/alerts.html" import error_alert, success_alert, info_alert, verification_alert %}
+{% from "components/form_inputs.html" import email_input, password_input, checkbox_input, submit_button %}
+
+{% block title %}Login - Research Assistant{% endblock %}
+
+{% block content %}
+<div class="w-full overflow-hidden sentry-bg">
+    <!-- Interactive background elements -->
+    <div class="orb-container">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+        <div class="orb orb-5"></div>
+        <div class="orb orb-6"></div>
+    </div>
+    <div class="spotlight"></div>
+
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 text-white">
+        <div class="w-full max-w-md">
+            <div class="glass-effect rounded-lg shadow-xl overflow-hidden border border-indigo-800">
+                <!-- Header Tabs -->
+                <div class="px-6 py-4 flex border-b border-indigo-800">
+                    <span class="text-xl font-medium text-indigo-400 border-b-2 border-indigo-400 pb-1 px-2">Sign In</span>
+                    <a href="/auth/register" class="text-xl font-medium text-gray-300 hover:text-white ml-4 px-2">Sign Up</a>
+                    <div class="ml-auto">
+                        <div class="w-10 h-10 rounded-full bg-indigo-900 flex items-center justify-center">
+                            <svg class="w-6 h-6 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Body -->
+                <div class="p-8">
+                    <div class="space-y-6">
+                        {% if registered %}
+                        <h2 class="text-3xl font-bold text-center text-indigo-400">Registration Successful</h2>
+                        <p class="text-center text-gray-300">Please check your email to verify your account</p>
+                        {% else %}
+                        <h2 class="text-3xl font-bold text-center text-indigo-400">Welcome Back</h2>
+                        <p class="text-center text-gray-300">Sign in to your account to continue</p>
+                        {% endif %}
+
+                    {# Display error messages #}
+                    {{ error_alert(error) }}
+
+                    {# Display success messages #}
+                    {{ success_alert(message) }}
+
+                    {# Display verification email reminder #}
+                    {{ verification_alert(unverified_email) }}
+
+                    {# Display verification success message #}
+                    {% if verified %}
+                    {{ success_alert("Your email has been verified successfully! You can now sign in.") }}
+                    {% endif %}
+
+                    {# Display registration success message #}
+                    {% if registered %}
+                    {{ info_alert("Registration successful! Please check your email to verify your account.") }}
+                    {% endif %}
+
+                    <!-- Google Sign In Button -->
+                    <div class="grid grid-cols-1 gap-3">
+                        <a href="/auth/oauth/google?redirect_to={{ next }}" class="flex items-center justify-center py-4 px-4 rounded-md border border-indigo-600 bg-white hover:bg-gray-100 transition-colors shadow-md">
+                            <svg width="24" height="24" class="mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+                                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                            </svg>
+                            <span class="text-gray-800 font-medium text-lg">Continue with Google</span>
+                        </a>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="relative">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-indigo-600 opacity-30"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-2 bg-indigo-900 text-white font-medium">Or sign in with email</span>
+                        </div>
+                    </div>
+
+                    <form action="/auth/login" method="post" id="login-form" class="space-y-6">
+                        <!-- CSRF Token (Hidden) -->
+                        {% if csrf_token %}
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        {% endif %}
+
+                        {# Email Input #}
+                        {{ email_input("email", "Email Address", "you@example.com", required=True) }}
+
+                        {# Password Input #}
+                        {{ password_input("password", "Password", "••••••••", required=True) }}
+
+                        {# Remember Me & Forgot Password #}
+                        <div class="flex items-center justify-between">
+                            {{ checkbox_input("remember", "Remember me") }}
+                            <a href="/auth/reset-password" class="text-sm font-medium text-indigo-400 hover:text-indigo-300">Forgot password?</a>
+                        </div>
+
+                        {# Hidden next field #}
+                        <input type="hidden" name="next" value="{{ next }}">
+
+                        {# Submit Button #}
+                        {{ submit_button("Sign In") }}
+                    </form>
+
+                    <!-- Sign Up Link -->
+                    <div class="text-center mt-4">
+                        <p class="text-sm text-gray-300">
+                            Don't have an account?
+                            <a href="/auth/register" class="font-medium text-indigo-400 hover:text-indigo-300">Sign up</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

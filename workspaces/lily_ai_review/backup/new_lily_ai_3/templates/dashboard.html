@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Lily AI{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="display-5 fw-bold">Welcome, {{ user.username }}</h1>
+        <p class="lead">Your AI research assistant is ready to help you.</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Subscription</h5>
+                <h6 class="card-subtitle mb-2 text-muted">{{ user.subscription_tier|title }} Plan</h6>
+                <p class="card-text">
+                    {% if user.subscription_tier == "free" %}
+                    You're currently on the Free plan with limited features.
+                    <a href="/billing/subscription" class="btn btn-primary mt-2">Upgrade Now</a>
+                    {% elif user.subscription_tier == "premium" %}
+                    You're on the Premium plan with full access to all features.
+                    <a href="/billing/manage" class="btn btn-outline-primary mt-2">Manage Plan</a>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Quick Start</h5>
+                <p class="card-text">Start a new research paper or continue where you left off.</p>
+                <a href="/papers/new" class="btn btn-primary">New Paper</a>
+                {% if user.subscription_tier != "free" %}
+                <a href="/papers" class="btn btn-outline-primary">My Papers</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Examples</h5>
+                <p class="card-text">Check out example papers to see what Lily AI can do.</p>
+                <div class="list-group">
+                    <a href="/examples/science" class="list-group-item list-group-item-action">Science Example</a>
+                    <a href="/examples/arts" class="list-group-item list-group-item-action">Arts Example</a>
+                    <a href="/examples/humanities" class="list-group-item list-group-item-action">Humanities Example</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">Start Researching</h5>
+            </div>
+            <div class="card-body">
+                <form action="/papers/new" method="get">
+                    <div class="mb-3">
+                        <label for="topic" class="form-label">What would you like to research today?</label>
+                        <input type="text" class="form-control form-control-lg" id="topic" name="topic" placeholder="Enter your research topic...">
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">Start Research</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

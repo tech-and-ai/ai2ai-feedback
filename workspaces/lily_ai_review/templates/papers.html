@@ -1,0 +1,435 @@
+{% extends "base.html" %}
+
+{% block title %}My Papers - Research Assistant{% endblock %}
+
+{% block content %}
+<!-- Background Orbs -->
+<div class="orb-container">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="orb orb-4"></div>
+    <div class="orb orb-5"></div>
+    <div class="orb orb-6"></div>
+    <div class="spotlight"></div>
+</div>
+
+<!-- Page Header -->
+<header class="glass-effect shadow">
+    <div class="container mx-auto px-4 py-6">
+        <div class="flex items-center justify-between">
+            <h1 class="text-2xl font-bold text-white">My Papers</h1>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<section class="py-16 relative z-10">
+    <div class="container mx-auto px-4">
+        {% if request.query_params.get('credits_added') == 'true' %}
+        <div class="bg-green-50 dark:bg-green-900 border-l-4 border-green-400 p-4 mb-6 rounded">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-green-700 dark:text-green-200">
+                        Paper credits added successfully! You can now generate more research papers.
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Subscription Status -->
+        <div class="glass-effect rounded-xl p-8 mb-12">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Paper Allowance</h2>
+                    <div class="flex items-center">
+                        <span class="px-3 py-1 text-xs font-medium rounded-full capitalize flex items-center
+                            {% if user.subscription_tier == 'premium' %}
+                                bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-md
+                            {% elif user.subscription_tier == 'pro' %}
+                                bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-md
+                            {% else %}
+                                bg-gradient-to-r from-gray-400 to-gray-500 text-white shadow-sm
+                            {% endif %}">
+                            {% if user.subscription_tier == 'premium' %}
+                                <svg class="w-3 h-3 mr-1 text-yellow-300" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                </svg>
+                            {% elif user.subscription_tier == 'pro' %}
+                                <svg class="w-3 h-3 mr-1 text-yellow-300" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"></path>
+                                </svg>
+                            {% else %}
+                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"></path>
+                                </svg>
+                            {% endif %}
+                            {{ user.subscription_tier|title }}
+                        </span>
+                        <span class="ml-2 text-sm text-gray-800 dark:text-gray-200 font-medium">
+                            {% if user.subscription_tier == 'free' %}
+                                {{ user.papers_remaining|default(3) }} papers remaining
+                            {% elif user.subscription_tier == 'basic' %}
+                                {{ user.papers_remaining|default(3) }} papers remaining this month
+                                {% if additional_papers_remaining is defined and additional_papers_remaining > 0 %}
+                                    <span class="ml-1 text-green-600 dark:text-green-400">+ {{ additional_papers_remaining }} additional credits</span>
+                                {% endif %}
+                            {% elif user.subscription_tier == 'premium' %}
+                                {{ user.papers_remaining|default(10) }} papers remaining this month
+                                {% if additional_papers_remaining is defined and additional_papers_remaining > 0 %}
+                                    <span class="ml-1 text-green-600 dark:text-green-400">+ {{ additional_papers_remaining }} additional credits</span>
+                                {% endif %}
+                            {% elif user.subscription_tier == 'pro' %}
+                                Unlimited papers
+                                {% if additional_papers_remaining is defined and additional_papers_remaining > 0 %}
+                                    <span class="ml-1 text-green-600 dark:text-green-400">+ {{ additional_papers_remaining }} additional credits</span>
+                                {% endif %}
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                <div class="mt-4 md:mt-0">
+                    {% if user.subscription_tier == 'premium' or user.subscription_tier == 'pro' %}
+                        <a href="/billing/buy-credits" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-medium rounded-full shadow-sm hover:from-purple-700 hover:to-indigo-700 transition-all duration-200">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Buy More Credits
+                        </a>
+                    {% else %}
+                        <a href="/subscription/upgrade" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-medium rounded-full shadow-sm hover:from-blue-700 hover:to-indigo-700 transition-all duration-200">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                            </svg>
+                            Upgrade to Premium
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- In-Progress Papers Panel -->
+        <div class="glass-effect rounded-xl p-8 mb-12">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">In-Progress Papers</h2>
+                <button id="refreshButton" class="flex items-center px-3 py-1.5 text-sm font-medium text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900 rounded-md hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Refresh
+                </button>
+            </div>
+
+            <div id="inProgressLoadingIndicator" class="text-center py-8 text-gray-500 dark:text-gray-400">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p>Loading your in-progress papers...</p>
+            </div>
+
+            <div id="inProgressPapersContainer" class="space-y-4">
+                {% set in_progress_papers = papers|selectattr('status', 'in', ['in_progress', 'queued', 'processing'])|list %}
+                {% if in_progress_papers %}
+                    {% for paper in in_progress_papers %}
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                                <div>
+                                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-1">
+                                        {% if paper.title %}{{ paper.title }}
+                                        {% elif paper.params and paper.params.custom_title %}{{ paper.params.custom_title }}
+                                        {% elif paper.params and paper.params.topic %}{{ paper.params.topic }}
+                                        {% else %}Untitled Paper
+                                        {% endif %}
+                                    </h3>
+                                    <div class="flex items-center mb-2">
+                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 mr-2">
+                                            {% if paper.status == 'processing' %}In Progress{% elif paper.status == 'queued' %}Queued{% else %}In Progress{% endif %}
+                                        </span>
+                                        <span class="text-sm text-gray-500 dark:text-gray-400">
+                                            Started {{ paper.started_at|default('recently') }}
+                                        </span>
+                                    </div>
+                                    <div class="w-full md:w-64 bg-gray-200 dark:bg-gray-600 rounded-full h-2.5 mb-2">
+                                        <div class="{% if paper.status == 'queued' %}bg-blue-600{% else %}bg-yellow-500{% endif %} h-2.5 rounded-full" style="width: {% if paper.progress %}{{ paper.progress }}%{% elif paper.status == 'queued' %}10%{% else %}50%{% endif %}"></div>
+                                    </div>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300">
+                                        {% if paper.progress_message %}
+                                            {{ paper.progress_message }}
+                                        {% else %}
+                                            Generating paper...
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                <div class="mt-4 md:mt-0 flex items-center">
+                                    <button class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 mr-4">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div id="noInProgressPapers" class="text-center py-8 text-gray-500 dark:text-gray-400">
+                        <svg class="w-12 h-12 mx-auto mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <p>No papers currently in progress.</p>
+                        <a href="/my-papers/new" class="inline-block mt-3 text-blue-600 dark:text-blue-400 hover:underline">Create a new paper</a>
+                    </div>
+                {% endif %}
+            </div>
+
+
+        </div>
+
+        <!-- Completed Papers Panel -->
+        <div class="glass-effect rounded-xl p-8">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Completed Papers</h2>
+            </div>
+
+            <!-- Search and Filter Controls -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="col-span-1 md:col-span-1">
+                    <div class="relative">
+                        <input type="text" id="paperSearch" placeholder="Search by title or topic..."
+                            class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <div class="absolute left-3 top-2.5 text-gray-400">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <select id="paperTypeFilter" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <option value="all">All Types</option>
+                        <option value="research">Research Papers</option>
+                        <option value="essay">Essays</option>
+                        <option value="report">Reports</option>
+                    </select>
+                </div>
+
+                <div>
+                    <select id="paperSort" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <option value="date-desc">Date (Newest First)</option>
+                        <option value="date-asc">Date (Oldest First)</option>
+                        <option value="title-asc">Title (A-Z)</option>
+                        <option value="title-desc">Title (Z-A)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="completedPapersCount" class="text-sm text-gray-600 dark:text-gray-400 mb-4">Showing {{ completed_papers|length }} papers</div>
+
+            <div id="completedLoadingIndicator" class="text-center py-8 text-gray-500 dark:text-gray-400 hidden">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p>Loading your completed papers...</p>
+            </div>
+
+            <div id="completedPapersContainer" class="space-y-4">
+                {% set completed_papers = papers|selectattr('status', 'ne', 'in_progress')|selectattr('status', 'ne', 'queued')|selectattr('status', 'ne', 'processing')|list %}
+                {% if completed_papers %}
+                    {% for paper in completed_papers %}
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border
+                            {% if paper.status == 'errored' %}border-red-200 dark:border-red-900{% else %}border-gray-200 dark:border-gray-600{% endif %}">
+                            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                                <div>
+                                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-1">
+                                        {% if paper.title %}{{ paper.title }}
+                                        {% elif paper.params and paper.params.custom_title %}{{ paper.params.custom_title }}
+                                        {% elif paper.params and paper.params.topic %}{{ paper.params.topic }}
+                                        {% else %}Untitled Paper
+                                        {% endif %}
+                                    </h3>
+                                    <div class="flex items-center mb-2">
+                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium
+                                            {% if paper.status == 'completed' %}bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300
+                                            {% elif paper.status == 'in_progress' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300
+                                            {% elif paper.status == 'processing' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300
+                                            {% elif paper.status == 'queued' %}bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300
+                                            {% elif paper.status == 'errored' %}bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300
+                                            {% else %}bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300{% endif %} mr-2">
+                                            {% if paper.status == 'processing' %}In Progress{% else %}{{ paper.status|title }}{% endif %}
+                                        </span>
+                                        <span class="text-sm text-gray-500 dark:text-gray-400">
+                                            {{ paper.created_at|default('Unknown date') }}
+                                        </span>
+                                    </div>
+                                    {% if paper.status == 'errored' and paper.error_message %}
+                                        <p class="text-sm text-red-600 dark:text-red-400">Error: {{ paper.error_message }}</p>
+                                    {% elif paper.params and paper.params.topic %}
+                                        <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+                                            {{ paper.params.topic }}
+                                            {% if paper.params.education_level %} ({{ paper.params.education_level|title }}){% endif %}
+                                        </p>
+                                    {% endif %}
+                                </div>
+                                <div class="mt-4 md:mt-0 flex items-center space-x-2">
+                                    {% if paper.status == 'completed' and paper.result_path %}
+                                        <div class="dropdown relative">
+                                            <button class="inline-flex items-center px-3 py-1.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md text-sm font-medium transition-colors duration-150">
+                                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                                </svg>
+                                                Download
+                                                <svg class="w-4 h-4 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                </svg>
+                                            </button>
+                                            <div class="dropdown-menu hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
+                                                <a href="/my-papers/{{ paper.id }}/download/pdf" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                                    <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                                    </svg>
+                                                    PDF
+                                                </a>
+                                                <a href="/my-papers/{{ paper.id }}/download/docx" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                                    <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                                    </svg>
+                                                    Word (DOCX)
+                                                </a>
+                                            </div>
+                                        </div>
+                                    {% elif paper.status == 'errored' %}
+                                        <a href="/api/research-paper/retry/{{ paper.job_id }}" class="inline-flex items-center px-3 py-1.5 border border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-700 rounded-md text-sm font-medium transition-colors duration-150">
+                                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                            </svg>
+                                            Retry
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div id="noCompletedPapers" class="text-center py-8 text-gray-500 dark:text-gray-400">
+                        <svg class="w-12 h-12 mx-auto mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <p>No completed papers found.</p>
+                        <a href="/my-papers/new" class="inline-block mt-3 text-blue-600 dark:text-blue-400 hover:underline">Create a new paper</a>
+                    </div>
+                {% endif %}
+            </div>
+
+
+
+            <!-- Pagination -->
+            <div class="flex justify-center mt-6">
+                <button id="prevPageBtn" class="inline-flex items-center px-4 py-2 mr-3 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                    Previous
+                </button>
+                <button id="nextPageBtn" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+                    Next
+                    <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle dropdown menus
+        const dropdownButtons = document.querySelectorAll('.dropdown button');
+        dropdownButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const menu = this.nextElementSibling;
+                menu.classList.toggle('hidden');
+            });
+        });
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            dropdownButtons.forEach(button => {
+                const dropdown = button.closest('.dropdown');
+                if (dropdown && !dropdown.contains(event.target)) {
+                    const menu = dropdown.querySelector('.dropdown-menu');
+                    if (menu && !menu.classList.contains('hidden')) {
+                        menu.classList.add('hidden');
+                    }
+                }
+            });
+        });
+
+        // Hide loading indicator since we're loading data server-side
+        document.getElementById('inProgressLoadingIndicator').classList.add('hidden');
+
+        // Refresh button functionality
+        document.getElementById('refreshButton').addEventListener('click', function() {
+            // Reload the page to get fresh data
+            window.location.reload();
+        });
+
+        // Auto-refresh functionality when papers are in progress
+        const inProgressPapers = document.querySelectorAll('#inProgressPapersContainer .bg-gray-50');
+        if (inProgressPapers.length > 0) {
+            // Set auto-refresh every 30 seconds if there are in-progress papers
+            const refreshInterval = 30000; // 30 seconds
+            console.log(`Auto-refresh enabled. Will refresh every ${refreshInterval/1000} seconds`);
+
+            // Add a countdown timer
+            const refreshContainer = document.querySelector('#refreshButton').parentNode;
+            const countdownEl = document.createElement('span');
+            countdownEl.className = 'ml-2 text-sm text-gray-500 dark:text-gray-400';
+            countdownEl.textContent = `Refreshing in ${refreshInterval/1000}s`;
+            refreshContainer.appendChild(countdownEl);
+
+            // Update countdown every second
+            let timeLeft = refreshInterval/1000;
+            const countdownInterval = setInterval(() => {
+                timeLeft -= 1;
+                countdownEl.textContent = `Refreshing in ${timeLeft}s`;
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                }
+            }, 1000);
+
+            // Set the auto-refresh timer
+            setTimeout(() => {
+                window.location.reload();
+            }, refreshInterval);
+        }
+
+        // Search functionality
+        document.getElementById('paperSearch').addEventListener('input', function() {
+            // Implement search logic here
+            console.log('Searching for:', this.value);
+        });
+
+        // Filter functionality
+        document.getElementById('paperTypeFilter').addEventListener('change', function() {
+            console.log('Filtering by type:', this.value);
+        });
+
+        // Sort functionality
+        document.getElementById('paperSort').addEventListener('change', function() {
+            console.log('Sorting by:', this.value);
+        });
+
+        // Pagination functionality
+        document.getElementById('prevPageBtn').addEventListener('click', function() {
+            console.log('Previous page');
+        });
+
+        document.getElementById('nextPageBtn').addEventListener('click', function() {
+            console.log('Next page');
+        });
+    });
+</script>
+{% endblock %}

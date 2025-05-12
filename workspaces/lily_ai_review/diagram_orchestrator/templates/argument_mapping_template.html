@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Argument Mapping</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.5;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            /* Set portrait orientation - A4 dimensions in pixels (at 96 DPI) */
+            width: 794px;  /* 210mm at 96 DPI */
+            height: 1123px; /* 297mm at 96 DPI */
+            overflow: hidden;
+        }
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+        .container {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+        h1 {
+            text-align: center;
+            color: #444;
+            margin-bottom: 8px;
+            font-size: 22px;
+        }
+        .description {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+        .argument-map {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+        }
+        .central-claim {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .claim-box {
+            background-color: #f0f7ff;
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            padding: 15px;
+            display: inline-block;
+            min-width: 70%;
+            max-width: 85%;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+        .claim-text {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 0;
+            line-height: 1.4;
+        }
+        .arguments {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .argument-column {
+            width: 48%;
+        }
+        .argument-title {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 15px;
+        }
+        .supporting {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        .opposing {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        .argument {
+            background-color: white;
+            border: 2px solid #95a5a6;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .argument h3 {
+            margin-top: 0;
+            margin-bottom: 6px;
+            font-size: 15px;
+        }
+        .argument p {
+            color: #7f8c8d;
+            font-size: 13px;
+            margin-bottom: 8px;
+            margin-top: 6px;
+        }
+        .evidence {
+            background-color: #f8f9fa;
+            border-left: 3px solid #95a5a6;
+            padding: 6px 10px;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+        .rebuttal {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed #ddd;
+        }
+        .rebuttal-title {
+            font-weight: bold;
+            font-size: 12px;
+            color: #7b7b7b;
+        }
+        .connector {
+            width: 2px;
+            height: 25px;
+            background-color: #95a5a6;
+            margin: 0 auto;
+        }
+        .connector-horizontal {
+            width: 80%;
+            height: 2px;
+            background-color: #95a5a6;
+            margin: 0 auto 15px auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{title}</h1>
+        <p class="description">
+            {description}
+        </p>
+
+        <div class="argument-map">
+            <div class="central-claim">
+                <div class="claim-box">
+                    <p class="claim-text" id="central-claim"></p>
+                </div>
+            </div>
+
+            <div class="connector"></div>
+            <div class="connector-horizontal"></div>
+
+            <div class="arguments">
+                <div class="argument-column">
+                    <div class="argument-title supporting">Supporting Arguments</div>
+                    <div id="supporting-arguments"></div>
+                </div>
+
+                <div class="argument-column">
+                    <div class="argument-title opposing">Opposing Arguments</div>
+                    <div id="opposing-arguments"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get the argument map data from the template
+            var argMapData = {json_data};
+
+            // Set the central claim
+            var centralClaimElement = document.getElementById('central-claim');
+
+            // Check if the central claim contains quotation marks (indicating a research question)
+            var centralClaimText = argMapData.central_claim;
+
+            if (centralClaimText.includes('"')) {
+                // Format with proper styling for quoted research questions
+                var parts = centralClaimText.split('"');
+
+                if (parts.length >= 3) {
+                    // We have a quoted section and text after it
+                    var beforeQuote = parts[0];
+                    var quotedText = parts[1];
+                    var afterQuote = parts.slice(2).join('"');
+
+                    // Clear the element
+                    centralClaimElement.innerHTML = '';
+
+                    // Add the quoted part with styling
+                    if (beforeQuote.trim()) {
+                        var beforeSpan = document.createElement('span');
+                        beforeSpan.textContent = beforeQuote;
+                        centralClaimElement.appendChild(beforeSpan);
+                    }
+
+                    var quoteSpan = document.createElement('span');
+                    quoteSpan.style.fontStyle = 'italic';
+                    quoteSpan.style.display = 'block';
+                    quoteSpan.style.margin = '5px 0';
+                    quoteSpan.textContent = '"' + quotedText + '"';
+                    centralClaimElement.appendChild(quoteSpan);
+
+                    if (afterQuote.trim()) {
+                        var afterSpan = document.createElement('span');
+                        afterSpan.textContent = afterQuote;
+                        centralClaimElement.appendChild(afterSpan);
+                    }
+                } else {
+                    // Fallback if the splitting didn't work as expected
+                    centralClaimElement.textContent = centralClaimText;
+                }
+            } else {
+                // No quotation marks, just set the text directly
+                centralClaimElement.textContent = centralClaimText;
+            }
+
+            // Populate supporting arguments
+            var supportingArgsContainer = document.getElementById('supporting-arguments');
+            if (argMapData.supporting_arguments && argMapData.supporting_arguments.length > 0) {
+                argMapData.supporting_arguments.forEach(function(arg) {
+                    var argElement = document.createElement('div');
+                    argElement.className = 'argument';
+
+                    var titleElement = document.createElement('h3');
+                    titleElement.textContent = arg.title;
+                    argElement.appendChild(titleElement);
+
+                    var textElement = document.createElement('p');
+                    textElement.textContent = arg.text;
+                    argElement.appendChild(textElement);
+
+                    var evidenceElement = document.createElement('div');
+                    evidenceElement.className = 'evidence';
+                    evidenceElement.textContent = 'Evidence: ' + arg.evidence;
+                    argElement.appendChild(evidenceElement);
+
+                    if (arg.rebuttal) {
+                        var rebuttalElement = document.createElement('div');
+                        rebuttalElement.className = 'rebuttal';
+
+                        var rebuttalTitleElement = document.createElement('div');
+                        rebuttalTitleElement.className = 'rebuttal-title';
+                        rebuttalTitleElement.textContent = 'Response to opposition:';
+                        rebuttalElement.appendChild(rebuttalTitleElement);
+
+                        var rebuttalTextNode = document.createTextNode(arg.rebuttal);
+                        rebuttalElement.appendChild(rebuttalTextNode);
+
+                        argElement.appendChild(rebuttalElement);
+                    }
+
+                    supportingArgsContainer.appendChild(argElement);
+                });
+            }
+
+            // Populate opposing arguments
+            var opposingArgsContainer = document.getElementById('opposing-arguments');
+            if (argMapData.opposing_arguments && argMapData.opposing_arguments.length > 0) {
+                argMapData.opposing_arguments.forEach(function(arg) {
+                    var argElement = document.createElement('div');
+                    argElement.className = 'argument';
+
+                    var titleElement = document.createElement('h3');
+                    titleElement.textContent = arg.title;
+                    argElement.appendChild(titleElement);
+
+                    var textElement = document.createElement('p');
+                    textElement.textContent = arg.text;
+                    argElement.appendChild(textElement);
+
+                    var evidenceElement = document.createElement('div');
+                    evidenceElement.className = 'evidence';
+                    evidenceElement.textContent = 'Evidence: ' + arg.evidence;
+                    argElement.appendChild(evidenceElement);
+
+                    if (arg.rebuttal) {
+                        var rebuttalElement = document.createElement('div');
+                        rebuttalElement.className = 'rebuttal';
+
+                        var rebuttalTitleElement = document.createElement('div');
+                        rebuttalTitleElement.className = 'rebuttal-title';
+                        rebuttalTitleElement.textContent = 'Response to support:';
+                        rebuttalElement.appendChild(rebuttalTitleElement);
+
+                        var rebuttalTextNode = document.createTextNode(arg.rebuttal);
+                        rebuttalElement.appendChild(rebuttalTextNode);
+
+                        argElement.appendChild(rebuttalElement);
+                    }
+
+                    opposingArgsContainer.appendChild(argElement);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

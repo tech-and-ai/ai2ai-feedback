@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Password Reset Sent - Lily AI Research Assistant{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <!-- Background Elements -->
+    <div class="absolute inset-0 z-0">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="w-full max-w-md relative z-10">
+        <div class="glass-effect rounded-xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700 animate-fadeIn">
+            <!-- Card Header -->
+            <div class="px-6 py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-lg font-medium text-gray-900 dark:text-white">Reset Email Sent</h2>
+                    <div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-green-600 dark:text-green-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-6 bg-white dark:bg-gray-800">
+                <div class="space-y-6">
+                    <div class="flex justify-center">
+                        <div class="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                            <svg class="w-8 h-8 text-green-600 dark:text-green-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <h2 class="text-2xl font-bold text-center gradient-text">Check Your Email</h2>
+                    <p class="text-center text-gray-600 dark:text-gray-400">
+                        We've sent a password reset link to your email address. Please check your inbox and follow the instructions to reset your password.
+                    </p>
+                    
+                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-blue-500 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-blue-600 dark:text-blue-400">
+                                    If you don't see the email, please check your spam folder or request a new reset link.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Back to Login Button -->
+                    <a href="/auth/login" class="w-full btn-secondary block text-center">
+                        Back to Login
+                    </a>
+
+                    <!-- Resend Link -->
+                    <div class="text-center mt-4">
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            Didn't receive the email?
+                            <a href="/auth/reset-password" class="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">Resend reset link</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

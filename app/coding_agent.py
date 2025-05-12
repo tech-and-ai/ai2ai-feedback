@@ -52,10 +52,10 @@ class CodingAgent:
         self.skills = set(skills)
         self.model = model
         self.status = "idle"  # Add status attribute
-        self.provider = get_model_provider("openrouter", self.model)
+        self.provider = get_model_provider("ollama", self.model)
 
-        # Create workspace
-        self.workspace = FileOperations.get_agent_workspace(agent_id)
+        # Create workspace with improved folder structure
+        self.workspace = FileOperations.get_agent_workspace(agent_id, self.name, self.role)
 
     async def start(self):
         """Start the agent"""
@@ -320,9 +320,11 @@ For each file you want to create, use the following format:
 ```file-write
 {{
   "path": "path/to/file.py",
-  "content": "# File content goes here\\n..."
+  "content": "# File content goes here\\n# Use proper line breaks in your content\\ndef example_function():\\n    return 'This is an example'"
 }}
 ```
+
+IMPORTANT: Make sure to properly escape quotes and special characters in your content.
 
 You can also run shell commands if needed:
 
@@ -330,6 +332,12 @@ You can also run shell commands if needed:
 {{
   "command": "mkdir -p src/utils"
 }}
+```
+
+Or simply:
+
+```shell
+mkdir -p src/utils
 ```
 
 FORMAT YOUR RESPONSE AS FOLLOWS:
@@ -355,38 +363,58 @@ TESTS: [Description of tests]
                 json_str = match.group(1)
                 logger.info(f"Attempting to parse JSON: {json_str[:100]}...")
 
-                # Try to extract path and content directly using regex if JSON parsing fails
-                path_match = re.search(r'"path"\s*:\s*"([^"]+)"', json_str)
-                content_match = re.search(r'"content"\s*:\s*"""(.*?)"""', json_str, re.DOTALL)
-
-                if path_match and content_match:
-                    path = path_match.group(1)
-                    content = content_match.group(1)
-                    logger.info(f"Extracted path and content using regex: {path}")
-                    success, result = FileOperations.write_file(self.agent_id, path, content)
-                    if success:
-                        files_created.append(path)
-                        logger.info(f"Successfully created file: {path}")
-                    else:
-                        logger.error(f"Failed to create file: {path} - {result}")
-                else:
-                    # Try standard JSON parsing as fallback
-                    try:
-                        data = json.loads(json_str)
-                        if "path" in data and "content" in data:
-                            logger.info(f"Creating file: {data['path']}")
-                            success, result = FileOperations.write_file(self.agent_id, data["path"], data["content"])
-                            if success:
-                                files_created.append(data["path"])
-                                logger.info(f"Successfully created file: {data['path']}")
-                            else:
-                                logger.error(f"Failed to create file: {data['path']} - {result}")
+                # First try standard JSON parsing
+                try:
+                    data = json.loads(json_str)
+                    if "path" in data and "content" in data:
+                        logger.info(f"Creating file: {data['path']}")
+                        success, result = FileOperations.write_file(self.agent_id, data["path"], data["content"])
+                        if success:
+                            files_created.append(data["path"])
+                            logger.info(f"Successfully created file: {data['path']}")
                         else:
-                            logger.error(f"Missing 'path' or 'content' in file-write data: {data}")
-                    except json.JSONDecodeError as e:
-                        logger.error(f"Failed to parse JSON from file-write block: {e}")
+                            logger.error(f"Failed to create file: {data['path']} - {result}")
+                    else:
+                        logger.error(f"Missing 'path' or 'content' in file-write data: {data}")
+                except json.JSONDecodeError as e:
+                    logger.info(f"JSON parsing failed, trying regex extraction: {e}")
+
+                    # Try multiple regex patterns for content extraction
+                    path_match = re.search(r'"path"\s*:\s*"([^"]+)"', json_str)
+
+                    # Try different content patterns
+                    content_match = None
+                    # Pattern 1: Triple quotes
+                    content_match = re.search(r'"content"\s*:\s*"""(.*?)"""', json_str, re.DOTALL)
+
+                    # Pattern 2: Regular quotes with escaped newlines
+                    if not content_match:
+                        content_match = re.search(r'"content"\s*:\s*"(.*?)"(?=\s*[,}])', json_str, re.DOTALL)
+
+                    # Pattern 3: Raw content between content: and the next property
+                    if not content_match:
+                        content_match = re.search(r'"content"\s*:\s*"((?:\\.|[^"\\])*)"', json_str, re.DOTALL)
+
+                    if path_match and content_match:
+                        path = path_match.group(1)
+                        content = content_match.group(1)
+                        # Unescape any escaped characters
+                        content = content.replace('\\n', '\n').replace('\\t', '\t').replace('\\"', '"')
+                        logger.info(f"Extracted path and content using regex: {path}")
+                        success, result = FileOperations.write_file(self.agent_id, path, content)
+                        if success:
+                            files_created.append(path)
+                            logger.info(f"Successfully created file: {path}")
+                        else:
+                            logger.error(f"Failed to create file: {path} - {result}")
+                    else:
+                        logger.error(f"Failed to extract path and content using regex. Path match: {bool(path_match)}, Content match: {bool(content_match)}")
+                        # Dump the full JSON string for debugging
+                        logger.error(f"Full JSON string: {json_str}")
             except Exception as e:
                 logger.error(f"Error processing file-write block: {e}")
+                logger.error(f"Exception type: {type(e).__name__}")
+                logger.error(f"Full JSON string: {json_str}")
 
         # Extract and execute shell commands
         shell_pattern = r"```shell\s*\n(.*?)\n\s*```"
@@ -395,21 +423,59 @@ TESTS: [Description of tests]
             try:
                 json_str = match.group(1)
                 logger.info(f"Attempting to parse shell command JSON: {json_str[:100]}...")
-                data = json.loads(json_str)
-                if "command" in data:
-                    logger.info(f"Executing command: {data['command']}")
-                    success, stdout, stderr = ShellCommands.execute_command(self.agent_id, data["command"])
-                    commands_executed.append({
-                        "command": data["command"],
-                        "success": success,
-                        "stdout": stdout,
-                        "stderr": stderr
-                    })
-                    logger.info(f"Command execution result: success={success}, stdout={stdout[:100]}...")
-                else:
-                    logger.error(f"Missing 'command' in shell data: {data}")
-            except json.JSONDecodeError as e:
-                logger.error(f"Failed to parse JSON from shell block: {e}")
+
+                # First try standard JSON parsing
+                try:
+                    data = json.loads(json_str)
+                    if "command" in data:
+                        logger.info(f"Executing command: {data['command']}")
+                        success, stdout, stderr = ShellCommands.execute_command(self.agent_id, data["command"])
+                        commands_executed.append({
+                            "command": data["command"],
+                            "success": success,
+                            "stdout": stdout,
+                            "stderr": stderr
+                        })
+                        logger.info(f"Command execution result: success={success}, stdout={stdout[:100]}...")
+                    else:
+                        logger.error(f"Missing 'command' in shell data: {data}")
+                except json.JSONDecodeError as e:
+                    logger.info(f"JSON parsing failed for shell command, trying regex extraction: {e}")
+
+                    # Try to extract command using regex
+                    command_match = re.search(r'"command"\s*:\s*"([^"]+)"', json_str)
+                    if command_match:
+                        command = command_match.group(1)
+                        # Unescape any escaped characters
+                        command = command.replace('\\n', '\n').replace('\\t', '\t').replace('\\"', '"')
+                        logger.info(f"Executing command (extracted with regex): {command}")
+                        success, stdout, stderr = ShellCommands.execute_command(self.agent_id, command)
+                        commands_executed.append({
+                            "command": command,
+                            "success": success,
+                            "stdout": stdout,
+                            "stderr": stderr
+                        })
+                        logger.info(f"Command execution result: success={success}, stdout={stdout[:100]}...")
+                    else:
+                        # If it's not in JSON format, try to execute the raw command
+                        command = json_str.strip()
+                        if command and not command.startswith('{'):
+                            logger.info(f"Executing raw command: {command}")
+                            success, stdout, stderr = ShellCommands.execute_command(self.agent_id, command)
+                            commands_executed.append({
+                                "command": command,
+                                "success": success,
+                                "stdout": stdout,
+                                "stderr": stderr
+                            })
+                            logger.info(f"Command execution result: success={success}, stdout={stdout[:100]}...")
+                        else:
+                            logger.error(f"Failed to extract command using regex or raw format")
+            except Exception as e:
+                logger.error(f"Error processing shell command block: {e}")
+                logger.error(f"Exception type: {type(e).__name__}")
+                logger.error(f"Full command string: {json_str}")
 
         return {
             "response": response,

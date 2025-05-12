@@ -57,7 +57,7 @@ class AutonomousAgent:
         self.current_task = None
         self.status = "idle"
         # Get the provider for the model
-        self.provider = get_model_provider("openrouter", self.model)
+        self.provider = get_model_provider("ollama", self.model)
         self.running = False
 
     async def start(self):

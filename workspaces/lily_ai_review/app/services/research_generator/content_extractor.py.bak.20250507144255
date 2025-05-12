@@ -1,0 +1,391 @@
+"""
+Content Extractor Module
+
+Handles the extraction of content from various sources (PDFs, web pages, etc.)
+and stores it in the database for use in research packs.
+"""
+import os
+import re
+import logging
+import aiohttp
+import asyncio
+import tempfile
+from typing import Dict, List, Any, Optional, Tuple
+from urllib.parse import urlparse
+from datetime import datetime
+import uuid
+
+# For PDF extraction
+try:
+    from pypdf import PdfReader
+    import pdfplumber
+    PDF_EXTRACTION_AVAILABLE = True
+except ImportError:
+    PDF_EXTRACTION_AVAILABLE = False
+
+# For HTML extraction
+try:
+    import trafilatura
+    from bs4 import BeautifulSoup
+    HTML_EXTRACTION_AVAILABLE = True
+except ImportError:
+    HTML_EXTRACTION_AVAILABLE = False
+
+# Setup logging
+logger = logging.getLogger(__name__)
+
+class ContentExtractor:
+    """
+    Extracts and processes content from various sources.
+
+    Features:
+    - Extracts text from PDFs, HTML pages, and other document types
+    - Splits content into chunks for better processing
+    - Stores extracted content in the database
+    - Tracks extraction metadata to avoid duplicate work
+    - Implements rate limiting and parallel processing
+    """
+
+    def __init__(self, db_connection=None, max_workers=5):
+        """Initialize the content extractor."""
+        # Database connection
+        self.db_connection = db_connection
+
+        # Maximum number of parallel extraction workers
+        self.max_workers = max_workers
+
+        # Create a temporary directory for downloaded files
+        self.temp_dir = os.path.join(tempfile.gettempdir(), "lily_research")
+        os.makedirs(self.temp_dir, exist_ok=True)
+
+        # Track rate limiting
+        self.domain_last_access = {}
+        self.min_delay_between_requests = 2  # seconds
+
+        # Semaphore for limiting concurrent extractions
+        self.extraction_semaphore = asyncio.Semaphore(max_workers)
+
+        # Check available extraction methods
+        if not PDF_EXTRACTION_AVAILABLE:
+            logger.warning("PDF extraction libraries not available. PDF extraction will be limited.")
+
+        if not HTML_EXTRACTION_AVAILABLE:
+            logger.warning("HTML extraction libraries not available. HTML extraction will be limited.")
+
+    async def extract_content(self, url: str, session_id: str = None) -> Dict:
+        """
+        Extract content from a URL.
+
+        Args:
+            url: The URL to extract content from
+            session_id: Optional session ID to associate with this extraction
+
+        Returns:
+            Dictionary containing the extracted content and metadata
+        """
+        # Check if we've already extracted this URL
+        if self.db_connection:
+            # TODO: Check if URL exists in saas_research_extraction_metadata
+            pass
+
+        # Acquire semaphore to limit concurrent extractions
+        async with self.extraction_semaphore:
+            try:
+                # Apply rate limiting for the domain
+                domain = urlparse(url).netloc
+                if domain in self.domain_last_access:
+                    time_since_last_access = datetime.now() - self.domain_last_access[domain]
+                    if time_since_last_access.total_seconds() < self.min_delay_between_requests:
+                        delay = self.min_delay_between_requests - time_since_last_access.total_seconds()
+                        await asyncio.sleep(delay)
+
+                # Update last access time
+                self.domain_last_access[domain] = datetime.now()
+
+                # Start extraction timer
+                start_time = datetime.now()
+
+                # Download and extract content
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url, allow_redirects=True, timeout=30) as response:
+                        if response.status != 200:
+                            logger.warning(f"Failed to download {url}: HTTP {response.status}")
+                            return self._create_extraction_result(url, False, f"HTTP error: {response.status}")
+
+                        # Determine content type
+                        content_type = response.headers.get('Content-Type', '').lower()
+
+                        # Extract based on content type
+                        if 'application/pdf' in content_type:
+                            content = await self._extract_pdf_content(response, url)
+                            extraction_method = "pdf"
+                        elif 'text/html' in content_type:
+                            html_content = await response.text()
+                            content = self._extract_html_content(html_content, url)
+                            extraction_method = "html"
+                        else:
+                            # Try to extract as text
+                            try:
+                                content = await response.text()
+                                extraction_method = "text"
+                            except:
+                                logger.warning(f"Unsupported content type for {url}: {content_type}")
+                                return self._create_extraction_result(url, False, f"Unsupported content type: {content_type}")
+
+                # Calculate extraction duration
+                extraction_duration = (datetime.now() - start_time).total_seconds() * 1000
+
+                # Create result
+                result = self._create_extraction_result(
+                    url,
+                    True,
+                    None,
+                    content_type,
+                    extraction_method,
+                    extraction_duration,
+                    len(content) if content else 0,
+                    content
+                )
+
+                # Store in database if connection exists
+                if self.db_connection and content:
+                    # TODO: Store extraction metadata in saas_research_extraction_metadata
+                    pass
+
+                return result
+
+            except asyncio.TimeoutError:
+                logger.warning(f"Timeout while extracting content from {url}")
+                return self._create_extraction_result(url, False, "Timeout")
+
+            except Exception as e:
+                logger.error(f"Error extracting content from {url}: {str(e)}")
+                return self._create_extraction_result(url, False, str(e))
+
+    async def _extract_pdf_content(self, response, url: str) -> Optional[str]:
+        """Extract content from a PDF file."""
+        if not PDF_EXTRACTION_AVAILABLE:
+            return None
+
+        try:
+            # Save the PDF content to a temporary file
+            filename = os.path.join(self.temp_dir, f"{uuid.uuid4().hex}.pdf")
+            with open(filename, 'wb') as f:
+                f.write(await response.read())
+
+            # Extract text using PyPDF
+            text = ""
+            with open(filename, 'rb') as f:
+                pdf = PdfReader(f)
+                for page in pdf.pages:
+                    text += page.extract_text() + "\n\n"
+
+            # If PyPDF extraction is poor, try pdfplumber
+            if len(text.strip()) < 100 and pdfplumber:
+                text = ""
+                with pdfplumber.open(filename) as pdf:
+                    for page in pdf.pages:
+                        text += page.extract_text() or "" + "\n\n"
+
+            # Clean up the temporary file
+            os.remove(filename)
+
+            return text
+
+        except Exception as e:
+            logger.error(f"Error extracting PDF content from {url}: {str(e)}")
+            return None
+
+    def _extract_html_content(self, html_content: str, url: str) -> Optional[str]:
+        """Extract content from HTML."""
+        if not HTML_EXTRACTION_AVAILABLE:
+            return html_content  # Return raw HTML if extraction libraries aren't available
+
+        try:
+            # Try trafilatura first (best for article extraction)
+            extracted = trafilatura.extract(html_content, include_comments=False, include_tables=True)
+            if extracted and len(extracted.strip()) > 200:
+                return extracted
+
+            # Fall back to BeautifulSoup
+            soup = BeautifulSoup(html_content, 'html.parser')
+
+            # Remove script and style elements
+            for script in soup(["script", "style", "nav", "footer", "header"]):
+                script.extract()
+
+            # Get text
+            text = soup.get_text()
+
+            # Break into lines and remove leading and trailing space
+            lines = (line.strip() for line in text.splitlines())
+            # Break multi-headlines into a line each
+            chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+            # Remove blank lines
+            text = '\n'.join(chunk for chunk in chunks if chunk)
+
+            return text
+
+        except Exception as e:
+            logger.error(f"Error extracting HTML content from {url}: {str(e)}")
+            return None
+
+    def _create_extraction_result(self,
+                                url: str,
+                                success: bool,
+                                error_message: str = None,
+                                content_type: str = None,
+                                extraction_method: str = None,
+                                extraction_duration: int = None,
+                                content_length: int = None,
+                                content: str = None) -> Dict:
+        """Create a standardized extraction result."""
+        result = {
+            "url": url,
+            "extraction_success": success,
+            "timestamp": datetime.now().isoformat(),
+        }
+
+        if error_message:
+            result["error_message"] = error_message
+
+        if content_type:
+            result["content_type"] = content_type
+
+        if extraction_method:
+            result["extraction_method"] = extraction_method
+
+        if extraction_duration:
+            result["extraction_duration_ms"] = extraction_duration
+
+        if content_length:
+            result["content_length"] = content_length
+
+        if content:
+            result["content"] = content
+
+        return result
+
+    async def process_source_batch(self, sources: List[Dict], session_id: str = None) -> List[Dict]:
+        """
+        Process a batch of sources by extracting their content.
+
+        Args:
+            sources: List of source dictionaries with URLs (either as "url" or "link")
+            session_id: Optional session ID to associate with these extractions
+
+        Returns:
+            List of sources with extracted content
+        """
+        tasks = []
+        source_urls = []
+
+        for source in sources:
+            # Get URL (handle different field names: url or link)
+            url = source.get("url", source.get("link", None))
+            if url:
+                tasks.append(self.extract_content(url, session_id))
+                source_urls.append(url)
+                # Add the URL to the source if it doesn't have one
+                if "url" not in source:
+                    source["url"] = url
+
+        logger.info(f"Extracting content from {len(tasks)} sources")
+
+        # Process in parallel with rate limiting
+        if tasks:
+            results = await asyncio.gather(*tasks)
+
+            # Combine results with sources
+            for i, source in enumerate(sources):
+                url = source.get("url", source.get("link", None))
+                if url and url in source_urls:
+                    # Find the corresponding result
+                    result_index = source_urls.index(url)
+                    if result_index < len(results) and results[result_index]["extraction_success"]:
+                        source["full_content"] = results[result_index].get("content", "")
+                        source["extraction_metadata"] = {
+                            "content_type": results[result_index].get("content_type", ""),
+                            "extraction_method": results[result_index].get("extraction_method", ""),
+                            "extraction_duration_ms": results[result_index].get("extraction_duration_ms", 0),
+                            "content_length": results[result_index].get("content_length", 0)
+                        }
+                        logger.info(f"Successfully extracted content from {url} ({results[result_index].get('content_length', 0)} characters)")
+                    else:
+                        logger.warning(f"Failed to extract content from {url}")
+        else:
+            logger.warning("No valid URLs found in sources")
+
+        return sources
+
+    def split_content_into_chunks(self, content: str, chunk_size: int = 1000, chunk_overlap: int = 200) -> List[str]:
+        """
+        Split content into overlapping chunks for better processing.
+
+        Args:
+            content: The content to split
+            chunk_size: Maximum size of each chunk
+            chunk_overlap: Overlap between chunks
+
+        Returns:
+            List of content chunks
+        """
+        if not content:
+            return []
+
+        # Simple paragraph-based splitting
+        paragraphs = [p for p in content.split("\n\n") if p.strip()]
+
+        chunks = []
+        current_chunk = ""
+
+        for paragraph in paragraphs:
+            # If adding this paragraph would exceed chunk size, save current chunk and start a new one
+            if len(current_chunk) + len(paragraph) > chunk_size and current_chunk:
+                chunks.append(current_chunk)
+                # Start new chunk with overlap from the end of the previous chunk
+                if len(current_chunk) > chunk_overlap:
+                    # Find the last complete sentence within the overlap
+                    overlap_text = current_chunk[-chunk_overlap:]
+                    sentence_end = max(overlap_text.rfind(". "), overlap_text.rfind(".\n"), overlap_text.rfind("? "), overlap_text.rfind("?\n"))
+
+                    if sentence_end != -1:
+                        current_chunk = current_chunk[-(chunk_overlap-sentence_end):] + "\n\n"
+                    else:
+                        current_chunk = ""
+                else:
+                    current_chunk = ""
+
+            current_chunk += paragraph + "\n\n"
+
+            # If current chunk is already at chunk size, save it
+            if len(current_chunk) >= chunk_size:
+                chunks.append(current_chunk)
+                current_chunk = ""
+
+        # Add the last chunk if it's not empty
+        if current_chunk:
+            chunks.append(current_chunk)
+
+        return chunks
+
+    async def store_chunks_in_db(self, source_id: str, chunks: List[str], session_id: str = None) -> List[str]:
+        """
+        Store content chunks in the database.
+
+        Args:
+            source_id: ID of the source
+            chunks: List of content chunks
+            session_id: Optional session ID
+
+        Returns:
+            List of chunk IDs
+        """
+        if not self.db_connection:
+            logger.warning("No database connection. Chunks will not be stored.")
+            return []
+
+        # TODO: Implement database storage of chunks
+        chunk_ids = []
+
+        return chunk_ids

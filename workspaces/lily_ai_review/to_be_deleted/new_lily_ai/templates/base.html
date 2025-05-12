@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% block head %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Lily AI - Research Assistant{% endblock %}</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', path='/images/logo.svg') }}">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}">
+    {% endblock %}
+</head>
+<body class="bg-white">
+    <!-- Navigation -->
+    <header class="bg-white shadow-sm">
+        <nav class="navbar navbar-expand-lg navbar-light container">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="/">
+                    <img src="{{ url_for('static', path='/images/logo.svg') }}" alt="Lily AI Logo" height="40">
+                    <span class="ms-2 fw-bold text-primary">Lily AI</span>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/">Home</a>
+                        </li>
+                        {% if request.session.get('user_id') %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/dashboard">Dashboard</a>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/about">About</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/subscription">Pricing</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/contact">Contact</a>
+                        </li>
+                    </ul>
+                    <div class="d-flex">
+                        {% if request.session.get('user_id') %}
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                {{ request.session.get('username', 'User') }}
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" href="/dashboard">Dashboard</a></li>
+                                <li><a class="dropdown-item" href="/profile">Profile</a></li>
+                                {% if request.session.get('subscription_tier') == 'premium' %}
+                                <li><a class="dropdown-item" href="/billing/manage">Manage Plan</a></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/logout">Sign Out</a></li>
+                            </ul>
+                        </div>
+                        {% else %}
+                        <a href="/login" class="btn btn-outline-primary me-2">Sign In</a>
+                        <a href="/register" class="btn btn-primary">Sign Up</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Flash Messages -->
+    {% if messages %}
+        <div class="container mt-4">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.type }} alert-dismissible fade show" role="alert">
+                    {{ message.text }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="container py-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="{{ url_for('static', path='/images/logo.svg') }}" alt="Lily AI Logo" height="40" class="me-2">
+                        <span class="fs-4 fw-bold">Lily AI</span>
+                    </div>
+                    <p>Your AI-powered research assistant</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/about" class="text-white text-decoration-none">About</a></li>
+                        <li><a href="/contact" class="text-white text-decoration-none">Contact</a></li>
+                        <li><a href="/privacy" class="text-white text-decoration-none">Privacy Policy</a></li>
+                        <li><a href="/terms" class="text-white text-decoration-none">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Connect</h5>
+                    <div class="d-flex">
+                        <a href="https://discord.gg/lilyai" target="_blank" class="me-3 text-white">
+                            <img src="{{ url_for('static', path='/images/discord.svg') }}" alt="Discord" height="24">
+                        </a>
+                        <a href="https://twitter.com/lilyai" target="_blank" class="me-3 text-white">
+                            <img src="{{ url_for('static', path='/images/x.svg') }}" alt="X" height="24">
+                        </a>
+                        <a href="https://linkedin.com/company/lilyai" target="_blank" class="text-white">
+                            <img src="{{ url_for('static', path='/images/linkedin.svg') }}" alt="LinkedIn" height="24">
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12 text-center">
+                    <p class="mb-0">&copy; 2025 Lily AI. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', path='/js/main.js') }}"></script>
+
+    <!-- Global script to handle Supabase auth callbacks -->
+    <script>
+        // Check for Supabase auth callback in URL fragment
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if URL contains access_token and type=signup
+            const hash = window.location.hash;
+            if (hash && hash.includes('access_token') && hash.includes('type=signup')) {
+                console.log('Detected Supabase auth callback in URL fragment');
+                // Redirect to welcome page
+                window.location.href = '/welcome';
+            }
+        });
+    </script>
+
+    {% block scripts %}{% endblock %}
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Create New Paper - Research Assistant{% endblock %}
+
+{% block content %}
+<!-- Background Orbs -->
+<div class="orb-container">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="orb orb-4"></div>
+    <div class="orb orb-5"></div>
+    <div class="orb orb-6"></div>
+    <div class="spotlight"></div>
+</div>
+
+<!-- Hero Section -->
+<section class="sentry-bg sentry-hero">
+    <div class="sentry-container">
+        <h1 class="sentry-title text-center mb-6">Create New Paper</h1>
+        <p class="sentry-subtitle text-center">
+            Choose your paper options and get started
+        </p>
+    </div>
+</section>
+
+<!-- Main Content -->
+<section class="py-16 relative z-10">
+    <div class="container mx-auto px-4 max-w-4xl">
+        <!-- Paper Creation Form -->
+        <div class="glass-effect rounded-xl p-8 mb-12">
+            <form id="newPaperForm" action="/api/papers/create" method="POST">
+                <!-- Paper Topic Section -->
+                <div class="mb-6">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Paper Topic</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="paperTopic" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                What is your paper topic?
+                            </label>
+                            <input type="text" id="paperTopic" name="topic" required
+                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                placeholder="e.g., The impact of artificial intelligence on modern education">
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                Be specific about your paper topic to get the best results.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paper Type Section -->
+                <div class="mb-6">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Paper Type</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="paperType" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Select paper type
+                            </label>
+                            <select id="paperType" name="paper_type" required
+                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                <option value="" disabled selected>Select paper type</option>
+                                <option value="research">Research Paper</option>
+                                <option value="essay">Essay</option>
+                                <option value="report">Report</option>
+                                <option value="case-study">Case Study</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Education Level Section -->
+                <div class="mb-6">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Education Level</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="educationLevel" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Select your education level
+                            </label>
+                            <select id="educationLevel" name="education_level" required
+                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                <option value="" disabled selected>Select education level</option>
+                                <option value="high-school">High School</option>
+                                <option value="undergraduate">Undergraduate</option>
+                                <option value="postgraduate">Postgraduate</option>
+                                <option value="doctoral">Doctoral</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Options Section -->
+                <div class="mb-6">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Additional Options</h2>
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input id="includeDiagrams" name="include_diagrams" type="checkbox" checked
+                                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-400 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="includeDiagrams" class="font-medium text-gray-700 dark:text-gray-300">Include diagrams and visualizations</label>
+                                <p class="text-gray-500 dark:text-gray-400">Add relevant diagrams to enhance understanding of complex concepts.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input id="includeResearch" name="include_research" type="checkbox" checked
+                                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-400 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="includeResearch" class="font-medium text-gray-700 dark:text-gray-300">Include research papers and citations</label>
+                                <p class="text-gray-500 dark:text-gray-400">Add citations from academic sources to support the paper.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex justify-center">
+                    <button type="submit" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-md shadow-sm transition-all duration-200 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                        Create Paper
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Form submission
+        document.getElementById('newPaperForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Show loading state
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Creating...
+            `;
+
+            // Collect form data
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+
+            // Convert checkboxes to booleans
+            data.include_diagrams = !!data.include_diagrams;
+            data.include_research = !!data.include_research;
+
+            console.log('Submitting paper creation request:', data);
+
+            // Simulate API call (replace with actual API call)
+            setTimeout(() => {
+                // Redirect to papers page
+                window.location.href = '/my-papers';
+            }, 2000);
+        });
+    });
+</script>
+{% endblock %}

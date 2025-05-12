@@ -1,0 +1,26 @@
+{
+  "agent_id": "53d96f0f-24f8-46ac-83ec-3535da7cbbd6",
+  "name": "CodeWizard",
+  "model": "google/gemini-2.5-flash-preview",
+  "system_prompt": "You are an expert Python developer specializing in creating clean, efficient, and well-documented code.",
+  "memory_limit": 20,
+  "memory": [
+    {
+      "role": "system",
+      "content": "You are an expert Python developer specializing in creating clean, efficient, and well-documented code."
+    }
+  ],
+  "state": {
+    "status": "idle",
+    "current_task": null,
+    "task_history": [],
+    "created_at": 1746821050.2749732,
+    "last_active": 1746821050.2749734
+  },
+  "metrics": {
+    "tasks_completed": 0,
+    "tokens_used": 0,
+    "response_times": [],
+    "files_generated": 0,
+    "lines_of_code": 0,
+    "languages_used": 

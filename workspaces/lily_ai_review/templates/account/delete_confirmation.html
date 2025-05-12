@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Account - Lily AI Research Assistant{% endblock %}
+
+{% block content %}
+<div class="min-h-screen sentry-bg dashboard-content">
+    <!-- Interactive background elements -->
+    <div class="orb-container">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+        <div class="orb orb-5"></div>
+        <div class="orb orb-6"></div>
+    </div>
+    <div class="spotlight"></div>
+
+    <!-- Page Header -->
+    <header class="glass-effect shadow">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold text-white">Delete Account</h1>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="sentry-container py-8">
+        <!-- Delete Account Confirmation -->
+        <div class="glass-effect rounded-xl p-6 mb-8 max-w-2xl mx-auto">
+            <h2 class="text-xl font-semibold text-white mb-4">Are you sure you want to delete your account?</h2>
+
+            {% if request.query_params.get("error") == "true" %}
+            <div class="bg-red-900 bg-opacity-30 rounded-lg p-4 border border-red-800 mb-6">
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 text-red-400 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    <span class="text-white text-opacity-90">
+                        <strong class="text-red-300">Error:</strong> There was a problem deleting your account. Please try again or contact support.
+                    </span>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if request.query_params.get("subscription_active") == "true" %}
+            <div class="bg-yellow-900 bg-opacity-30 rounded-lg p-4 border border-yellow-800 mb-6">
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 text-yellow-400 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    <span class="text-white text-opacity-90">
+                        <strong class="text-yellow-300">Active Subscription:</strong> You have an active subscription. If you delete your account, your subscription will be canceled, but you'll retain access until the end of your current billing period.
+                    </span>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="bg-red-900 bg-opacity-30 rounded-lg p-4 border border-red-800 mb-6">
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 text-red-400 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    <span class="text-white text-opacity-90">
+                        <strong class="text-red-300">Warning:</strong> This action cannot be undone. Your account will be deactivated and your personal information will be anonymized.
+                    </span>
+                </div>
+            </div>
+
+            <p class="text-white text-opacity-90 mb-6">
+                When you delete your account:
+            </p>
+
+            <ul class="space-y-3 mb-6">
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-red-400 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    <span class="text-white text-opacity-90">Your account will be deactivated and you will no longer be able to log in</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-red-400 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    <span class="text-white text-opacity-90">Your subscription will be canceled</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-red-400 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    <span class="text-white text-opacity-90">Any remaining paper credits will be lost</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-red-400 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    <span class="text-white text-opacity-90">Your personal information will be anonymized</span>
+                </li>
+            </ul>
+
+            <div class="bg-indigo-900 bg-opacity-30 rounded-lg p-4 border border-indigo-800 mb-6">
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 text-indigo-400 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span class="text-white text-opacity-90">
+                        <strong class="text-indigo-300">Data Retention Notice:</strong> In accordance with our legal obligations, we retain certain anonymized data for a limited period for legal, security, and fraud prevention purposes. This includes research papers and usage records with all personal identifiers removed. For more information, please see our <a href="/privacy" class="text-indigo-300 hover:text-indigo-200 underline">Privacy Policy</a>.
+                    </span>
+                </div>
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-4 justify-center">
+                <a href="/dashboard" class="inline-block py-3 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-md text-center">
+                    Cancel
+                </a>
+
+                {% if request.query_params.get("subscription_active") == "true" %}
+                <form method="POST" action="/account/delete?cancel_subscription_confirmed=true" class="inline-block">
+                    <button type="submit" class="w-full py-3 px-6 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-md">
+                        Cancel Subscription & Delete Account
+                    </button>
+                </form>
+                {% else %}
+                <form method="POST" action="/account/delete" class="inline-block">
+                    <button type="submit" class="w-full py-3 px-6 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-md">
+                        Permanently Delete Account
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

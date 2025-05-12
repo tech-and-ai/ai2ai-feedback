@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="200" height="60" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .logo-text { font-family: 'Arial', sans-serif; font-weight: bold; }
+    .primary { fill: #4f46e5; }
+    .secondary { fill: #6b7280; }
+  </style>
+  
+  <!-- Lily Icon -->
+  <g transform="translate(10, 30)">
+    <path class="primary" d="M15,0 C20,0 25,5 25,15 C25,25 20,30 15,30 C10,30 5,25 5,15 C5,5 10,0 15,0 Z" />
+    <path fill="white" d="M15,5 C17.5,5 20,8 20,15 C20,22 17.5,25 15,25 C12.5,25 10,22 10,15 C10,8 12.5,5 15,5 Z" />
+    <rect class="primary" x="15" y="-10" width="3" height="15" rx="1.5" />
+    <path class="primary" d="M18,0 C25,5 25,25 18,30" fill="none" stroke="#4f46e5" stroke-width="2" />
+  </g>
+  
+  <!-- Text -->
+  <text x="45" y="35" class="logo-text primary" font-size="28">Lily</text>
+  <text x="100" y="35" class="logo-text secondary" font-size="28">AI</text>
+</svg>

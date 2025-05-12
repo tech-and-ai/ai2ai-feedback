@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mind Map: {TITLE}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsmind@0.5.4/style/jsmind.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsmind@0.5.4/js/jsmind.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsmind@0.5.4/js/jsmind.draggable.js"></script>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: flex-start;
+            min-height: 100vh;
+            /* Explicitly set A4 landscape dimensions with safety margin */
+            width: 1600px; /* Slightly reduced from 1684px to ensure safety margin */
+            height: 1100px; /* Slightly reduced from 1190px to ensure safety margin */
+            padding-left: 10px; /* Minimal left padding to maximize available space */
+            overflow: hidden; /* Prevent any overflow */
+            box-sizing: border-box; /* Include padding in width calculation */
+        }
+        @page {
+            size: A4 landscape;
+            margin: 0;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: left; /* Left-align title */
+            margin-bottom: 20px;
+            margin-left: 20px; /* Match container padding */
+            font-size: 24px;
+            font-weight: 300;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            max-width: 1644px; /* Match container width */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #jsmind_container {
+            width: 1580px;  /* Reduced width to ensure safety margin */
+            height: 850px;  /* Reduced height to ensure safety margin */
+            border: none;
+            background-color: white;
+            margin: 0;
+            margin-left: 10px; /* Minimal left margin */
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            left: 0;
+            box-sizing: border-box;
+        }
+
+        /* Add safety container to prevent overflow */
+        .safety-container {
+            max-width: 1580px;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        /* Reset body styles to prevent duplication */
+        body {
+            overflow: hidden;
+        }
+
+        @page {
+            size: A4 landscape;
+            margin: 0;
+        }
+
+        /* Custom node styles */
+        jmnodes.theme-primary jmnode {
+            background-color: #d4e6f7;
+            color: #333;
+            border: 2px solid #888;
+            border-radius: 15px;
+            font-size: 14px;
+            padding: 10px;
+            box-shadow: 3px 3px 5px rgba(0,0,0,0.2);
+        }
+
+        jmnodes.theme-primary jmnode.root {
+            background-color: #d4e6f7;
+            color: #333;
+            font-size: 16px;
+            font-weight: bold;
+            border: 3px solid #888;
+            box-shadow: 4px 4px 7px rgba(0,0,0,0.25);
+        }
+
+        jmnodes.theme-primary jmnode.branch-0 {
+            background-color: #FFE5E5;
+            border: 2px solid #888;
+        }
+
+        jmnodes.theme-primary jmnode.branch-1 {
+            background-color: #E6F3E6;
+            border: 2px solid #888;
+        }
+
+        jmnodes.theme-primary jmnode.branch-2 {
+            background-color: #FFF0E0;
+            border: 2px solid #888;
+        }
+
+        jmnodes.theme-primary jmnode.branch-3 {
+            background-color: #E0F3FF;
+            border: 2px solid #888;
+        }
+
+        jmnodes.theme-primary jmnode.branch-4 {
+            background-color: #F0E0FF;
+            border: 2px solid #888;
+        }
+
+        jmnodes.theme-primary jmnode.branch-5 {
+            background-color: #FFE5E5;
+            border: 2px solid #888;
+        }
+
+        jmnodes.theme-primary jmnode.branch-6 {
+            background-color: #FFF0E0;
+            border: 2px solid #888;
+        }
+
+        jmnodes.theme-primary jmnode.branch-7 {
+            background-color: #E0F3FF;
+            border: 2px solid #888;
+        }
+
+        jmnodes.theme-primary jmnode.branch-8 {
+            background-color: #E6F3E6;
+            border: 2px solid #888;
+        }
+
+        jmnodes.theme-primary jmnode.branch-9 {
+            background-color: #F0E0FF;
+            border: 2px solid #888;
+        }
+
+        /* Remove expander icons */
+        jmexpander {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>{TITLE}</h1>
+    <div id="jsmind_container"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get the mind map data from the template
+            var mindMapData = {json_data};
+
+            // Convert our data format to jsMind format
+            var mind = {
+                "meta": {
+                    "name": "{TITLE}",
+                    "author": "Research Assistant",
+                    "version": "1.0"
+                },
+                "format": "node_tree",
+                "data": {
+                    "id": "root",
+                    "topic": mindMapData.center,
+                    "direction": "center",
+                    "children": []
+                }
+            };
+
+            // Process branches - 5 on left, 5 on right for balanced layout
+            if (mindMapData.branches && mindMapData.branches.length > 0) {
+                // Ensure we have exactly 10 branches (or fewer if that's all we have)
+                const branches = mindMapData.branches.slice(0, 10);
+                const totalBranches = branches.length;
+
+                // Calculate how many branches should be on each side
+                const leftCount = Math.min(5, Math.floor(totalBranches / 2));
+                const rightCount = Math.min(5, totalBranches - leftCount);
+
+                // Process branches
+                branches.forEach(function(branch, index) {
+                    // First 5 branches go left, rest go right
+                    const direction = (index < leftCount) ? "left" : "right";
+
+                    // Create branch node
+                    const branchNode = {
+                        "id": "branch_" + index,
+                        "topic": branch.title,
+                        "direction": direction,
+                        "expanded": true,
+                        "children": []
+                    };
+
+                    // Add children to branch (maximum 2)
+                    if (branch.children && branch.children.length > 0) {
+                        // Limit to 2 children per branch
+                        const children = branch.children.slice(0, 2);
+                        children.forEach(function(child, childIndex) {
+                            branchNode.children.push({
+                                "id": "child_" + index + "_" + childIndex,
+                                "topic": child,
+                                "direction": direction
+                            });
+                        });
+                    }
+
+                    // Add branch to mind map
+                    mind.data.children.push(branchNode);
+                });
+            }
+
+            // Options for the mind map
+            var options = {
+                container: 'jsmind_container',
+                theme: 'primary',
+                editable: false,
+                mode: 'full',
+                support_html: true,
+                view: {
+                    hmargin: 80,   // Further reduced horizontal margin
+                    vmargin: 60,   // Reduced vertical margin
+                    line_width: 2,
+                    line_color: '#666',
+                    engine: 'canvas'  // Use canvas for better rendering
+                },
+                shortcut: {
+                    enable: false, // Disable shortcuts
+                    handles: {}
+                },
+                layout: {
+                    hspace: 80,   // Further reduced horizontal spacing for more compact layout
+                    vspace: 30,   // Reduced vertical spacing
+                    pspace: 15    // Reduced padding space
+                }
+            };
+
+            // Create the mind map
+            var jm = new jsMind(options);
+            jm.show(mind);
+
+            // Position the mind map with root node more to the left
+            setTimeout(function() {
+                jm.resize();
+                jm.expand_all();
+
+                // Custom positioning to shift the diagram to the left
+                var rootNode = jm.get_node('root');
+                if (rootNode) {
+                    // Get the view object
+                    var view = jm.view;
+                    if (view) {
+                        // Calculate a position that's 30% from the left (instead of centered at 50%)
+                        // This gives more space on the right side to prevent cropping
+                        var containerWidth = jm.view.size.w;
+                        var leftPosition = containerWidth * 0.30;
+
+                        // Apply the custom position
+                        jm.view.setViewOffset({x: leftPosition - rootNode.x, y: 0});
+
+                        // Add safety check to ensure all nodes are visible
+                        setTimeout(function() {
+                            // Find all nodes
+                            var allNodes = document.querySelectorAll('jmnode');
+                            var containerRect = document.getElementById('jsmind_container').getBoundingClientRect();
+                            var containerRight = containerRect.right;
+
+                            // Check if any node is outside the container
+                            var needsAdjustment = false;
+                            var furthestRight = 0;
+
+                            allNodes.forEach(function(node) {
+                                var nodeRect = node.getBoundingClientRect();
+                                if (nodeRect.right > containerRight) {
+                                    needsAdjustment = true;
+                                }
+                                if (nodeRect.right > furthestRight) {
+                                    furthestRight = nodeRect.right;
+                                }
+                            });
+
+                            // If any node is outside, adjust the position
+                            if (needsAdjustment) {
+                                var currentOffset = jm.view.getViewOffset();
+                                var extraSpace = furthestRight - containerRight + 20; // 20px safety margin
+                                jm.view.setViewOffset({
+                                    x: currentOffset.x - extraSpace,
+                                    y: currentOffset.y
+                                });
+                            }
+                        }, 100);
+                    } else {
+                        // Fallback to standard centering if view not available
+                        jm.select_node('root');
+                        jm.center_node('root');
+                    }
+                } else {
+                    // Fallback to standard centering if root node not found
+                    jm.select_node('root');
+                    jm.center_node('root');
+                }
+            }, 200);
+
+            // Apply custom classes and styles to nodes based on their branch
+            setTimeout(function() {
+                var nodes = document.querySelectorAll('jmnode');
+                nodes.forEach(function(node) {
+                    var nodeId = node.getAttribute('nodeid');
+
+                    // Apply styles based on node type
+                    if (nodeId === 'root') {
+                        node.classList.add('root');
+                        node.style.backgroundColor = '#a8d5f3';
+                        node.style.color = '#333';
+                        node.style.fontWeight = 'bold';
+                        node.style.padding = '8px 12px'; // Reduced padding
+                        node.style.borderRadius = '16px';
+                        node.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+                        node.style.maxWidth = '200px'; // Limit width
+                        node.style.whiteSpace = 'normal'; // Allow text wrapping
+                        node.style.wordBreak = 'break-word'; // Break long words
+                        node.style.textAlign = 'center'; // Center text
+                    } else if (nodeId.startsWith('branch_')) {
+                        // Extract branch index from ID
+                        var branchIndex = parseInt(nodeId.split('_')[1]);
+                        node.classList.add('branch-' + (branchIndex % 10));
+
+                        // Assign colors based on branch index
+                        var colors = [
+                            '#f8d7da', // Light red
+                            '#d1e7dd', // Light green
+                            '#cfe2ff', // Light blue
+                            '#fff3cd', // Light yellow
+                            '#e2e3e5', // Light gray
+                            '#d7f8ec', // Light teal
+                            '#f5e7f7', // Light purple
+                            '#f8f9d7', // Light lime
+                            '#f7e7e5', // Light salmon
+                            '#e7f7f5'  // Light cyan
+                        ];
+
+                        var color = colors[branchIndex % colors.length];
+                        node.style.backgroundColor = color;
+                        node.style.padding = '6px 10px'; // Reduced padding
+                        node.style.borderRadius = '12px';
+                        node.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+                        node.style.maxWidth = '150px'; // Limit width
+                        node.style.whiteSpace = 'normal'; // Allow text wrapping
+                        node.style.wordBreak = 'break-word'; // Break long words
+                        node.style.fontSize = '0.95em'; // Slightly smaller font
+                    } else if (nodeId.startsWith('child_')) {
+                        // Extract branch index from ID
+                        var branchIndex = parseInt(nodeId.split('_')[1]);
+                        node.classList.add('branch-' + (branchIndex % 10));
+
+                        node.style.backgroundColor = '#f8f9fa';
+                        node.style.padding = '4px 8px'; // Reduced padding
+                        node.style.borderRadius = '8px';
+                        node.style.fontSize = '0.85em'; // Smaller font
+                        node.style.maxWidth = '120px'; // Limit width
+                        node.style.whiteSpace = 'normal'; // Allow text wrapping
+                        node.style.wordBreak = 'break-word'; // Break long words
+                    }
+
+                    // Ensure text doesn't overflow
+                    var textContent = node.textContent;
+                    if (textContent.length > 30) {
+                        node.textContent = textContent.substring(0, 27) + '...';
+                    }
+                });
+
+                // Final safety check - ensure all nodes are visible
+                setTimeout(function() {
+                    var allNodes = document.querySelectorAll('jmnode');
+                    var containerRect = document.getElementById('jsmind_container').getBoundingClientRect();
+                    var containerRight = containerRect.right;
+                    var containerLeft = containerRect.left;
+                    var containerTop = containerRect.top;
+                    var containerBottom = containerRect.bottom;
+
+                    // Check if any node is outside the container
+                    allNodes.forEach(function(node) {
+                        var nodeRect = node.getBoundingClientRect();
+
+                        // If node is outside container, adjust its size
+                        if (nodeRect.right > containerRight ||
+                            nodeRect.left < containerLeft ||
+                            nodeRect.top < containerTop ||
+                            nodeRect.bottom > containerBottom) {
+
+                            // Reduce text length if needed
+                            if (node.textContent.length > 15) {
+                                node.textContent = node.textContent.substring(0, 12) + '...';
+                            }
+
+                            // Reduce padding further if needed
+                            node.style.padding = '2px 4px';
+                            node.style.fontSize = '0.8em';
+                        }
+                    });
+                }, 400);
+            }, 100);
+        });
+    </script>
+</body>
+</html>

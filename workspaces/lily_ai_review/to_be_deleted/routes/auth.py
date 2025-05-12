@@ -1,0 +1,940 @@
+"""
+Authentication routes module.
+
+This module provides route handlers for authentication operations.
+"""
+import os
+import requests
+from fastapi import APIRouter, Request, Form, Depends, HTTPException, status, BackgroundTasks
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.templating import Jinja2Templates
+import logging
+from auth.service import AuthService
+from dotenv import load_dotenv
+from google.cloud import recaptchaenterprise_v1
+from google.cloud.recaptchaenterprise_v1 import Assessment
+
+# Load environment variables
+load_dotenv()
+
+# Get reCAPTCHA keys from environment variables
+RECAPTCHA_SITE_KEY = os.getenv("RECAPTCHA_SITE_KEY", "6LcgczQrAAAAAAvXas3rgYE7nit-OmSMZE0_Iv-a")
+RECAPTCHA_SECRET_KEY = os.getenv("RECAPTCHA_SECRET_KEY", "6LcgczQrAAAAAAvXas3rgYE7nit-OmSMZE0_Iv-a")
+GOOGLE_CLOUD_PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT_ID", "lily-ai-research-assistant")
+
+# Set environment variables for Google Cloud authentication
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.getenv("GOOGLE_APPLICATION_CREDENTIALS",
+                                                        "/home/admin/projects/lily_ai/service-account-key.json")
+
+# Configure logging
+logger = logging.getLogger(__name__)
+
+# Initialize router
+router = APIRouter(prefix="/auth", tags=["auth"])
+
+# Initialize templates
+templates = Jinja2Templates(directory="templates")
+
+# Initialize auth service
+auth_service = AuthService()
+
+def verify_recaptcha_enterprise(token: str, action: str = "REGISTER") -> bool:
+    """
+    Verify a reCAPTCHA Enterprise token.
+
+    Args:
+        token: The reCAPTCHA token from the client
+        action: The expected action name
+
+    Returns:
+        True if verification is successful, False otherwise
+    """
+    # Log the token for debugging
+    logger.info(f"reCAPTCHA token received: {token[:20] if token else 'None'}...")
+
+    # Check if we're in development mode - always bypass in development
+    if os.getenv("ENVIRONMENT", "development") != "production":
+        logger.info("Development mode: bypassing reCAPTCHA verification")
+        return True
+
+    # If no token is provided, fail verification in production
+    if not token:
+        logger.warning("No reCAPTCHA token provided")
+        # In development, allow the request even if no token
+        return os.getenv("ENVIRONMENT", "development") != "production"
+
+    # Check if service account key file exists and is valid
+    service_account_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS",
+                                    "/home/admin/projects/lily_ai/service-account-key.json")
+
+    if not os.path.exists(service_account_path):
+        logger.error(f"Service account key file not found: {service_account_path}")
+        # In development, allow the request even if verification fails
+        return os.getenv("ENVIRONMENT", "development") != "production"
+
+    try:
+        # For testing purposes, if the token is "test_token", return True
+        if token == "test_token" and os.getenv("ENVIRONMENT", "development") != "production":
+            logger.warning("Using test reCAPTCHA token, skipping verification")
+            return True
+
+        # Create the reCAPTCHA client
+        client = recaptchaenterprise_v1.RecaptchaEnterpriseServiceClient()
+
+        # Set up the assessment request
+        event = recaptchaenterprise_v1.Event()
+        event.site_key = RECAPTCHA_SITE_KEY
+        event.token = token
+
+        assessment = recaptchaenterprise_v1.Assessment()
+        assessment.event = event
+
+        project_name = f"projects/{GOOGLE_CLOUD_PROJECT_ID}"
+
+        # Build the assessment request
+        request = recaptchaenterprise_v1.CreateAssessmentRequest()
+        request.assessment = assessment
+        request.parent = project_name
+
+        # Get the assessment
+        response = client.create_assessment(request)
+
+        # Log the full response for debugging
+        logger.info(f"reCAPTCHA Enterprise assessment response: {response}")
+
+        # Check if the token is valid
+        if not response.token_properties.valid:
+            logger.warning(f"reCAPTCHA token invalid: {response.token_properties.invalid_reason}")
+            return False
+
+        # Check if the expected action was executed
+        if response.token_properties.action != action:
+            logger.warning(f"reCAPTCHA action mismatch: expected {action}, got {response.token_properties.action}")
+            # In development, be more lenient with action mismatches
+            if os.getenv("ENVIRONMENT", "development") != "production":
+                logger.info("Development mode: ignoring action mismatch")
+                return True
+            return False
+
+        # Get the risk score
+        score = response.risk_analysis.score
+        logger.info(f"reCAPTCHA score: {score}")
+
+        # In production, be more strict with the score threshold
+        if os.getenv("ENVIRONMENT", "development") == "production":
+            # Consider scores above 0.7 as likely human in production
+            return score > 0.7
+        else:
+            # Consider scores above 0.3 as likely human in development (more lenient)
+            return score > 0.3
+
+    except Exception as e:
+        logger.error(f"reCAPTCHA verification error: {str(e)}")
+        logger.error(f"Exception type: {type(e)}")
+        logger.error(f"Exception args: {e.args}")
+
+        # Check if the error is related to the service account key
+        if "service_account" in str(e).lower() or "credentials" in str(e).lower():
+            logger.error(f"Service account key error: {str(e)}")
+            # Log the path to the service account key file
+            logger.error(f"Service account key path: {service_account_path}")
+
+        # In case of error, fail closed (return False) in production
+        if os.getenv("ENVIRONMENT", "development") == "production":
+            return False
+        else:
+            # In development, allow the request even if verification fails
+            logger.info("Development mode: allowing request despite reCAPTCHA verification error")
+            return True
+
+@router.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request):
+    """
+    Render the login page.
+
+    Args:
+        request: The incoming request
+
+    Returns:
+        HTMLResponse with the login template
+    """
+    return templates.TemplateResponse(
+        "auth/login.html",
+        {
+            "request": request,
+            "error": request.query_params.get("error"),
+            "message": request.query_params.get("message"),
+            "next": request.query_params.get("next", "/dashboard")
+        }
+    )
+
+@router.post("/login")
+async def login(
+    request: Request,
+    email: str = Form(...),
+    password: str = Form(...),
+    next: str = Form("/dashboard")
+):
+    """
+    Process login form submission.
+
+    Args:
+        request: The incoming request
+        email: User's email address
+        password: User's password
+        next: URL to redirect to after login
+
+    Returns:
+        Redirect to dashboard or error page
+    """
+    user = auth_service.sign_in(email.lower(), password)
+
+    if not user:
+        logger.warning(f"Failed login attempt for email: {email}")
+        return RedirectResponse(
+            url="/auth/login?error=Invalid+email+or+password",
+            status_code=status.HTTP_303_SEE_OTHER
+        )
+
+    # Check if email is confirmed
+    if not user.email_confirmed_at:
+        logger.warning(f"Login attempt with unverified email: {email}")
+        # Store email for verification page
+        request.session["pending_verification_email"] = email
+        return RedirectResponse(
+            url="/auth/verify-email?error=Please+verify+your+email+before+logging+in",
+            status_code=status.HTTP_303_SEE_OTHER
+        )
+
+    # Set session data
+    request.session["user_id"] = user.id
+    request.session["email"] = user.email
+    request.session["username"] = user.user_metadata.get("username")
+
+    # Get the subscription tier from the database (not from user metadata)
+    subscription_tier = auth_service.get_subscription_tier(user.id)
+    request.session["subscription_tier"] = subscription_tier
+
+    logger.info(f"User logged in: {email} with subscription tier: {subscription_tier}")
+    return RedirectResponse(url=next, status_code=status.HTTP_303_SEE_OTHER)
+
+@router.get("/oauth/google")
+async def google_login(request: Request):
+    """
+    Initiate Google OAuth login flow.
+
+    Args:
+        request: The incoming request
+
+    Returns:
+        Redirect to Google OAuth authorization endpoint
+    """
+    redirect_url = request.query_params.get("redirect_to", "/dashboard")
+    oauth_url = auth_service.get_oauth_url("google", redirect_url)
+
+    # Note: The prompt parameter is already added in auth_service.get_oauth_url
+    logger.info(f"Initiating Google OAuth login flow with URL: {oauth_url}")
+    return RedirectResponse(url=oauth_url, status_code=status.HTTP_303_SEE_OTHER)
+
+@router.get("/v1/callback")
+async def oauth_v1_callback(request: Request):
+    """
+    Handler for Supabase's /auth/v1/callback route.
+    Redirects to our internal /auth/callback route.
+
+    Args:
+        request: The incoming request
+
+    Returns:
+        Redirect to our internal callback handler
+    """
+    # Preserve all query parameters
+    query_string = request.url.query
+    logger.info(f"Received OAuth request at /auth/v1/callback with params: {query_string}")
+
+    # Redirect to our internal callback endpoint with all query parameters
+    return RedirectResponse(
+        url=f"/auth/callback?{query_string}",
+        status_code=status.HTTP_303_SEE_OTHER
+    )
+
+@router.get("/callback")
+async def oauth_callback(request: Request):
+    """
+    Handle OAuth callback from provider (e.g., Google).
+
+    Args:
+        request: The incoming request with oauth code
+
+    Returns:
+        Redirect to dashboard or error page
+    """
+    code = request.query_params.get("code")
+    error = request.query_params.get("error")
+    error_description = request.query_params.get("error_description")
+
+    # Log all query parameters for debugging
+    logger.info(f"OAuth callback received with params: {dict(request.query_params)}")
+
+    if error or error_description:
+        logger.error(f"OAuth error received: {error} - {error_description}")
+        return RedirectResponse(
+            url=f"/auth/login?error=Authentication+failed:+{error}",
+            status_code=status.HTTP_303_SEE_OTHER
+        )
+
+    if not code:
+        logger.error("OAuth callback missing code parameter")
+        return RedirectResponse(
+            url="/auth/login?error=Authentication+failed",
+            status_code=status.HTTP_303_SEE_OTHER
+        )
+
+    try:
+        logger.info(f"Exchanging OAuth code for session")
+        # Exchange code for session using our service method
+        user = auth_service.exchange_code_for_session(code)
+
+        if not user:
+            logger.error("Failed to exchange OAuth code for session")
+            return RedirectResponse(
+                url="/auth/login?error=Authentication+failed",
+                status_code=status.HTTP_303_SEE_OTHER
+            )
+
+        # Set session data
+        logger.info(f"Setting session data for user: {user.id}")
+        request.session["user_id"] = user.id
+        request.session["email"] = user.email
+
+        # Handle case where user_metadata might be None or not have username
+        username = None
+        if hasattr(user, 'user_metadata') and user.user_metadata:
+            username = user.user_metadata.get("username", user.email.split('@')[0])
+        else:
+            # Fallback to using email prefix as username
+            username = user.email.split('@')[0]
+
+        request.session["username"] = username
+
+        # Get the subscription tier from the database (not from user metadata)
+        subscription_tier = auth_service.get_subscription_tier(user.id)
+        request.session["subscription_tier"] = subscription_tier
+
+        # Log session data for debugging
+        logger.info(f"Session data set: user_id={user.id}, email={user.email}, username={username}, subscription_tier={subscription_tier}")
+        logger.info(f"Session contents after setting: {dict(request.session)}")
+
+        # Check if this is a new user (created within the last minute)
+        is_new_user = False
+        if hasattr(user, 'created_at') and hasattr(user, 'last_sign_in_at'):
+            from datetime import datetime, timezone, timedelta
+            # Parse the timestamps
+            created_at = user.created_at
+            last_sign_in_at = user.last_sign_in_at
+
+            # Check if this is the first sign-in (created_at and last_sign_in_at are close)
+            if isinstance(created_at, datetime) and isinstance(last_sign_in_at, datetime):
+                time_diff = abs((last_sign_in_at - created_at).total_seconds())
+                is_new_user = time_diff < 60  # Less than a minute difference
+
+        # Send welcome email for new Google OAuth users
+        if is_new_user:
+            try:
+                # Import notification service
+                from app.services.notification.notification_service import NotificationService
+                from fastapi.background import BackgroundTasks
+
+                # Initialize notification service
+                notification_service = NotificationService(auth_service.supabase)
+
+                # Create background tasks
+                background_tasks = BackgroundTasks()
+
+                # Send the welcome email
+                await notification_service.notify(
+                    event_type="email.verified",
+                    user_id=user.id,
+                    data=None,
+                    background_tasks=background_tasks
+                )
+                logger.info(f"Welcome email queued for new OAuth user: {user.email}")
+            except Exception as e:
+                logger.error(f"Error sending welcome email to OAuth user: {str(e)}")
+                # Continue with login even if welcome email fails
+
+        # Redirect to next URL or dashboard
+        next_url = request.query_params.get("next", "/dashboard")
+        logger.info(f"User logged in via OAuth: {user.email} with subscription tier: {subscription_tier}")
+        return RedirectResponse(url=next_url, status_code=status.HTTP_303_SEE_OTHER)
+
+    except Exception as e:
+        logger.error(f"OAuth callback error: {str(e)}")
+        logger.error(f"Exception type: {type(e)}")
+        logger.error(f"Exception args: {e.args}")
+        # Try to get more detailed error information
+        if hasattr(e, 'to_dict'):
+            logger.error(f"Error details: {e.to_dict()}")
+
+        return RedirectResponse(
+            url="/auth/login?error=Authentication+failed",
+            status_code=status.HTTP_303_SEE_OTHER
+        )
+
+@router.get("/register", response_class=HTMLResponse)
+async def register_page(request: Request):
+    """
+    Render the registration page.
+
+    Args:
+        request: The incoming request
+
+    Returns:
+        HTMLResponse with the registration template
+    """
+    return templates.TemplateResponse(
+        "auth/register.html",
+        {
+            "request": request,
+            "recaptcha_site_key": RECAPTCHA_SITE_KEY
+        }
+    )
+
+# Add a route to handle root path redirect with code parameter
+@router.get("/", include_in_schema=False)
+async def root_oauth_callback(request: Request, code: str = None, state: str = None):
+    """
+    Handle OAuth callback when redirected to the root path with a code.
+    This happens when Google OAuth redirects back to the site URL instead of the callback URL.
+
+    Args:
+        request: The incoming request
+        code: OAuth code from provider
+        state: OAuth state from provider
+
+    Returns:
+        Redirect to the main callback handler
+    """
+    # If there's a code parameter, it's likely an OAuth callback
+    if code:
+        logger.info(f"Received OAuth callback at auth router root path with code: {code[:10]}...")
+
+        # Instead of handling the OAuth callback here, redirect to the dedicated callback handler
+        # This ensures consistent processing of OAuth callbacks
+        query_string = request.url.query
+        logger.info(f"Redirecting OAuth callback from auth router root path to /auth/callback with params: {query_string}")
+
+        # Redirect to the auth callback route with all query parameters
+        return RedirectResponse(
+            url=f"/auth/callback?{query_string}",
+            status_code=status.HTTP_303_SEE_OTHER
+        )
+
+    # If no code, let the default root handler take over
+    # This is necessary to avoid breaking other routes
+    return RedirectResponse(url="/", status_code=status.HTTP_307_TEMPORARY_REDIRECT)
+
+@router.post("/register")
+async def register(
+    request: Request,
+    email: str = Form(...),
+    password: str = Form(...),
+    confirm_password: str = Form(...),
+    username: str = Form(...),
+    name: str = Form(None)
+):
+    # Log the registration attempt
+    logger.info(f"Registration attempt for email: {email}, username: {username}")
+    """
+    Process registration form submission.
+
+    Args:
+        request: The incoming request
+        email: User's email address
+        password: User's password
+        confirm_password: Password confirmation
+        username: User's username
+        name: User's full name (optional)
+
+    Returns:
+        Redirect to dashboard or error page
+    """
+    # Get form data
+    form_data = await request.form()
+    recaptcha_response = form_data.get("g_recaptcha_response", "")
+
+    # Log the form data for debugging
+    logger.info(f"Form data received: {dict(form_data)}")
+    logger.info(f"reCAPTCHA token received: {recaptcha_response[:20] if recaptcha_response else 'None'}")
+
+    # Verify reCAPTCHA token
+    if not recaptcha_response and os.getenv("ENVIRONMENT", "development") == "production":
+        logger.warning("reCAPTCHA token not provided")
+        return templates.TemplateResponse(
+            "auth/register.html",
+            {
+                "request": request,
+                "error": "Please complete the reCAPTCHA verification.",
+                "form_data": {"email": email, "username": username, "name": name},
+                "recaptcha_site_key": RECAPTCHA_SITE_KEY,
+                "captcha_error": "reCAPTCHA verification failed. Please try again."
+            }
+        )
+
+    # In development, allow registration without reCAPTCHA
+    if not recaptcha_response and os.getenv("ENVIRONMENT", "development") != "production":
+        logger.info("Development mode: allowing registration without reCAPTCHA")
+        recaptcha_response = "test_token"
+
+    # Verify reCAPTCHA token
+    is_human = verify_recaptcha_enterprise(recaptcha_response, "REGISTER")
+
+    if not is_human:
+        logger.warning("reCAPTCHA verification failed")
+        return templates.TemplateResponse(
+            "auth/register.html",
+            {
+                "request": request,
+                "error": "reCAPTCHA verification failed. Please try again.",
+                "form_data": {"email": email, "username": username, "name": name},
+                "recaptcha_site_key": RECAPTCHA_SITE_KEY,
+                "captcha_error": "reCAPTCHA verification failed. Please try again."
+            }
+        )
+
+    # Validate passwords match
+    if password != confirm_password:
+        return templates.TemplateResponse(
+            "auth/register.html",
+            {
+                "request": request,
+                "error": "Passwords do not match",
+                "form_data": {"email": email, "username": username, "name": name},
+                "recaptcha_site_key": RECAPTCHA_SITE_KEY
+            }
+        )
+
+    # The sign_up method now handles all the checks for existing email and username
+
+    # Log registration attempt
+    logger.info(f"Registration attempt - Email: {email}, Username: {username}")
+
+    # Create user with sign-up method that returns (user, error_message)
+    user, error_message = auth_service.sign_up(email.lower(), password, username, name)
+
+    if not user:
+        logger.warning(f"Failed registration attempt for email: {email} - Error: {error_message}")
+
+        # Return the specific error message from the sign_up method
+        return templates.TemplateResponse(
+            "auth/register.html",
+            {
+                "request": request,
+                "error": error_message,
+                "form_data": {"email": email, "username": username, "name": name} if "Username" in error_message else {"email": "", "username": username, "name": name},
+                "recaptcha_site_key": RECAPTCHA_SITE_KEY
+            }
+        )
+
+    # Don't set session data yet - user needs to verify email first
+    # Just store the email for the verification page
+    request.session["pending_verification_email"] = email
+
+    logger.info(f"New user registered: {email}")
+    return RedirectResponse(url="/auth/verify-email", status_code=status.HTTP_303_SEE_OTHER)
+
+@router.get("/logout")
+async def logout(request: Request):
+    """
+    Handle user logout.
+
+    Args:
+        request: The incoming request
+
+    Returns:
+        Redirect to home page with cleared session cookies
+    """
+    # Log the logout attempt
+    if "user_id" in request.session:
+        logger.info(f"User logged out: {request.session.get('email')}")
+
+    # Sign out from Supabase
+    auth_service.sign_out()
+
+    # Clear the session
+    request.session.clear()
+
+    # Create a response that redirects to the home page
+    response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+
+    # Clear any session cookies by setting them to expire immediately
+    response.delete_cookie(key="session")
+    response.delete_cookie(key="sb-access-token")
+    response.delete_cookie(key="sb-refresh-token")
+
+    # Add cache control headers to prevent caching
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+
+    logger.info("Session cleared and cookies deleted")
+    return response
+
+@router.get("/reset-password", response_class=HTMLResponse)
+async def reset_password_page(request: Request):
+    """
+    Render the password reset page.
+
+    Args:
+        request: The incoming request
+
+    Returns:
+        HTMLResponse with the password reset template
+    """
+    return templates.TemplateResponse(
+        "auth/reset.html",
+        {"request": request}
+    )
+
+@router.post("/reset-password")
+async def reset_password(
+    request: Request,
+    email: str = Form(...)
+):
+    """
+    Process password reset form submission.
+
+    Args:
+        request: The incoming request
+        email: User's email address
+
+    Returns:
+        Redirect to confirmation page
+    """
+    try:
+        # Send password reset email via Supabase
+        auth_service.supabase.auth.reset_password_email(email)
+        logger.info(f"Password reset requested for: {email}")
+
+        # Redirect to confirmation page
+        return RedirectResponse(
+            url="/auth/reset-confirmation",
+            status_code=status.HTTP_303_SEE_OTHER
+        )
+    except Exception as e:
+        logger.error(f"Password reset error: {str(e)}")
+        return templates.TemplateResponse(
+            "auth/reset.html",
+            {
+                "request": request,
+                "error": "Error sending password reset email. Please try again.",
+                "email": email
+            }
+        )
+
+@router.get("/reset-confirmation", response_class=HTMLResponse)
+async def reset_confirmation_page(request: Request):
+    """
+    Render the password reset confirmation page.
+
+    Args:
+        request: The incoming request
+
+    Returns:
+        HTMLResponse with the confirmation template
+    """
+    return templates.TemplateResponse(
+        "auth/reset_confirmation.html",
+        {"request": request}
+    )
+
+@router.get("/verify-email", response_class=HTMLResponse)
+async def verify_email_page(request: Request):
+    """
+    Render the email verification page.
+
+    Args:
+        request: The incoming request
+
+    Returns:
+        HTMLResponse with the verification template
+    """
+    email = request.session.get("pending_verification_email", "")
+    error = request.query_params.get("error", "")
+    return templates.TemplateResponse(
+        "auth/verify_email.html",
+        {"request": request, "email": email, "error": error}
+    )
+
+@router.get("/verify-success", response_class=HTMLResponse)
+async def verify_success_page(request: Request):
+    """
+    Render the email verification success page.
+
+    Args:
+        request: The incoming request
+
+    Returns:
+        HTMLResponse with the verification success template
+    """
+    email = request.query_params.get("email", "")
+    return templates.TemplateResponse(
+        "auth/verify_success.html",
+        {"request": request, "email": email}
+    )
+
+@router.post("/change-password")
+async def change_password(
+    request: Request,
+    current_password: str = Form(None),
+    new_password: str = Form(...),
+    confirm_password: str = Form(...)
+):
+    """
+    Change user's password.
+
+    Args:
+        request: The incoming request
+        current_password: User's current password (not required for OAuth users)
+        new_password: User's new password
+        confirm_password: Confirmation of new password
+
+    Returns:
+        JSON response with success status
+    """
+    # Get user from session
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return {"success": False, "message": "Not authenticated"}
+
+    # Validate passwords match
+    if new_password != confirm_password:
+        return {"success": False, "message": "Passwords do not match"}
+
+    # Check if user is OAuth user
+    user = auth_service.get_user(user_id)
+    is_oauth_user = user.app_metadata.get("provider") not in [None, "email"]
+
+    # For non-OAuth users, verify current password
+    if not is_oauth_user and current_password:
+        # Verify current password
+        if not auth_service.verify_password(user_id, current_password):
+            return {"success": False, "message": "Current password is incorrect"}
+
+    # Update password
+    try:
+        success = auth_service.update_password(user_id, new_password)
+        if success:
+            logger.info(f"Password changed for user: {user_id}")
+            return {"success": True, "message": "Password updated successfully"}
+        else:
+            logger.error(f"Failed to update password for user: {user_id}")
+            return {"success": False, "message": "Failed to update password"}
+    except Exception as e:
+        logger.error(f"Error updating password: {str(e)}")
+        return {"success": False, "message": str(e)}
+
+@router.post("/change-email")
+async def change_email(
+    request: Request,
+    new_email: str = Form(...),
+    password: str = Form(...)
+):
+    """
+    Change user's email address.
+
+    Args:
+        request: The incoming request
+        new_email: User's new email address
+        password: User's current password
+
+    Returns:
+        JSON response with success status
+    """
+    # Get user from session
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return {"success": False, "message": "Not authenticated"}
+
+    # Verify password
+    if not auth_service.verify_password(user_id, password):
+        return {"success": False, "message": "Password is incorrect"}
+
+    # Update email
+    try:
+        success = auth_service.update_email(user_id, new_email)
+        if success:
+            logger.info(f"Email change initiated for user: {user_id} to {new_email}")
+            return {"success": True, "message": "Verification email sent to your new address"}
+        else:
+            logger.error(f"Failed to update email for user: {user_id}")
+            return {"success": False, "message": "Failed to update email"}
+    except Exception as e:
+        logger.error(f"Error updating email: {str(e)}")
+        return {"success": False, "message": str(e)}
+
+@router.get("/resend-verification", response_class=HTMLResponse)
+async def resend_verification(request: Request):
+    """
+    Resend verification email.
+
+    Args:
+        request: The incoming request
+
+    Returns:
+        Redirect back to verification page
+    """
+    email = request.session.get("pending_verification_email")
+
+    if not email:
+        return RedirectResponse(
+            url="/auth/login",
+            status_code=status.HTTP_303_SEE_OTHER
+        )
+
+    try:
+        # Send verification email via Supabase
+        auth_service.supabase.auth.resend_signup_email({"email": email})
+        logger.info(f"Verification email resent to: {email}")
+
+        # Redirect back to verification page
+        return RedirectResponse(
+            url="/auth/verify-email",
+            status_code=status.HTTP_303_SEE_OTHER
+        )
+    except Exception as e:
+        logger.error(f"Error resending verification email: {str(e)}")
+        return templates.TemplateResponse(
+            "auth/verify_email.html",
+            {
+                "request": request,
+                "email": email,
+                "error": "Error resending verification email. Please try again."
+            }
+        )
+
+@router.get("/verify", response_class=HTMLResponse)
+async def verify_email_callback(
+    request: Request,
+    token: str = None,
+    type: str = None,
+    error_description: str = None,
+    background_tasks: BackgroundTasks = None
+):
+    """
+    Handle email verification callback from Supabase.
+    This is the endpoint that users are directed to when they click the verification link in their email.
+
+    Args:
+        request: The incoming request
+        token: Verification token
+        type: Type of verification (e.g., 'signup', 'recovery')
+        error_description: Error description if verification failed
+        background_tasks: FastAPI background tasks
+
+    Returns:
+        Redirect to verification success page or error page
+    """
+    # Log the verification request
+    logger.info(f"Email verification callback received with token: {token[:10] if token and len(token) > 10 else 'None'}... and type: {type}")
+    logger.info(f"Request URL: {request.url}")
+    logger.info(f"Request query params: {request.query_params}")
+    logger.info(f"Request headers: {dict(request.headers)}")
+    if error_description:
+        logger.error(f"Email verification error: {error_description}")
+        return RedirectResponse(
+            url=f"/auth/login?error={error_description}",
+            status_code=status.HTTP_303_SEE_OTHER
+        )
+
+    if not token or not type:
+        logger.error("Missing token or type in verification callback")
+        return RedirectResponse(
+            url="/auth/login?error=Invalid+verification+link",
+            status_code=status.HTTP_303_SEE_OTHER
+        )
+
+    try:
+        # Verify the token with Supabase
+        # This is handled automatically by Supabase, but we can log it
+        logger.info(f"Email verification callback received with token: {token[:10]}... and type: {type}")
+
+        # If this is a signup verification, send a welcome email
+        if type == 'signup':
+            try:
+                # Get user from token
+                user_response = auth_service.supabase.auth.verify_otp({
+                    "token_hash": token,
+                    "type": "email"
+                })
+
+                if user_response and user_response.user:
+                    user = user_response.user
+                    logger.info(f"Email verified for user: {user.email}")
+
+                    # Import notification service
+                    from app.services.notification.notification_service import NotificationService
+
+                    # Initialize notification service
+                    notification_service = NotificationService(auth_service.supabase)
+
+                    # Create background tasks if not provided
+                    local_background_tasks = background_tasks or BackgroundTasks()
+
+                    # Send the welcome email
+                    await notification_service.notify(
+                        event_type="email.verified",
+                        user_id=user.id,
+                        data=None,
+                        background_tasks=local_background_tasks
+                    )
+                    logger.info(f"Welcome email queued for user: {user.email}")
+            except Exception as e:
+                logger.error(f"Error sending welcome email: {str(e)}")
+                # Continue with verification even if welcome email fails
+
+        # Redirect to the verification success page
+        email = user.email if 'user' in locals() and user else ""
+        if not email and 'user_response' in locals() and user_response and hasattr(user_response, 'user') and user_response.user:
+            email = user_response.user.email
+
+        logger.info(f"Email verification successful, redirecting to success page with email: {email}")
+
+        # Force redirect to the verification success page
+        response = RedirectResponse(
+            url=f"/auth/verify-success?email={email}",
+            status_code=status.HTTP_303_SEE_OTHER
+        )
+
+        # Set cache control headers to prevent caching
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+
+        return response
+    except Exception as e:
+        logger.error(f"Error verifying email: {str(e)}")
+        return RedirectResponse(
+            url=f"/auth/login?error=Error+verifying+email:+{str(e)}",
+            status_code=status.HTTP_303_SEE_OTHER
+        )
+
+@router.get("/verify-success", response_class=HTMLResponse)
+async def verify_success_page(request: Request, email: str = None):
+    """
+    Render the verification success page.
+
+    Args:
+        request: The incoming request
+        email: The email that was verified
+
+    Returns:
+        HTMLResponse with the verification success template
+    """
+    return templates.TemplateResponse(
+        "auth/verify_success.html",
+        {
+            "request": request,
+            "email": email
+        }
+    )

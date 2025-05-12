@@ -1,0 +1,118 @@
+{# 
+   Reusable form input components
+   
+   This file contains reusable form input components for creating consistent forms.
+   
+   Usage:
+   {% from "components/form_inputs.html" import text_input, email_input, password_input %}
+   {{ text_input("username", "Username", "Enter your username", required=True) }}
+   {{ email_input("email", "Email Address", "you@example.com", required=True) }}
+   {{ password_input("password", "Password", "••••••••", required=True) }}
+#}
+
+{# Text Input #}
+{% macro text_input(name, label, placeholder="", value="", required=False, icon="") %}
+<div>
+    <label for="{{ name }}" class="block text-sm font-medium text-gray-300 mb-2">{{ label }}</label>
+    <div class="relative">
+        {% if icon %}
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            {{ icon|safe }}
+        </div>
+        {% endif %}
+        <input 
+            id="{{ name }}" 
+            name="{{ name }}" 
+            type="text" 
+            {% if required %}required{% endif %} 
+            class="block w-full bg-indigo-900 bg-opacity-30 border border-indigo-800 rounded-md py-3 {% if icon %}pl-10{% else %}pl-3{% endif %} pr-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+            placeholder="{{ placeholder }}"
+            {% if value %}value="{{ value }}"{% endif %}
+        >
+    </div>
+</div>
+{% endmacro %}
+
+{# Email Input #}
+{% macro email_input(name, label, placeholder="", value="", required=False) %}
+<div>
+    <label for="{{ name }}" class="block text-sm font-medium text-gray-300 mb-2">{{ label }}</label>
+    <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="h-5 w-5 text-indigo-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+            </svg>
+        </div>
+        <input 
+            id="{{ name }}" 
+            name="{{ name }}" 
+            type="email" 
+            {% if required %}required{% endif %} 
+            class="block w-full bg-indigo-900 bg-opacity-30 border border-indigo-800 rounded-md py-3 pl-10 pr-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+            placeholder="{{ placeholder }}"
+            {% if value %}value="{{ value }}"{% endif %}
+        >
+    </div>
+</div>
+{% endmacro %}
+
+{# Password Input #}
+{% macro password_input(name, label, placeholder="", required=False) %}
+<div>
+    <label for="{{ name }}" class="block text-sm font-medium text-gray-300 mb-2">{{ label }}</label>
+    <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="h-5 w-5 text-indigo-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+            </svg>
+        </div>
+        <input 
+            id="{{ name }}" 
+            name="{{ name }}" 
+            type="password" 
+            {% if required %}required{% endif %} 
+            class="block w-full bg-indigo-900 bg-opacity-30 border border-indigo-800 rounded-md py-3 pl-10 pr-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+            placeholder="{{ placeholder }}"
+        >
+    </div>
+</div>
+{% endmacro %}
+
+{# Textarea Input #}
+{% macro textarea_input(name, label, placeholder="", value="", required=False, rows=4) %}
+<div>
+    <label for="{{ name }}" class="block text-sm font-medium text-gray-300 mb-2">{{ label }}</label>
+    <div class="relative">
+        <textarea 
+            id="{{ name }}" 
+            name="{{ name }}" 
+            {% if required %}required{% endif %} 
+            rows="{{ rows }}"
+            class="block w-full bg-indigo-900 bg-opacity-30 border border-indigo-800 rounded-md py-3 px-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+            placeholder="{{ placeholder }}"
+        >{% if value %}{{ value }}{% endif %}</textarea>
+    </div>
+</div>
+{% endmacro %}
+
+{# Checkbox Input #}
+{% macro checkbox_input(name, label, checked=False) %}
+<div class="flex items-center">
+    <input 
+        id="{{ name }}" 
+        name="{{ name }}" 
+        type="checkbox" 
+        {% if checked %}checked{% endif %}
+        class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-indigo-300 rounded bg-indigo-900 bg-opacity-30"
+    >
+    <label for="{{ name }}" class="ml-2 block text-sm text-gray-300">{{ label }}</label>
+</div>
+{% endmacro %}
+
+{# Submit Button #}
+{% macro submit_button(text="Submit") %}
+<button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+    {{ text }}
+</button>
+{% endmacro %}

@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}My Reviews{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-6xl mx-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold">My Reviews</h1>
+            <a href="/review/upload" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out">
+                Upload New Paper
+            </a>
+        </div>
+        
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <!-- In Progress Reviews -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold mb-4">In Progress</h2>
+                
+                <div id="in-progress-reviews" class="space-y-4">
+                    {% if in_progress_reviews %}
+                        {% for review in in_progress_reviews %}
+                        <div class="border rounded-lg p-4 dark:border-gray-700">
+                            <h3 class="font-medium text-lg mb-1">{{ review.title }}</h3>
+                            <div class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400 mb-3">
+                                <span>Uploaded: {{ review.created_at }}</span>
+                                <span class="px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">{{ review.status }}</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mb-2">
+                                <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ review.progress }}%"></div>
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-300">{{ review.progress }}% complete</p>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-gray-500 dark:text-gray-400">No reviews in progress.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Completed Reviews -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold mb-4">Completed</h2>
+                
+                <div id="completed-reviews" class="space-y-4">
+                    {% if completed_reviews %}
+                        {% for review in completed_reviews %}
+                        <div class="border rounded-lg p-4 dark:border-gray-700">
+                            <h3 class="font-medium text-lg mb-1">{{ review.title }}</h3>
+                            <div class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400 mb-3">
+                                <span>Completed: {{ review.updated_at }}</span>
+                                <span class="px-2 py-1 rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">{{ review.status }}</span>
+                            </div>
+                            <div class="flex space-x-2 mt-2">
+                                <a href="/review/download/{{ review.id }}/pdf" class="inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    PDF
+                                </a>
+                                <a href="/review/download/{{ review.id }}/docx" class="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    DOCX
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-gray-500 dark:text-gray-400">No completed reviews yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Auto-refresh in-progress reviews every 30 seconds
+    function refreshInProgressReviews() {
+        fetch('/review/list')
+            .then(response => response.json())
+            .then(data => {
+                // Update the UI with the new data
+                // This is a simplified example - in a real implementation,
+                // you would update the DOM with the new review data
+                console.log('Reviews refreshed:', data);
+                
+                // Schedule the next refresh
+                setTimeout(refreshInProgressReviews, 30000);
+            })
+            .catch(error => {
+                console.error('Error refreshing reviews:', error);
+                // Still schedule the next refresh even if there was an error
+                setTimeout(refreshInProgressReviews, 30000);
+            });
+    }
+    
+    // Start the refresh cycle
+    setTimeout(refreshInProgressReviews, 30000);
+</script>
+{% endblock %}

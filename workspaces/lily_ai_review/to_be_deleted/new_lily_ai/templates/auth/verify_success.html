@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Email Verified - Lily AI{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" class="bi bi-check-circle text-success" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                            <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <h1 class="card-title text-center mb-4">Email Verified!</h1>
+
+                <p class="text-center mb-4">
+                    Your email has been successfully verified. You can now sign in to your account and start using Lily AI.
+                </p>
+
+                <div class="alert alert-info" role="alert">
+                    <div class="d-flex">
+                        <div class="me-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="mb-0">Thank you for signing up with Lily AI! You'll be automatically redirected to the login page in 5 seconds.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 mt-4">
+                    <a href="/login?verified=true" class="btn btn-primary">Sign In Now</a>
+                    <a href="/" class="btn btn-outline-secondary">Return to Home</a>
+                </div>
+
+                <script>
+                    // Auto-redirect to login page after 5 seconds
+                    setTimeout(function() {
+                        window.location.href = "/login?verified=true";
+                    }, 5000);
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

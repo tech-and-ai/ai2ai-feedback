@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}Generate Research Paper - Research Assistant{% endblock %}
+
+{% block content %}
+<!-- Background Orbs -->
+<div class="orb-container">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="orb orb-4"></div>
+    <div class="orb orb-5"></div>
+    <div class="orb orb-6"></div>
+    <div class="spotlight"></div>
+</div>
+
+<!-- Page Header -->
+<header class="glass-effect shadow">
+    <div class="container mx-auto px-4 py-6">
+        <div class="flex items-center justify-between">
+            <h1 class="text-2xl font-bold text-white">Generate Research Paper</h1>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<section class="py-16 relative z-10">
+    <div class="container mx-auto px-4 max-w-4xl">
+        <!-- Research Paper Form -->
+        <div class="glass-effect rounded-xl p-8 mb-12 max-w-3xl mx-auto">
+            <form id="researchPaperForm" action="/api/research-paper/generate" method="POST">
+                <!-- Paper Title Section -->
+                <div class="mb-6">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Paper Title</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="paperTitle" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                What should be the title of your paper?
+                            </label>
+                            <input type="text" id="paperTitle" name="custom_title" required
+                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                placeholder="e.g., The Impact of Artificial Intelligence on Modern Education">
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                A clear, concise title that reflects your research focus.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Research Topic Section -->
+                <div class="mb-6">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Research Topic</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="paperTopic" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                What is your research topic or question?
+                            </label>
+                            <textarea id="paperTopic" name="topic" required rows="3"
+                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                placeholder="Describe your research topic in detail. What specific aspects are you interested in exploring?"></textarea>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                Be specific about your research topic to get the best results.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hidden Education Level Field - Always set to undergraduate -->
+                <input type="hidden" name="education_level" value="undergraduate">
+
+                <!-- Hidden Fields for Diagrams and Research - Always included -->
+                <input type="hidden" name="include_diagrams" value="on">
+                <input type="hidden" name="include_research" value="on">
+
+                <!-- Lily Questions Section -->
+                <div class="mb-8">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Lily Questions</h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                        Provide specific questions you'd like Lily to address in your research paper. This helps focus the research and ensure it meets your needs.
+                    </p>
+
+                    <div id="lilyQuestionsContainer" class="space-y-4">
+                        <div class="lily-question-item">
+                            <div class="flex items-start">
+                                <div class="flex-grow">
+                                    <label for="lilyQuestion1" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        Question 1
+                                    </label>
+                                    <input type="text" id="lilyQuestion1" name="key_points[]"
+                                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                        placeholder="e.g., What are the ethical implications of AI in education?">
+                                </div>
+                                <button type="button" class="remove-question-btn ml-2 mt-6 text-red-500 hover:text-red-700 hidden">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" id="addQuestionBtn" class="mt-3 inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900 rounded-md hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Add Another Question
+                    </button>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex justify-center">
+                    <button type="submit" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-md shadow-sm transition-all duration-200 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                        Generate Research Paper
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const lilyQuestionsContainer = document.getElementById('lilyQuestionsContainer');
+        const addQuestionBtn = document.getElementById('addQuestionBtn');
+        let questionCount = 1;
+
+        // Add new question field
+        addQuestionBtn.addEventListener('click', function() {
+            questionCount++;
+            const newQuestion = document.createElement('div');
+            newQuestion.className = 'lily-question-item';
+            newQuestion.innerHTML = `
+                <div class="flex items-start">
+                    <div class="flex-grow">
+                        <label for="lilyQuestion${questionCount}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Question ${questionCount}
+                        </label>
+                        <input type="text" id="lilyQuestion${questionCount}" name="key_points[]"
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            placeholder="e.g., What are the current trends in this field?">
+                    </div>
+                    <button type="button" class="remove-question-btn ml-2 mt-6 text-red-500 hover:text-red-700">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            `;
+            lilyQuestionsContainer.appendChild(newQuestion);
+
+            // Show remove button for the first question if we have more than one
+            if (questionCount === 2) {
+                document.querySelector('.remove-question-btn').classList.remove('hidden');
+            }
+        });
+
+        // Remove question field
+        lilyQuestionsContainer.addEventListener('click', function(e) {
+            if (e.target.closest('.remove-question-btn')) {
+                e.target.closest('.lily-question-item').remove();
+                questionCount--;
+
+                // Update question numbers
+                const questionItems = document.querySelectorAll('.lily-question-item');
+                questionItems.forEach((item, index) => {
+                    const label = item.querySelector('label');
+                    const input = item.querySelector('input');
+                    label.setAttribute('for', `lilyQuestion${index + 1}`);
+                    label.textContent = `Question ${index + 1}`;
+                    input.setAttribute('id', `lilyQuestion${index + 1}`);
+                });
+
+                // Hide remove button for the first question if it's the only one
+                if (questionCount === 1) {
+                    document.querySelector('.remove-question-btn').classList.add('hidden');
+                }
+            }
+        });
+
+        // Form submission
+        document.getElementById('researchPaperForm').addEventListener('submit', function(e) {
+            // Validate form
+            const title = document.getElementById('paperTitle').value.trim();
+            const topic = document.getElementById('paperTopic').value.trim();
+            const lilyQuestions = document.querySelectorAll('input[name="key_points[]"]');
+            let hasValidQuestion = false;
+
+            lilyQuestions.forEach(question => {
+                if (question.value.trim() !== '') {
+                    hasValidQuestion = true;
+                }
+            });
+
+            if (title === '') {
+                e.preventDefault();
+                alert('Please enter a title for your paper.');
+                return;
+            }
+
+            if (topic === '') {
+                e.preventDefault();
+                alert('Please enter a research topic.');
+                return;
+            }
+
+            if (!hasValidQuestion) {
+                e.preventDefault();
+                alert('Please enter at least one Lily question.');
+                return;
+            }
+
+            // Show loading state
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Generating...
+            `;
+
+            // Form will submit normally
+        });
+    });
+</script>
+{% endblock %}

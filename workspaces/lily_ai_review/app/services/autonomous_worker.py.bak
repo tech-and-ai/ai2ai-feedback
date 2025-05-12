@@ -1,0 +1,760 @@
+"""
+Autonomous Worker for Lily AI
+
+This module provides an autonomous worker that can process code files,
+generate documentation, and store it in the database.
+"""
+import os
+import json
+import glob
+import logging
+import sys
+import time
+from pathlib import Path
+import subprocess
+from typing import Dict, List, Any, Optional, Union
+import requests
+from dotenv import load_dotenv
+from supabase import create_client, Client
+from app.services.ollama_service import OllamaService
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("autonomous_worker.log"),
+        logging.StreamHandler(sys.stdout)
+    ]
+)
+logger = logging.getLogger("autonomous_worker")
+
+class AutonomousWorker:
+    """
+    Autonomous worker for code documentation and analysis.
+    """
+    def __init__(self, config_path: str = "config.json"):
+        """
+        Initialize the autonomous worker.
+
+        Args:
+            config_path: Path to the configuration file
+        """
+        self.config = self._load_config(config_path)
+        self.supabase = self._init_supabase()
+        self.inbound_dir = os.path.join(os.path.dirname(__file__), "../../agent_worker/inbound")
+        self.outbound_dir = os.path.join(os.path.dirname(__file__), "../../agent_worker/outbound")
+        self.processed_files = []
+        self.context_entries = []
+        self.relationships = []
+
+        # Load environment variables
+        env_path = os.path.join(os.path.dirname(__file__), "../../.env")
+        if os.path.exists(env_path):
+            load_dotenv(env_path)
+            logger.info(f"Loaded environment variables from {env_path}")
+
+        # Initialize AI service
+        if "ai_providers" in self.config:
+            providers = self.config["ai_providers"]
+            default_provider = self.config.get("default_provider", "ollama")
+
+            if default_provider == "ollama" and "ollama" in providers and providers["ollama"]["enabled"]:
+                # Initialize Ollama service
+                ollama_config = providers["ollama"]
+                base_url = ollama_config.get("base_url", os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"))
+                model = ollama_config.get("model", os.getenv("OLLAMA_MODEL", "gemma3:4b"))
+
+                self.ai_service = OllamaService(base_url=base_url)
+                self.ai_model = model
+                self.ai_temperature = ollama_config.get("temperature", 0.2)
+                self.ai_max_tokens = ollama_config.get("max_tokens", 4000)
+                logger.info(f"Using Ollama service with model: {self.ai_model} at {base_url}")
+            elif default_provider == "openrouter" and "openrouter" in providers and providers["openrouter"]["enabled"]:
+                # Initialize OpenRouter service (using the OllamaService for now)
+                # In a real implementation, you would create a separate OpenRouterService class
+                openrouter_config = providers["openrouter"]
+                base_url = openrouter_config.get("base_url", "https://openrouter.ai/api/v1")
+                model = openrouter_config.get("model", os.getenv("OPENROUTER_MODEL", "google/gemini-flash-2.5"))
+
+                self.ai_service = OllamaService(base_url=base_url)  # Using OllamaService as a placeholder
+                self.ai_model = model
+                self.ai_temperature = openrouter_config.get("temperature", 0.3)
+                self.ai_max_tokens = openrouter_config.get("max_tokens", 8000)
+                logger.info(f"Using OpenRouter service with model: {self.ai_model}")
+            else:
+                logger.warning(f"Default AI provider '{default_provider}' not configured or disabled")
+                self.ai_service = None
+        elif "ollama" in self.config:
+            # Legacy support for older config format
+            ollama_config = self.config["ollama"]
+            self.ai_service = OllamaService(base_url=ollama_config.get("base_url", "http://localhost:11434"))
+            self.ai_model = ollama_config.get("model", "gemma3:4b")
+            self.ai_temperature = ollama_config.get("temperature", 0.2)
+            self.ai_max_tokens = ollama_config.get("max_tokens", 4000)
+            logger.info(f"Using Ollama service with model: {self.ai_model} (legacy config)")
+        else:
+            self.ai_service = None
+            logger.warning("AI service configuration not found, AI-powered analysis will not be available")
+
+        # No database context provider needed for this task
+        self.db_context_provider = None
+
+        # Ensure directories exist
+        os.makedirs(self.inbound_dir, exist_ok=True)
+        os.makedirs(self.outbound_dir, exist_ok=True)
+
+        logger.info("Autonomous worker initialized")
+        logger.info(f"Inbound directory: {self.inbound_dir}")
+        logger.info(f"Outbound directory: {self.outbound_dir}")
+
+    def _load_config(self, config_path: str) -> Dict[str, Any]:
+        """
+        Load the configuration file.
+
+        Args:
+            config_path: Path to the configuration file
+
+        Returns:
+            The configuration as a dictionary
+        """
+        try:
+            config_path = os.path.join(os.path.dirname(__file__), "../../agent_worker", config_path)
+            with open(config_path, 'r') as f:
+                config = json.load(f)
+            logger.info(f"Configuration loaded from {config_path}")
+            return config
+        except Exception as e:
+            logger.error(f"Error loading configuration: {str(e)}")
+            # Create default config
+            return {
+                "database": {
+                    "supabase_url": "https://brxpkhpkitfzecvmwzgz.supabase.co",
+                    "supabase_key": "your-supabase-key-here"
+                },
+                "include_patterns": ["*.py", "*.js", "*.ts", "*.html", "*.css"],
+                "exclude_patterns": ["node_modules", "__pycache__", "*.pyc", "*.map"]
+            }
+
+    def _init_supabase(self) -> Optional[Client]:
+        """
+        Initialize the Supabase client.
+
+        Returns:
+            Supabase client or None if initialization fails
+        """
+        try:
+            url = self.config["database"]["supabase_url"]
+            key = self.config["database"]["supabase_key"]
+            client = create_client(url, key)
+            logger.info("Supabase client initialized")
+            return client
+        except Exception as e:
+            logger.error(f"Error initializing Supabase client: {str(e)}")
+            return None
+
+    def scan_inbound_folder(self) -> List[str]:
+        """
+        Scan the inbound folder for files to process.
+
+        Returns:
+            List of file paths to process
+        """
+        files_to_process = []
+
+        # Process each include pattern
+        for pattern in self.config["include_patterns"]:
+            pattern_path = os.path.join(self.inbound_dir, "**", pattern)
+            matching_files = glob.glob(pattern_path, recursive=True)
+
+            # Filter out excluded patterns
+            for file_path in matching_files:
+                should_exclude = False
+                for exclude in self.config["exclude_patterns"]:
+                    if exclude in file_path:
+                        should_exclude = True
+                        break
+
+                if not should_exclude:
+                    files_to_process.append(file_path)
+
+        logger.info(f"Found {len(files_to_process)} files to process")
+        return files_to_process
+
+    def process_file(self, file_path: str) -> Dict[str, Any]:
+        """
+        Process a single file and extract documentation.
+
+        Args:
+            file_path: Path to the file to process
+
+        Returns:
+            Dictionary with extracted documentation
+        """
+        try:
+            # Read the file content
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                content = f.read()
+
+            file_info = {
+                "path": file_path,
+                "filename": os.path.basename(file_path),
+                "extension": os.path.splitext(file_path)[1],
+                "content": content,
+                "size": os.path.getsize(file_path),
+                "last_modified": os.path.getmtime(file_path)
+            }
+
+            logger.info(f"Processed file: {file_path}")
+            self.processed_files.append(file_info)
+            return file_info
+
+        except Exception as e:
+            logger.error(f"Error processing file {file_path}: {str(e)}")
+            return {"path": file_path, "error": str(e)}
+
+    def analyze_code(self, file_info: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Analyze a code file and extract components and relationships.
+
+        Args:
+            file_info: Information about the file to analyze
+
+        Returns:
+            Dictionary with analysis results
+        """
+        # Extract file information
+        filename = file_info["filename"]
+        content = file_info["content"]
+        extension = file_info["extension"]
+
+        # Initialize analysis results
+        analysis = {
+            "components": [],
+            "relationships": [],
+            "summary": ""
+        }
+
+        # First, use basic analysis to extract components and relationships
+        if extension == ".py":
+            analysis = self._analyze_python_file(content, filename)
+        elif extension in [".js", ".ts"]:
+            analysis = self._analyze_javascript_file(content, filename)
+        elif extension == ".html":
+            analysis = self._analyze_html_file(content, filename)
+        elif extension == ".css":
+            analysis = self._analyze_css_file(content, filename)
+
+        # Then, if AI service is available, enhance the analysis with AI
+        if self.ai_service:
+            try:
+                # Determine the language based on extension
+                language = None
+                if extension == ".py":
+                    language = "python"
+                elif extension in [".js", ".jsx"]:
+                    language = "javascript"
+                elif extension in [".ts", ".tsx"]:
+                    language = "typescript"
+                elif extension == ".html":
+                    language = "html"
+                elif extension == ".css":
+                    language = "css"
+
+                # Use AI to analyze the code
+                ai_analysis = self.ai_service.analyze_code(
+                    model=self.ai_model,
+                    code=content,
+                    language=language,
+                    task="document"
+                )
+
+                # Extract AI-generated documentation
+                if "result" in ai_analysis and ai_analysis["result"]:
+                    # Add AI-generated summary
+                    analysis["ai_summary"] = ai_analysis["result"]
+
+                    # Try to extract more detailed component descriptions
+                    for component in analysis["components"]:
+                        # Look for component name in AI summary
+                        component_name = component["name"]
+                        if component_name in ai_analysis["result"]:
+                            # Find the paragraph containing the component name
+                            paragraphs = ai_analysis["result"].split("\n\n")
+                            for paragraph in paragraphs:
+                                if component_name in paragraph:
+                                    component["description"] = paragraph.strip()
+                                    break
+
+                logger.info(f"Enhanced analysis of {filename} with AI")
+            except Exception as e:
+                logger.error(f"Error using AI to analyze {filename}: {str(e)}")
+
+        return analysis
+
+    def _analyze_python_file(self, content: str, filename: str) -> Dict[str, Any]:
+        """
+        Analyze a Python file.
+
+        Args:
+            content: Content of the file
+            filename: Name of the file
+
+        Returns:
+            Dictionary with analysis results
+        """
+        # This is a simplified implementation
+        # In a real implementation, you would use the ast module to parse the Python code
+
+        components = []
+        relationships = []
+
+        # Extract classes
+        class_lines = [line for line in content.split("\n") if line.strip().startswith("class ")]
+        for line in class_lines:
+            class_name = line.split("class ")[1].split("(")[0].strip()
+            components.append({
+                "type": "class",
+                "name": class_name,
+                "file": filename
+            })
+
+        # Extract functions
+        function_lines = [line for line in content.split("\n") if line.strip().startswith("def ")]
+        for line in function_lines:
+            function_name = line.split("def ")[1].split("(")[0].strip()
+            components.append({
+                "type": "function",
+                "name": function_name,
+                "file": filename
+            })
+
+        # Extract imports
+        import_lines = [line for line in content.split("\n") if line.strip().startswith("import ") or line.strip().startswith("from ")]
+        for line in import_lines:
+            if line.strip().startswith("import "):
+                module_name = line.split("import ")[1].strip()
+                relationships.append({
+                    "type": "imports",
+                    "source": filename,
+                    "target": module_name
+                })
+            elif line.strip().startswith("from "):
+                module_name = line.split("from ")[1].split("import")[0].strip()
+                relationships.append({
+                    "type": "imports",
+                    "source": filename,
+                    "target": module_name
+                })
+
+        # Generate summary
+        summary = f"Python file {filename} contains {len(components)} components and {len(relationships)} relationships."
+
+        return {
+            "components": components,
+            "relationships": relationships,
+            "summary": summary
+        }
+
+    def _analyze_javascript_file(self, content: str, filename: str) -> Dict[str, Any]:
+        """
+        Analyze a JavaScript/TypeScript file.
+
+        Args:
+            content: Content of the file
+            filename: Name of the file
+
+        Returns:
+            Dictionary with analysis results
+        """
+        # Simplified implementation
+        components = []
+        relationships = []
+
+        # Extract classes
+        class_lines = [line for line in content.split("\n") if "class " in line]
+        for line in class_lines:
+            if "class " in line:
+                class_name = line.split("class ")[1].split("{")[0].split("extends")[0].strip()
+                components.append({
+                    "type": "class",
+                    "name": class_name,
+                    "file": filename
+                })
+
+        # Extract functions
+        function_lines = [line for line in content.split("\n") if "function " in line]
+        for line in function_lines:
+            function_name = line.split("function ")[1].split("(")[0].strip()
+            components.append({
+                "type": "function",
+                "name": function_name,
+                "file": filename
+            })
+
+        # Extract imports
+        import_lines = [line for line in content.split("\n") if "import " in line]
+        for line in import_lines:
+            if "from " in line:
+                module_name = line.split("from ")[1].replace(";", "").replace("'", "").replace('"', '').strip()
+                relationships.append({
+                    "type": "imports",
+                    "source": filename,
+                    "target": module_name
+                })
+
+        # Generate summary
+        summary = f"JavaScript/TypeScript file {filename} contains {len(components)} components and {len(relationships)} relationships."
+
+        return {
+            "components": components,
+            "relationships": relationships,
+            "summary": summary
+        }
+
+    def _analyze_html_file(self, content: str, filename: str) -> Dict[str, Any]:
+        """
+        Analyze an HTML file.
+
+        Args:
+            content: Content of the file
+            filename: Name of the file
+
+        Returns:
+            Dictionary with analysis results
+        """
+        # Simplified implementation
+        components = []
+        relationships = []
+
+        # Extract components (simplified)
+        components.append({
+            "type": "html_document",
+            "name": filename,
+            "file": filename
+        })
+
+        # Extract relationships (e.g., CSS and JS includes)
+        link_lines = [line for line in content.split("\n") if "<link" in line]
+        for line in link_lines:
+            if "href=" in line:
+                href = line.split("href=")[1].split('"')[1]
+                relationships.append({
+                    "type": "includes",
+                    "source": filename,
+                    "target": href
+                })
+
+        script_lines = [line for line in content.split("\n") if "<script" in line]
+        for line in script_lines:
+            if "src=" in line:
+                src = line.split("src=")[1].split('"')[1]
+                relationships.append({
+                    "type": "includes",
+                    "source": filename,
+                    "target": src
+                })
+
+        # Generate summary
+        summary = f"HTML file {filename} contains {len(components)} components and {len(relationships)} relationships."
+
+        return {
+            "components": components,
+            "relationships": relationships,
+            "summary": summary
+        }
+
+    def _analyze_css_file(self, content: str, filename: str) -> Dict[str, Any]:
+        """
+        Analyze a CSS file.
+
+        Args:
+            content: Content of the file
+            filename: Name of the file
+
+        Returns:
+            Dictionary with analysis results
+        """
+        # Simplified implementation
+        components = []
+        relationships = []
+
+        # Extract selectors (simplified)
+        selector_lines = [line for line in content.split("\n") if "{" in line]
+        for line in selector_lines:
+            selector = line.split("{")[0].strip()
+            if selector:
+                components.append({
+                    "type": "css_selector",
+                    "name": selector,
+                    "file": filename
+                })
+
+        # Generate summary
+        summary = f"CSS file {filename} contains {len(components)} selectors."
+
+        return {
+            "components": components,
+            "relationships": relationships,
+            "summary": summary
+        }
+
+    def store_documentation(self, analysis_results: List[Dict[str, Any]]):
+        """
+        Store the generated documentation in the database.
+
+        Args:
+            analysis_results: List of analysis results for each file
+        """
+        if not self.supabase:
+            logger.error("Supabase client not initialized, cannot store documentation")
+            return
+
+        try:
+            # Process each file's analysis results
+            for result in analysis_results:
+                # Store components as context entries
+                for component in result["components"]:
+                    entry = {
+                        "entry_type": component["type"],
+                        "title": component["name"],
+                        "content": f"Component in file {component['file']}",
+                        "metadata": json.dumps(component)
+                    }
+
+                    # Insert into database
+                    response = self.supabase.table("tool_context_entries").insert(entry).execute()
+                    component_id = response.data[0]["id"] if response.data else None
+
+                    if component_id:
+                        logger.info(f"Stored component: {component['name']}")
+
+                        # Store component ID for relationship creation
+                        component["id"] = component_id
+
+                # Store relationships
+                for relationship in result["relationships"]:
+                    # Find source and target components
+                    source_id = None
+                    target_id = None
+
+                    for component in result["components"]:
+                        if component["file"] == relationship["source"]:
+                            source_id = component.get("id")
+                            break
+
+                    # Target might be in another file, so we need to query the database
+                    if not target_id:
+                        response = self.supabase.table("tool_context_entries").select("id").eq("title", relationship["target"]).execute()
+                        if response.data:
+                            target_id = response.data[0]["id"]
+
+                    if source_id and target_id:
+                        rel_entry = {
+                            "source_id": source_id,
+                            "target_id": target_id,
+                            "relationship_type": relationship["type"]
+                        }
+
+                        # Insert into database
+                        self.supabase.table("tool_context_relationships").insert(rel_entry).execute()
+                        logger.info(f"Stored relationship: {relationship['type']} from {relationship['source']} to {relationship['target']}")
+
+            logger.info("Documentation stored in database")
+
+        except Exception as e:
+            logger.error(f"Error storing documentation: {str(e)}")
+
+    def generate_output_files(self, analysis_results: List[Dict[str, Any]]):
+        """
+        Generate output files in the outbound folder.
+
+        Args:
+            analysis_results: List of analysis results for each file
+        """
+        try:
+            # Ensure outbound directory exists
+            os.makedirs(self.outbound_dir, exist_ok=True)
+
+            # Generate codebase structure markdown
+            structure_path = os.path.join(self.outbound_dir, "codebase_structure.md")
+            with open(structure_path, 'w') as f:
+                f.write("# Codebase Structure\n\n")
+
+                # Group components by file
+                files = {}
+                for result in analysis_results:
+                    for component in result["components"]:
+                        file = component["file"]
+                        if file not in files:
+                            files[file] = []
+                        files[file].append(component)
+
+                # Write file structure
+                for file, components in files.items():
+                    f.write(f"## {file}\n\n")
+                    for component in components:
+                        f.write(f"- {component['type']}: {component['name']}\n")
+                    f.write("\n")
+
+            # Generate component documentation
+            docs_path = os.path.join(self.outbound_dir, "component_documentation.md")
+            with open(docs_path, 'w') as f:
+                f.write("# Component Documentation\n\n")
+
+                # Group components by type
+                component_types = {}
+                for result in analysis_results:
+                    for component in result["components"]:
+                        comp_type = component["type"]
+                        if comp_type not in component_types:
+                            component_types[comp_type] = []
+                        component_types[comp_type].append(component)
+
+                # Write component documentation
+                for comp_type, components in component_types.items():
+                    f.write(f"## {comp_type.capitalize()}s\n\n")
+                    for component in components:
+                        f.write(f"### {component['name']}\n\n")
+                        f.write(f"File: {component['file']}\n\n")
+                        # Add more details if available
+                        f.write("\n")
+
+            # Generate relationship diagram (simplified as markdown)
+            diagram_path = os.path.join(self.outbound_dir, "relationship_diagram.md")
+            with open(diagram_path, 'w') as f:
+                f.write("# Component Relationships\n\n")
+
+                # Write relationships
+                for result in analysis_results:
+                    for relationship in result["relationships"]:
+                        f.write(f"- {relationship['source']} {relationship['type']} {relationship['target']}\n")
+
+            # Generate summary report
+            summary_path = os.path.join(self.outbound_dir, "summary_report.md")
+            with open(summary_path, 'w') as f:
+                f.write("# Summary Report\n\n")
+
+                # Count components by type
+                component_counts = {}
+                for result in analysis_results:
+                    for component in result["components"]:
+                        comp_type = component["type"]
+                        if comp_type not in component_counts:
+                            component_counts[comp_type] = 0
+                        component_counts[comp_type] += 1
+
+                # Count relationships by type
+                relationship_counts = {}
+                for result in analysis_results:
+                    for relationship in result["relationships"]:
+                        rel_type = relationship["type"]
+                        if rel_type not in relationship_counts:
+                            relationship_counts[rel_type] = 0
+                        relationship_counts[rel_type] += 1
+
+                # Write summary
+                f.write(f"Processed {len(self.processed_files)} files\n\n")
+
+                f.write("## Component Counts\n\n")
+                for comp_type, count in component_counts.items():
+                    f.write(f"- {comp_type.capitalize()}s: {count}\n")
+
+                f.write("\n## Relationship Counts\n\n")
+                for rel_type, count in relationship_counts.items():
+                    f.write(f"- {rel_type.capitalize()}: {count}\n")
+
+            # Generate AI documentation if available
+            ai_docs_path = os.path.join(self.outbound_dir, "ai_documentation.md")
+            with open(ai_docs_path, 'w') as f:
+                f.write("# AI-Generated Documentation\n\n")
+
+                # Check if any results have AI summaries
+                has_ai_summaries = False
+                for result in analysis_results:
+                    if "ai_summary" in result and result["ai_summary"]:
+                        has_ai_summaries = True
+                        break
+
+                if has_ai_summaries:
+                    # Write AI-generated documentation for each file
+                    for result in analysis_results:
+                        if "ai_summary" in result and result["ai_summary"]:
+                            for component in result["components"]:
+                                f.write(f"## {component['name']} ({component['type']})\n\n")
+                                if "description" in component:
+                                    f.write(f"{component['description']}\n\n")
+                                else:
+                                    f.write(f"Component in file {component['file']}\n\n")
+                else:
+                    # If no AI summaries, use the AI service directly to generate documentation
+                    if self.ai_service:
+                        try:
+                            # Prepare a prompt with all the code files
+                            prompt = "# Code Documentation Task\n\n"
+                            prompt += "Please analyze and document the following code files:\n\n"
+
+                            for file_info in self.processed_files:
+                                filename = file_info["filename"]
+                                content = file_info["content"]
+                                extension = file_info["extension"].lstrip(".")
+
+                                prompt += f"## File: {filename}\n\n"
+                                prompt += f"```{extension}\n{content}\n```\n\n"
+
+                            # Generate documentation using the AI model
+                            result = self.ai_service.generate(
+                                model=self.ai_model,
+                                prompt=prompt,
+                                temperature=0.2,
+                                max_tokens=4000
+                            )
+
+                            if "response" in result:
+                                f.write(result["response"])
+                                logger.info("Generated AI documentation using direct prompt")
+                            else:
+                                f.write("Failed to generate AI documentation.")
+                                logger.error("Failed to generate AI documentation")
+                        except Exception as e:
+                            f.write(f"Error generating AI documentation: {str(e)}")
+                            logger.error(f"Error generating AI documentation: {str(e)}")
+                    else:
+                        f.write("AI service not available. No AI-generated documentation.")
+
+            logger.info("Generated output files in outbound folder")
+
+        except Exception as e:
+            logger.error(f"Error generating output files: {str(e)}")
+
+    def run(self):
+        """
+        Run the autonomous worker.
+        """
+        logger.info("Starting autonomous worker")
+
+        try:
+            # Step 1: Scan inbound folder
+            files = self.scan_inbound_folder()
+
+            # Step 2: Process and analyze files
+            analysis_results = []
+            for file_path in files:
+                file_info = self.process_file(file_path)
+                analysis = self.analyze_code(file_info)
+                analysis_results.append(analysis)
+
+            # Step 3: Store documentation
+            self.store_documentation(analysis_results)
+
+            # Step 4: Generate output files
+            self.generate_output_files(analysis_results)
+
+            logger.info("Autonomous worker completed successfully")
+
+        except Exception as e:
+            logger.error(f"Error running autonomous worker: {str(e)}")
+
+if __name__ == "__main__":
+    worker = AutonomousWorker()
+    worker.run()

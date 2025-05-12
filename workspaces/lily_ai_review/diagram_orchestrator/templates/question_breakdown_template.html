@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Question Breakdown</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            /* Set portrait orientation - A4 dimensions in pixels (at 96 DPI) */
+            width: 794px;  /* 210mm at 96 DPI */
+            height: 1123px; /* 297mm at 96 DPI */
+            max-width: none;
+            max-height: none;
+            transform: none;
+            overflow: hidden;
+        }
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+        .container {
+            max-width: 750px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #444;
+            margin-bottom: 10px;
+        }
+        .description {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #666;
+        }
+        .question-breakdown {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        .main-question {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .main-question-box {
+            background-color: #f0f7ff;
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            padding: 20px;
+            display: inline-block;
+            min-width: 60%;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+        .main-question-text {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 0;
+        }
+        .sub-questions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .sub-question {
+            background-color: white;
+            border: 2px solid #95a5a6;
+            border-radius: 8px;
+            padding: 12px;
+            width: calc(50% - 30px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+            margin-bottom: 10px;
+        }
+        .sub-question::before {
+            content: "";
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            width: 2px;
+            height: 20px;
+            background-color: #95a5a6;
+        }
+        .sub-question h3 {
+            margin-top: 0;
+            color: #34495e;
+            font-size: 16px;
+        }
+        .sub-question p {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 0;
+        }
+        .connector {
+            width: 2px;
+            height: 30px;
+            background-color: #95a5a6;
+            margin: 0 auto;
+        }
+        .connector-horizontal {
+            width: 80%;
+            height: 2px;
+            background-color: #95a5a6;
+            margin: 0 auto 20px auto;
+        }
+
+        /* Color-coding for different types of sub-questions */
+        .factual {
+            border-color: #3498db;
+        }
+        .factual h3 {
+            color: #3498db;
+        }
+        .factual::before {
+            background-color: #3498db;
+        }
+
+        .analytical {
+            border-color: #9b59b6;
+        }
+        .analytical h3 {
+            color: #9b59b6;
+        }
+        .analytical::before {
+            background-color: #9b59b6;
+        }
+
+        .evaluative {
+            border-color: #e67e22;
+        }
+        .evaluative h3 {
+            color: #e67e22;
+        }
+        .evaluative::before {
+            background-color: #e67e22;
+        }
+
+        .ethical {
+            border-color: #27ae60;
+        }
+        .ethical h3 {
+            color: #27ae60;
+        }
+        .ethical::before {
+            background-color: #27ae60;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 0 15px 10px 15px;
+        }
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            margin-right: 8px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{title}</h1>
+        <p class="description">
+            {description}
+        </p>
+
+        <div class="question-breakdown">
+            <div class="main-question">
+                <div class="main-question-box">
+                    <p class="main-question-text" id="main-question"></p>
+                </div>
+            </div>
+
+            <div class="connector"></div>
+            <div class="connector-horizontal"></div>
+
+            <div class="sub-questions" id="sub-questions-container">
+                <!-- Sub-questions will be added here by JavaScript -->
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #3498db;"></div>
+                <span>Factual Questions</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #9b59b6;"></div>
+                <span>Analytical Questions</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #e67e22;"></div>
+                <span>Evaluative Questions</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #27ae60;"></div>
+                <span>Ethical Questions</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get the question breakdown data from the template
+            var questionData = {json_data};
+
+            // Set the main question
+            document.getElementById('main-question').textContent = questionData.main_question;
+
+            // Populate sub-questions
+            var subQuestionsContainer = document.getElementById('sub-questions-container');
+            if (questionData.sub_questions && questionData.sub_questions.length > 0) {
+                questionData.sub_questions.forEach(function(subQuestion) {
+                    var subQuestionElement = document.createElement('div');
+                    subQuestionElement.className = 'sub-question ' + subQuestion.type;
+
+                    var titleElement = document.createElement('h3');
+                    titleElement.textContent = subQuestion.question;
+                    subQuestionElement.appendChild(titleElement);
+
+                    var descriptionElement = document.createElement('p');
+                    descriptionElement.textContent = subQuestion.description;
+                    subQuestionElement.appendChild(descriptionElement);
+
+                    subQuestionsContainer.appendChild(subQuestionElement);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

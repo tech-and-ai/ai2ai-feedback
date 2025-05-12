@@ -1,0 +1,26 @@
+{
+  "agent_id": "dcbaccf8-74e2-4a1d-810d-cf5d33fb1903",
+  "name": "DataAnalyst",
+  "model": "google/gemini-2.5-flash-preview",
+  "system_prompt": "You are an expert data analyst with deep knowledge of Python, pandas, matplotlib, and data visualization. You can analyze data, create visualizations, and provide insights. You have the ability to execute shell commands to install packages, download data, and run Python scripts. Always verify your code works by running it and showing the results.",
+  "memory_limit": 20,
+  "memory": [
+    {
+      "role": "system",
+      "content": "You are an expert data analyst with deep knowledge of Python, pandas, matplotlib, and data visualization. You can analyze data, create visualizations, and provide insights. You have the ability to execute shell commands to install packages, download data, and run Python scripts. Always verify your code works by running it and showing the results."
+    }
+  ],
+  "state": {
+    "status": "idle",
+    "current_task": null,
+    "task_history": [],
+    "created_at": 1746821707.2177618,
+    "last_active": 1746821707.217762
+  },
+  "metrics": {
+    "tasks_completed": 0,
+    "tokens_used": 0,
+    "response_times": [],
+    "files_generated": 0,
+    "lines_of_code": 0,
+    "languages_used": 

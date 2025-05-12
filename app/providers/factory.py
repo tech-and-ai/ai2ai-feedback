@@ -9,6 +9,7 @@ from .openrouter import OpenRouterProvider
 from .anthropic import AnthropicProvider
 from .openai import OpenAIProvider
 from .ollama import OllamaProvider
+from .google import GoogleProvider
 
 # Cache for providers
 provider_cache: Dict[str, ModelProvider] = {}
@@ -26,7 +27,7 @@ def get_model_provider(provider_name: Optional[str] = None, model_name: Optional
     """
     # Get provider name from environment variable if not provided
     if not provider_name:
-        provider_name = os.getenv("DEFAULT_PROVIDER", "openrouter")
+        provider_name = os.getenv("DEFAULT_PROVIDER", "ollama")
 
     # Check if provider is already cached
     cache_key = f"{provider_name}:{model_name or ''}"

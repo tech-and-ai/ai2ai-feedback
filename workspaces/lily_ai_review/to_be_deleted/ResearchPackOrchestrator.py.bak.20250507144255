@@ -1,0 +1,1049 @@
+"""
+Research Pack Orchestrator
+
+This module orchestrates the generation of research packs by coordinating
+the various components involved in the process. It serves as the central
+coordinator for the entire research pack generation workflow.
+"""
+
+import os
+import logging
+import asyncio
+import json
+from typing import Dict, List, Optional, Any
+from datetime import datetime
+
+
+# Custom exception types for better error classification
+class ResearchPackError(Exception):
+    """Base exception for all research pack errors."""
+    ERROR_CODE = "RP000"
+
+    def __init__(self, message, error_code=None):
+        self.error_code = error_code or self.ERROR_CODE
+        self.message = message
+        super().__init__(f"[{self.error_code}] {message}")
+
+
+class ConfigurationError(ResearchPackError):
+    """Exception raised for configuration errors."""
+    ERROR_CODE = "RP001"
+
+
+class ContentGenerationError(ResearchPackError):
+    """Exception raised for content generation errors."""
+    ERROR_CODE = "RP002"
+
+
+class ContentValidationError(ResearchPackError):
+    """Exception raised for content validation errors."""
+    ERROR_CODE = "RP003"
+
+
+class LilyCalloutError(ResearchPackError):
+    """Exception raised for Lily callout errors."""
+    ERROR_CODE = "RP004"
+
+
+class DocumentFormattingError(ResearchPackError):
+    """Exception raised for document formatting errors."""
+    ERROR_CODE = "RP005"
+
+# Import utilities
+from app.services.utils.cloudmersive_converter import docx_to_pdf
+from app.services.utils.storage_service import StorageService
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logger = logging.getLogger("ResearchPackOrchestrator")
+
+class ResearchPackOrchestrator:
+    """
+    Orchestrates the generation of research packs by coordinating all components.
+
+    The orchestrator follows these steps:
+    1. Generate diagrams using the Diagram Orchestrator
+    2. Generate content using the Content Generator
+    3. Process content through the Lily Callout Engine
+    4. Format the document using the Document Formatter
+    5. Convert DOCX to PDF using Cloudmersive
+    6. Upload both files to Supabase S3
+    7. Return the completed research pack with file URLs
+    """
+
+    def __init__(
+            self,
+            diagram_orchestrator=None,
+            content_generator=None,
+            lily_callout_engine=None,
+            document_formatter=None,
+            storage_service=None,
+            openrouter_key: Optional[str] = None,
+            serp_key: Optional[str] = None,
+            supabase_url: Optional[str] = None,
+            supabase_key: Optional[str] = None
+        ):
+        """
+        Initialize the Research Pack Orchestrator.
+
+        Args:
+            diagram_orchestrator: The diagram orchestrator component
+            content_generator: The content generator component
+            lily_callout_engine: The Lily Callout Engine component
+            document_formatter: The document formatter component
+            storage_service: The storage service for uploading files
+            openrouter_key: API key for OpenRouter
+            serp_key: API key for SERP API
+            supabase_url: URL for Supabase
+            supabase_key: API key for Supabase
+        """
+        self.diagram_orchestrator = diagram_orchestrator
+        self.content_generator = content_generator
+        self.lily_callout_engine = lily_callout_engine
+        self.document_formatter = document_formatter
+        self.openrouter_key = openrouter_key
+        self.serp_key = serp_key
+
+        # Initialize storage service if not provided
+        if storage_service:
+            self.storage_service = storage_service
+        else:
+            try:
+                self.storage_service = StorageService(supabase_url, supabase_key)
+                logger.info("Storage service initialized")
+            except Exception as e:
+                logger.error(f"Error initializing storage service: {str(e)}")
+                self.storage_service = None
+
+        # Log initialization
+        logger.info("Research Pack Orchestrator initialized")
+
+        # Log key information without exposing the full keys
+        if openrouter_key:
+            key_prefix = openrouter_key[:4] if len(openrouter_key) > 4 else "***"
+            logger.info(f"Using OpenRouter API key (prefix: {key_prefix}...)")
+        else:
+            logger.warning("No OpenRouter API key provided")
+
+        if serp_key:
+            key_prefix = serp_key[:4] if len(serp_key) > 4 else "***"
+            logger.info(f"Using SERP API key (prefix: {key_prefix}...)")
+        else:
+            logger.warning("No SERP API key provided")
+
+    async def generate_research_pack(
+            self,
+            topic: str,
+            question: str,
+            user_id: str,
+            education_level: str = "university",
+            include_diagrams: bool = True,
+            premium: bool = False,
+            personalized_questions: List[str] = None
+        ) -> Dict[str, Any]:
+        """
+        Generate a research pack for the given topic and question.
+
+        Args:
+            topic: The research topic
+            question: The research question
+            user_id: The ID of the user requesting the research pack
+            education_level: The education level (high-school, college, university)
+            include_diagrams: Whether to include diagrams in the research pack
+            premium: Whether this is a premium request
+            personalized_questions: List of personalized questions from the user
+
+        Returns:
+            A dictionary containing the research pack details
+        """
+        logger.info(f"Generating research pack for topic: {topic}, question: {question}")
+
+        # Track timing for performance analysis
+        start_time = datetime.now()
+
+        # Create a dictionary to store all components of the research pack
+        research_pack = {
+            "topic": topic,
+            "question": question,
+            "user_id": user_id,
+            "education_level": education_level,
+            "premium": premium,
+            "personalized_questions": personalized_questions or [],
+            "diagrams": [],
+            "content": {},
+            "document_path": None,
+            "pdf_path": None,
+            "docx_url": None,
+            "pdf_url": None,
+            "created_at": start_time.isoformat()
+        }
+
+        try:
+            # STEP 1: Generate diagrams (first priority)
+            if include_diagrams and self.diagram_orchestrator:
+                logger.info("Starting diagram generation")
+                research_pack["diagrams"] = await self._generate_diagrams(topic, question)
+                logger.info(f"Generated {len(research_pack['diagrams'])} diagrams")
+
+            # STEP 2: Generate content
+            if self.content_generator:
+                logger.info("Starting content generation")
+                research_pack["content"] = await self._generate_content(topic, question, education_level, premium)
+                logger.info("Content generation completed")
+
+            # STEP 3: Generate answers to personalized questions
+            if research_pack["personalized_questions"] and research_pack["content"]:
+                logger.info("Generating answers to personalized questions")
+                await self._generate_personalized_answers(
+                    research_pack=research_pack,
+                    topic=topic,
+                    education_level=education_level
+                )
+                logger.info("Personalized answers generation completed")
+
+            # STEP 4: Process content through Lily Callout Engine
+            if self.lily_callout_engine and research_pack["content"]:
+                logger.info("Processing content through Lily Callout Engine")
+                research_pack["content"] = await self._process_with_lily_callout_engine(
+                    content=research_pack["content"],
+                    topic=topic,
+                    education_level=education_level
+                )
+                logger.info("Lily Callout Engine processing completed")
+
+            # STEP 4: Format the document
+            if self.document_formatter and research_pack["content"]:
+                logger.info("Formatting document")
+                research_pack["document_path"] = await self._format_document(
+                    research_pack["content"],
+                    research_pack["diagrams"],
+                    topic,
+                    question,
+                    user_id
+                )
+                logger.info(f"Document formatted and saved to {research_pack['document_path']}")
+
+                # STEP 5: Convert DOCX to PDF
+                if research_pack["document_path"]:
+                    logger.info("Converting DOCX to PDF")
+                    research_pack["pdf_path"] = await self._convert_to_pdf(research_pack["document_path"])
+                    if research_pack["pdf_path"]:
+                        logger.info(f"DOCX converted to PDF: {research_pack['pdf_path']}")
+                    else:
+                        logger.error("Failed to convert DOCX to PDF")
+
+                # STEP 6: Upload files to Supabase S3
+                if self.storage_service:
+                    logger.info("Uploading files to Supabase S3")
+
+                    # Upload DOCX
+                    if research_pack["document_path"]:
+                        research_pack["docx_url"] = await self._upload_to_storage(
+                            research_pack["document_path"],
+                            "research-packs",
+                            f"{user_id}/{topic.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d%H%M%S')}.docx"
+                        )
+
+                    # Upload PDF
+                    if research_pack["pdf_path"]:
+                        research_pack["pdf_url"] = await self._upload_to_storage(
+                            research_pack["pdf_path"],
+                            "research-packs",
+                            f"{user_id}/{topic.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
+                        )
+
+                    logger.info("File uploads completed")
+
+            # Calculate and log total generation time
+            end_time = datetime.now()
+            duration = (end_time - start_time).total_seconds()
+            research_pack["generation_time"] = duration
+            logger.info(f"Research pack generation completed in {duration:.2f} seconds")
+
+            return research_pack
+
+        except Exception as e:
+            logger.error(f"Error generating research pack: {str(e)}", exc_info=True)
+            raise
+
+    async def _generate_diagrams(self, topic: str, question: str) -> List[Dict[str, Any]]:
+        """
+        Generate diagrams for the research pack.
+
+        Args:
+            topic: The research topic
+            question: The research question
+
+        Returns:
+            A list of dictionaries containing diagram details
+        """
+        logger.info(f"Generating diagrams for topic: {topic}")
+
+        # Placeholder for diagram generation
+        diagrams = []
+
+        try:
+            if self.diagram_orchestrator:
+                # Generate mind map
+                mind_map = await self.diagram_orchestrator.generate_mind_map(topic)
+                if mind_map:
+                    diagrams.append({
+                        "type": "mind_map",
+                        "path": mind_map,
+                        "title": f"Mind Map: {topic}"
+                    })
+
+                # Generate journey map
+                journey_map = await self.diagram_orchestrator.generate_journey_map(topic)
+                if journey_map:
+                    diagrams.append({
+                        "type": "journey_map",
+                        "path": journey_map,
+                        "title": f"Research Journey Map: {topic}"
+                    })
+
+                # Generate question breakdown
+                question_breakdown = await self.diagram_orchestrator.generate_question_breakdown(question)
+                if question_breakdown:
+                    diagrams.append({
+                        "type": "question_breakdown",
+                        "path": question_breakdown,
+                        "title": f"Question Breakdown: {question}"
+                    })
+
+                # Generate argument mapping
+                argument_mapping = await self.diagram_orchestrator.generate_argument_mapping(topic)
+                if argument_mapping:
+                    diagrams.append({
+                        "type": "argument_mapping",
+                        "path": argument_mapping,
+                        "title": f"Argument Mapping: {topic}"
+                    })
+
+                # Generate comparative analysis
+                comparative_analysis = await self.diagram_orchestrator.generate_comparative_analysis(topic)
+                if comparative_analysis:
+                    diagrams.append({
+                        "type": "comparative_analysis",
+                        "path": comparative_analysis,
+                        "title": f"Comparative Analysis: {topic}"
+                    })
+
+                logger.info(f"Generated {len(diagrams)} diagrams")
+            else:
+                logger.warning("No diagram orchestrator provided, skipping diagram generation")
+
+        except Exception as e:
+            logger.error(f"Error generating diagrams: {str(e)}", exc_info=True)
+            # Continue with the process even if diagram generation fails
+
+        return diagrams
+
+    async def _get_static_content(self, section_name: str) -> Optional[str]:
+        """
+        Retrieve static content from the database.
+
+        Args:
+            section_name: The name of the section to retrieve
+
+        Returns:
+            The static content or None if not found
+        """
+        try:
+            # Import the config service
+            from app.services.config import config_service
+
+            if not hasattr(config_service, 'db_connection') or not config_service.db_connection:
+                logger.error("No database connection available. Cannot retrieve static content.")
+                return None
+
+            # Query the static content table
+            try:
+                query = """
+                SELECT content
+                FROM saas_static_content
+                WHERE name = %s
+                AND content_type = 'research_pack_section'
+                AND is_current_version = true
+                ORDER BY version DESC
+                LIMIT 1
+                """
+
+                result = config_service.db_connection.execute(query, (section_name,)).fetchone()
+            except Exception as e:
+                logger.error(f"Error executing query: {str(e)}")
+                # Use direct Supabase query as fallback
+                try:
+                    from app.services.config.supabase_client import supabase_client
+                    response = supabase_client.table('saas_static_content').select('content').eq('name', section_name).eq('content_type', 'research_pack_section').eq('is_current_version', True).order('version', desc=True).limit(1).execute()
+                    if response.data:
+                        return response.data[0]['content']
+                    result = None
+                except Exception as e2:
+                    logger.error(f"Error with fallback query: {str(e2)}")
+                    result = None
+
+            if result:
+                return result[0]
+            else:
+                logger.warning(f"No static content found for section: {section_name}")
+                return None
+
+        except Exception as e:
+            logger.error(f"Error retrieving static content: {str(e)}")
+            return None
+
+    async def _generate_content(self, topic: str, question: str, education_level: str, premium: bool) -> Dict[str, Any]:
+        """
+        Generate content for the research pack.
+
+        Args:
+            topic: The research topic
+            question: The research question
+            education_level: The education level
+            premium: Whether this is a premium request
+
+        Returns:
+            A dictionary containing the generated content
+        """
+        request_id = f"req_{int(datetime.now().timestamp())}"
+        logger.info(f"[{request_id}] Generating content for topic: {topic}, question: {question}, education_level: {education_level}, premium: {premium}")
+
+        try:
+            # Import the LLM service
+            from app.services.llm import llm_service
+
+            # Import the research generator
+            from app.services.research_generator.research_generator import ResearchGenerator
+
+            # Step 1: Generate a research plan
+            logger.info(f"[{request_id}] Generating research plan for topic: {topic}")
+            # Store the research plan in a variable for future use
+            research_plan = llm_service.generate_research_plan(topic, [question])
+            logger.info(f"[{request_id}] Research plan generated successfully")
+
+            # Step 2: Conduct research if we have a SERP API key
+            research_context = None
+            if self.serp_key:
+                try:
+                    # Initialize the research generator
+                    research_generator = ResearchGenerator(
+                        openrouter_key=self.openrouter_key,
+                        serp_api_key=self.serp_key
+                    )
+
+                    # Create a research session (session ID not used directly but needed for the API)
+                    session_id = await research_generator.create_research_session(topic, [question])
+
+                    # Conduct research using the research plan we already generated
+                    logger.info(f"Conducting research for topic: {topic}")
+
+                    # First, let's search for sources using our research plan
+                    logger.info(f"Searching for sources using research plan")
+                    search_results = await research_generator.search_sources(research_plan, session_id)
+
+                    if "error" in search_results:
+                        logger.error(f"Error during source search: {search_results['error']}")
+                        research_context = None
+                    else:
+                        # Extract content from sources
+                        sources = search_results.get("academic_sources", [])
+                        logger.info(f"Found {len(sources)} academic sources, extracting content")
+                        sources_with_content = await research_generator.extract_content(sources, session_id)
+
+                        # Extract citations
+                        logger.info(f"Extracting citations from sources")
+                        citations = await research_generator.extract_citations(sources_with_content, session_id)
+
+                        # Get the enabled citation style
+                        from app.services.config import config_service
+                        citation_style = config_service.get_enabled_citation_style()
+                        primary_style = citation_style["name"].lower()
+
+                        # Create research context
+                        research_context = {
+                            "sources": sources_with_content,
+                            "citations": citations,
+                            "primary_citation_style": primary_style
+                        }
+
+                        logger.info(f"Research completed with {len(sources_with_content)} sources")
+
+
+                except Exception as e:
+                    logger.error(f"Error during research: {str(e)}")
+                    research_context = None
+            else:
+                logger.warning("No SERP API key provided, skipping research phase")
+
+            # Step 3: Generate content
+            logger.info(f"Generating content for topic: {topic}")
+
+            # Create a system prompt
+            system_prompt = f"""
+            You are an academic writing assistant specializing in {education_level} level research papers.
+            Your task is to generate well-structured, academically rigorous research papers.
+            Include proper citations, academic language, and appropriate depth for the {education_level} level.
+            """
+
+            # Get sections from the database
+            from app.services.config import config_service
+
+            # Get the content generation prompt from the database
+            prompt_data = config_service.get_prompt("research_pack", "content_generation")
+
+            if not prompt_data:
+                logger.warning("No content generation prompt found in database. Using default prompt.")
+                # Create a default prompt
+                prompt_data = {
+                    "name": "Default Content Generation Prompt",
+                    "prompt_text": """
+                    You are Lily, an academic research assistant specializing in {education_level} level research.
+
+                    Your task is to create a comprehensive research pack on the topic: {topic}
+
+                    {question}
+
+                    The research pack should be structured with the following sections:
+                    {sections_list}
+
+                    Please generate content for each section. The content should be academically rigorous, well-structured, and appropriate for {education_level} level research.
+
+                    Format your response as a JSON object with the following structure:
+                    ```json
+                    {{
+                      "title": "Research Pack: {topic}",
+                      "sections": {{
+                    {sections_json_format}
+                      }}
+                    }}
+                    ```
+
+                    Each section should include:
+                    1. A clear, informative heading
+                    2. Well-structured content with appropriate academic language
+                    3. Relevant examples, case studies, or data where appropriate
+                    4. Citations to academic sources where relevant
+
+                    Your response should ONLY contain the JSON object, nothing else.
+                    """
+                }
+
+            # Get sections from the database using Supabase
+            try:
+                if not hasattr(config_service, 'supabase') or not config_service.supabase:
+                    logger.error("No Supabase connection available. Using default sections.")
+                    # Create default sections
+                    sections = [
+                        ("introduction", "Introduction", 1),
+                        ("background", "Background", 2),
+                        ("literature_review", "Literature Review", 3),
+                        ("methodology", "Methodology", 4),
+                        ("findings", "Findings", 5),
+                        ("discussion", "Discussion", 6),
+                        ("conclusion", "Conclusion", 7),
+                        ("references", "References", 8)
+                    ]
+                else:
+                    # Build the query using Supabase
+                    query = config_service.supabase.table('saas_researchpack_sections').select('name,display_name,section_order').eq('enabled', True)
+
+                    # Add education level filter if provided
+                    if education_level:
+                        query = query.or_(f"education_level_minimum.is.null,education_level_minimum.eq.,education_level_minimum.eq.{education_level}")
+
+                    # Add premium filter
+                    query = query.or_(f"premium_only.eq.false,premium_only.eq.{str(premium).lower()}")
+
+                    # Order by section_order
+                    query = query.order('section_order')
+
+                    # Execute the query
+                    result = query.execute()
+
+                    if result.data and len(result.data) > 0:
+                        # Convert to the same format as the SQLAlchemy result
+                        sections = [(section['name'], section['display_name'], section['section_order']) for section in result.data]
+                    else:
+                        logger.error("No sections found in database. Using default sections.")
+                        # Create default sections
+                        sections = [
+                            ("introduction", "Introduction", 1),
+                            ("background", "Background", 2),
+                            ("literature_review", "Literature Review", 3),
+                            ("methodology", "Methodology", 4),
+                            ("findings", "Findings", 5),
+                            ("discussion", "Discussion", 6),
+                            ("conclusion", "Conclusion", 7),
+                            ("references", "References", 8)
+                        ]
+            except Exception as e:
+                logger.error(f"Error retrieving sections: {str(e)}. Using default sections.")
+                # Create default sections
+                sections = [
+                    ("introduction", "Introduction", 1),
+                    ("background", "Background", 2),
+                    ("literature_review", "Literature Review", 3),
+                    ("methodology", "Methodology", 4),
+                    ("findings", "Findings", 5),
+                    ("discussion", "Discussion", 6),
+                    ("conclusion", "Conclusion", 7),
+                    ("references", "References", 8)
+                ]
+
+            logger.info(f"Retrieved {len(sections)} sections for content generation")
+
+            # Create sections list for the prompt
+            sections_list = "\n".join([f"{i+1}. {section[1]}" for i, section in enumerate(sections)])
+
+            # Create sections JSON format for the prompt with already escaped braces
+            sections_json_format = ""
+            for i, section in enumerate(sections):
+                section_name = section[0]
+                section_heading = section[1]
+                comma = "," if i < len(sections) - 1 else ""
+                sections_json_format += f'        "{section_name}": {{\n            "heading": "{section_heading}",\n            "content": "{section_heading} content..."\n        }}{comma}\n'
+
+            # Pre-process the prompt to handle any potential formatting issues
+            try:
+                # Get the prompt text
+                prompt_text = prompt_data["prompt_text"]
+
+                # Replace all placeholders manually to avoid format string issues
+                content_prompt = prompt_text
+
+                # Replace the sections_json_format placeholder first if it exists
+                if "{sections_json_format}" in content_prompt:
+                    content_prompt = content_prompt.replace("{sections_json_format}", sections_json_format)
+
+                # Replace the other placeholders
+                content_prompt = content_prompt.replace("{topic}", str(topic))
+                content_prompt = content_prompt.replace("{question}", str(question) if question else "")
+                content_prompt = content_prompt.replace("{education_level}", str(education_level))
+                content_prompt = content_prompt.replace("{sections_list}", str(sections_list))
+            except Exception as e:
+                logger.error(f"[{request_id}] Error pre-processing prompt: {str(e)}")
+                raise ContentGenerationError(f"Error pre-processing prompt: {str(e)}", "RP002_PROMPT_ERROR")
+
+            # Add research context if available
+            if research_context:
+                content_prompt += f"""
+
+                Use the following research sources in your paper:
+
+                Sources:
+                {json.dumps([{
+                    "title": source.get("title", ""),
+                    "authors": source.get("authors", []),
+                    "year": source.get("publication_year", ""),
+                    "summary": source.get("snippet", "")
+                } for source in research_context["sources"][:10]], indent=2)}
+
+                Citations:
+                {json.dumps(research_context["citations"].get(research_context["primary_citation_style"], [])[:10], indent=2)}
+                """
+
+            # Generate the content
+            try:
+                response = llm_service.generate_content(content_prompt, config_type='content', system_prompt=system_prompt)
+
+                # Log the full response for debugging
+                logger.info(f"Raw LLM response: {response}")
+
+                # Parse the response as JSON
+                try:
+                    # Check if the response starts with ```json and ends with ```
+                    if response.strip().startswith("```json") and "```" in response:
+                        # Extract the JSON part
+                        json_start = response.find("```json") + 7
+                        json_end = response.find("```", json_start)
+                        json_str = response[json_start:json_end].strip()
+                        logger.info(f"Extracted JSON string: {json_str[:100]}...")
+                        content = json.loads(json_str)
+                    elif response.strip().startswith("```") and "```" in response:
+                        # Extract the JSON part without the json tag
+                        json_start = response.find("```") + 3
+                        json_end = response.find("```", json_start)
+                        json_str = response[json_start:json_end].strip()
+                        logger.info(f"Extracted JSON string from code block: {json_str[:100]}...")
+                        content = json.loads(json_str)
+                    else:
+                        # Try to parse the whole response as JSON
+                        # First, try to find a JSON object in the response
+                        json_start = response.find("{")
+                        json_end = response.rfind("}") + 1
+                        if json_start >= 0 and json_end > json_start:
+                            json_str = response[json_start:json_end]
+                            logger.info(f"Extracted JSON string from response: {json_str[:100]}...")
+                            content = json.loads(json_str)
+                        else:
+                            # Try to parse the whole response as JSON
+                            content = json.loads(response)
+
+                    # Validate the content structure
+                    if 'sections' not in content:
+                        logger.error(f"[{request_id}] Content does not have a 'sections' key")
+                        raise ContentValidationError("Invalid content structure: missing 'sections' key", "RP003_NO_SECTIONS")
+
+                    if not content.get('sections'):
+                        logger.error(f"[{request_id}] Content has empty 'sections'")
+                        raise ContentValidationError("Invalid content structure: empty 'sections'", "RP003_EMPTY_SECTIONS")
+
+                    # Add static content sections
+                    static_sections = ['about_lily', 'how_to_use', 'appendices']
+                    for section_name in static_sections:
+                        static_content = await self._get_static_content(section_name)
+                        if static_content:
+                            display_name = section_name.replace('_', ' ').title()
+                            if section_name == 'about_lily':
+                                display_name = 'About Lily AI'
+                            elif section_name == 'how_to_use':
+                                display_name = 'How to Use This Pack'
+
+                            content['sections'][section_name] = {
+                                'heading': display_name,
+                                'content': static_content
+                            }
+                            logger.info(f"Added static content for section: {section_name}")
+
+                    logger.info(f"Content generated successfully with {len(content.get('sections', {}))} sections")
+                    logger.info(f"Content sections: {list(content.get('sections', {}).keys())}")
+
+                    # Log a sample of each section and validate structure
+                    for section_name, section_data in content.get('sections', {}).items():
+                        if not isinstance(section_data, dict):
+                            logger.error(f"[{request_id}] Section '{section_name}' is not a dictionary: {type(section_data)}")
+                            raise ContentValidationError(
+                                f"Invalid section structure: '{section_name}' is not a dictionary",
+                                f"RP003_SECTION_TYPE_{section_name.upper()}"
+                            )
+
+                        if 'content' not in section_data:
+                            logger.error(f"[{request_id}] Section '{section_name}' does not have a 'content' key")
+                            raise ContentValidationError(
+                                f"Invalid section structure: missing 'content' key in '{section_name}'",
+                                f"RP003_NO_CONTENT_{section_name.upper()}"
+                            )
+
+                        if 'heading' not in section_data:
+                            logger.error(f"[{request_id}] Section '{section_name}' does not have a 'heading' key")
+                            raise ContentValidationError(
+                                f"Invalid section structure: missing 'heading' key in '{section_name}'",
+                                f"RP003_NO_HEADING_{section_name.upper()}"
+                            )
+
+                        section_content = section_data.get('content', '')
+                        logger.info(f"Section '{section_name}' content sample: {section_content[:100]}...")
+
+                    # Check if all required sections are present
+                    try:
+                        if not hasattr(config_service, 'supabase') or not config_service.supabase:
+                            logger.error("No Supabase connection available. Using default required sections.")
+                            # Create default required sections
+                            required_sections = [
+                                ("introduction", "Introduction"),
+                                ("conclusion", "Conclusion")
+                            ]
+                        else:
+                            # Build the query using Supabase
+                            query = config_service.supabase.table('saas_researchpack_sections').select('name,display_name').eq('enabled', True).eq('required', True)
+
+                            # Add education level filter if provided
+                            if education_level:
+                                query = query.or_(f"education_level_minimum.is.null,education_level_minimum.eq.,education_level_minimum.eq.{education_level}")
+
+                            # Add premium filter
+                            query = query.or_(f"premium_only.eq.false,premium_only.eq.{str(premium).lower()}")
+
+                            # Order by section_order
+                            query = query.order('section_order')
+
+                            # Execute the query
+                            result = query.execute()
+
+                            if result.data and len(result.data) > 0:
+                                # Convert to the same format as the SQLAlchemy result
+                                required_sections = [(section['name'], section['display_name']) for section in result.data]
+                            else:
+                                logger.error("No required sections found in database. Using default required sections.")
+                                # Create default required sections
+                                required_sections = [
+                                    ("introduction", "Introduction"),
+                                    ("conclusion", "Conclusion")
+                                ]
+                    except Exception as e:
+                        logger.error(f"Error retrieving required sections: {str(e)}. Using default required sections.")
+                        # Create default required sections
+                        required_sections = [
+                            ("introduction", "Introduction"),
+                            ("conclusion", "Conclusion")
+                        ]
+
+                    logger.info(f"Retrieved {len(required_sections)} required sections for validation")
+
+                    # Check if all required sections are present
+                    missing_sections = []
+                    for section_name, _ in required_sections:  # display_name not used here
+                        if section_name not in content.get('sections', {}):
+                            missing_sections.append(section_name)
+
+                    if missing_sections:
+                        logger.error(f"[{request_id}] Missing required sections: {missing_sections}")
+                        raise ContentValidationError(
+                            f"Missing required sections: {', '.join(missing_sections)}",
+                            "RP003_MISSING_SECTIONS"
+                        )
+                except json.JSONDecodeError as e:
+                    logger.error(f"[{request_id}] Error parsing content as JSON: {str(e)}")
+                    logger.error(f"[{request_id}] Response sample: {response[:500]}...")
+                    raise ContentValidationError(
+                        f"Failed to parse LLM response as JSON: {str(e)}",
+                        "RP003_JSON_PARSE_ERROR"
+                    )
+            except (ContentValidationError, ConfigurationError) as e:
+                # Re-raise these specific exceptions without wrapping
+                raise
+            except Exception as e:
+                logger.error(f"[{request_id}] Error generating content: {str(e)}")
+                raise ContentGenerationError(f"Failed to generate content: {str(e)}", "RP002_GENERATION_ERROR")
+
+            return content
+
+        except (ContentValidationError, ConfigurationError, ContentGenerationError) as e:
+            # Re-raise these specific exceptions without wrapping
+            logger.error(f"[{request_id}] Error in _generate_content: {str(e)}")
+            raise
+        except Exception as e:
+            logger.error(f"[{request_id}] Error in _generate_content: {str(e)}")
+            raise ContentGenerationError(f"Unexpected error in content generation: {str(e)}", "RP002_UNEXPECTED_ERROR")
+
+    async def _generate_personalized_answers(self, research_pack: Dict[str, Any], topic: str, education_level: str = "university") -> None:
+        """
+        Generate answers to personalized questions from the user.
+
+        Args:
+            research_pack: The research pack dictionary
+            topic: The research topic
+            education_level: The education level
+
+        Returns:
+            None (updates the research_pack dictionary in place)
+        """
+        request_id = f"req_{int(datetime.now().timestamp())}"
+        logger.info(f"[{request_id}] Generating answers to personalized questions for topic: {topic}")
+
+        if not research_pack["personalized_questions"]:
+            logger.info("No personalized questions to answer")
+            return
+
+        try:
+            # Import the LLM service
+            from app.services.llm import llm_service
+
+            # Create a system prompt
+            system_prompt = f"""
+            You are Lily, an academic research assistant specializing in {education_level} level research.
+            Your task is to provide thoughtful, well-researched answers to personalized questions about the topic.
+            Include academic language and appropriate depth for the {education_level} level.
+            Be concise but thorough in your responses.
+            """
+
+            # Create a dictionary to store the answers
+            answers = {}
+
+            # Generate an answer for each question
+            for i, question in enumerate(research_pack["personalized_questions"]):
+                logger.info(f"Generating answer for question {i+1}: {question}")
+
+                # Create a prompt for this question
+                prompt = f"""
+                Topic: {topic}
+
+                Please provide a thoughtful, well-researched answer to the following question:
+
+                Question: {question}
+
+                Your answer should be academically rigorous, well-structured, and appropriate for {education_level} level research.
+                Include relevant concepts, theories, and examples in your answer.
+                """
+
+                # Generate the answer
+                answer = llm_service.generate_content(prompt, config_type='content', system_prompt=system_prompt)
+
+                # Add the answer to the dictionary
+                answers[f"question_{i+1}"] = {
+                    "question": question,
+                    "answer": answer
+                }
+
+                logger.info(f"Generated answer for question {i+1}")
+
+            # Add the answers to the research pack content
+            if "sections" not in research_pack["content"]:
+                research_pack["content"]["sections"] = {}
+
+            research_pack["content"]["sections"]["personalized_questions"] = {
+                "heading": "Personalized Questions",
+                "content": "Answers to your personalized questions about this topic.",
+                "questions": answers
+            }
+
+            logger.info(f"Added {len(answers)} personalized question answers to the research pack")
+
+        except Exception as e:
+            logger.error(f"[{request_id}] Error generating personalized answers: {str(e)}")
+            logger.warning("Continuing without personalized answers")
+
+    async def _process_with_lily_callout_engine(self, content: Dict[str, Any], topic: str = "", education_level: str = "university") -> Dict[str, Any]:
+        """
+        Process content through the Lily Callout Engine.
+
+        Args:
+            content: The content to process
+            topic: The research topic
+            education_level: The education level (university, postgraduate, etc.)
+
+        Returns:
+            The processed content
+        """
+        request_id = f"req_{int(datetime.now().timestamp())}"
+        logger.info(f"[{request_id}] Processing content with Lily Callout Engine for topic: {topic}, education_level: {education_level}")
+
+        if not self.lily_callout_engine:
+            logger.error("No Lily Callout Engine provided")
+            raise ConfigurationError("Lily Callout Engine not provided", "RP001_NO_LILY_ENGINE")
+
+        # Process the content through the Lily Callout Engine
+        processed_content = self.lily_callout_engine._enhance_with_callouts(content, topic, education_level)
+        logger.info("Content processed through Lily Callout Engine successfully")
+
+        # Count the number of callouts added
+        callout_count = str(processed_content).count("LILY_CALLOUT")
+        logger.info(f"Added {callout_count} Lily callouts to the content")
+
+        return processed_content
+
+    async def _format_document(
+            self,
+            content: Dict[str, Any],
+            topic: str,
+            user_id: str,
+            diagrams: List[Dict[str, Any]] = None,  # Kept for backward compatibility
+            question: str = ""  # Kept for backward compatibility
+        ) -> str:
+        """
+        Format the document using the document formatter.
+
+        Args:
+            content: The content to format
+            topic: The research topic
+            user_id: The user ID
+            diagrams: The diagrams to include (optional, kept for backward compatibility)
+            question: The research question (optional, kept for backward compatibility)
+
+        Returns:
+            The path to the formatted document
+        """
+        request_id = f"req_{int(datetime.now().timestamp())}"
+        logger.info(f"[{request_id}] Formatting document for topic: {topic}, user_id: {user_id}")
+
+        # Create output directory if it doesn't exist
+        output_dir = os.path.join(os.path.dirname(__file__), "output")
+        os.makedirs(output_dir, exist_ok=True)
+
+        # Generate document path
+        document_path = os.path.join(output_dir, f"research_pack_{user_id}_{datetime.now().strftime('%Y%m%d%H%M%S')}.docx")
+
+        if not self.document_formatter:
+            logger.error("No document formatter provided")
+            raise ConfigurationError("Document formatter not provided", "RP001_NO_DOC_FORMATTER")
+
+        try:
+            # Format the document using the document formatter
+            self.document_formatter.format_research_pack(content)
+
+            # Save the document
+            self.document_formatter.save_document(document_path)
+        except Exception as e:
+            logger.error(f"[{request_id}] Error formatting document: {str(e)}")
+            raise DocumentFormattingError(f"Failed to format document: {str(e)}", "RP005_FORMAT_ERROR")
+        logger.info(f"Document saved to {document_path}")
+
+        return document_path
+
+    async def _convert_to_pdf(self, docx_path: str) -> Optional[str]:
+        """
+        Convert a DOCX file to PDF using Cloudmersive.
+
+        Args:
+            docx_path: Path to the DOCX file
+
+        Returns:
+            Path to the PDF file or None if conversion fails
+        """
+        logger.info(f"Converting DOCX to PDF: {docx_path}")
+
+        try:
+            # Generate PDF path based on DOCX path
+            pdf_path = os.path.splitext(docx_path)[0] + ".pdf"
+
+            # Convert DOCX to PDF
+            pdf_path = docx_to_pdf(docx_path, pdf_path)
+
+            if pdf_path:
+                logger.info(f"DOCX converted to PDF: {pdf_path}")
+                return pdf_path
+            else:
+                logger.error("Failed to convert DOCX to PDF")
+                return None
+        except Exception as e:
+            logger.error(f"Error converting DOCX to PDF: {str(e)}")
+            return None
+
+    async def _upload_to_storage(self, file_path: str, bucket_name: str, destination_path: Optional[str] = None) -> Optional[str]:
+        """
+        Upload a file to Supabase Storage.
+
+        Args:
+            file_path: Path to the file to upload
+            bucket_name: Name of the bucket to upload to
+            destination_path: Path within the bucket to upload to (optional)
+
+        Returns:
+            URL of the uploaded file or None if upload fails
+        """
+        logger.info(f"Uploading file to Supabase Storage: {file_path}")
+
+        try:
+            if not self.storage_service:
+                logger.error("No storage service available")
+                return None
+
+            # Upload the file
+            file_url = self.storage_service.upload_file(file_path, bucket_name, destination_path)
+
+            if file_url:
+                logger.info(f"File uploaded to Supabase Storage: {file_url}")
+                return file_url
+            else:
+                logger.error("Failed to upload file to Supabase Storage")
+                return None
+        except Exception as e:
+            logger.error(f"Error uploading file to Supabase Storage: {str(e)}")
+            return None
+
+# Example usage
+if __name__ == "__main__":
+    # This is just an example of how to use the Research Pack Orchestrator
+    # In a real application, you would initialize it with actual components
+    orchestrator = ResearchPackOrchestrator()
+
+    # Example of generating a research pack
+    import asyncio
+    research_pack = asyncio.run(orchestrator.generate_research_pack(
+        topic="Artificial Intelligence Ethics",
+        question="What are the key ethical considerations in AI development?",
+        user_id="user123"
+    ))
+
+    print(f"Research pack generated: {research_pack}")

@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{ super() }}
+<!-- Include Stripe.js -->
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    // Initialize Stripe with the publishable key
+    const stripe = Stripe('{{ stripe_publishable_key }}');
+
+    // Get the base URL for success redirect
+    const baseUrl = window.location.origin;
+    const successUrl = `${baseUrl}/billing/credits-success?session_id=cs_mock_credits_`;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add event listeners to checkout buttons
+        const checkoutButtons = document.querySelectorAll('.buy-credits-btn');
+        checkoutButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const amount = this.getAttribute('data-amount');
+                const userId = '{{ user.id }}';
+
+                // Use the server-side checkout endpoint instead of direct payment links
+                window.location.href = `/billing/checkout/credits/${amount}`;
+            });
+        });
+    });
+</script>
+{% endblock %}
+
+{% block title %}Buy Paper Credits - Lily AI Research Assistant{% endblock %}
+
+{% block content %}
+<div class="min-h-screen sentry-bg dashboard-content">
+    <!-- Interactive background elements -->
+    <div class="orb-container">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+        <div class="orb orb-5"></div>
+        <div class="orb orb-6"></div>
+    </div>
+    <div class="spotlight"></div>
+
+    <!-- Page Header -->
+    <header class="glass-effect shadow">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold text-white">Buy Paper Credits</h1>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="sentry-container py-8">
+        <!-- Current Credits Status -->
+        <div class="glass-effect rounded-xl p-6 mb-8">
+            <h2 class="text-xl font-semibold text-white mb-4">Your Paper Credits</h2>
+
+            <div class="flex flex-col md:flex-row gap-6">
+                <div class="flex-1">
+                    <div class="bg-indigo-900 bg-opacity-30 rounded-lg p-4 border border-indigo-800">
+                        <p class="text-sm text-indigo-300 mb-1">Monthly Papers</p>
+                        <p class="text-lg font-medium text-white">
+                            {{ subscription.papers_remaining }} / {{ subscription.papers_limit }}
+                        </p>
+                        <div class="w-full bg-indigo-800 rounded-full h-2.5 mt-2">
+                            <div class="bg-indigo-400 h-2.5 rounded-full"
+                                 {% if subscription.papers_limit > 0 %}
+                                 style="width: {{ (subscription.papers_used / subscription.papers_limit * 100)|round|int }}%"
+                                 {% else %}
+                                 style="width: 0%"
+                                 {% endif %}>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex-1">
+                    <div class="bg-indigo-900 bg-opacity-30 rounded-lg p-4 border border-indigo-800">
+                        <p class="text-sm text-indigo-300 mb-1">Additional Credits</p>
+                        <p class="text-lg font-medium text-white">
+                            {{ subscription.additional_credits }}
+                        </p>
+                        <p class="text-xs text-indigo-300 mt-2">
+                            Additional credits do not expire
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Credit Packages -->
+        <div class="glass-effect rounded-xl p-6 mb-8">
+            <h2 class="text-3xl font-bold text-white mb-6 text-center">Choose a Credit Package</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- 5 Credits Package (Small Top Up) -->
+                <div class="bg-indigo-900 bg-opacity-30 border-2 border-indigo-800 rounded-lg p-6 flex flex-col relative transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl">
+                    <div class="absolute top-0 right-0 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white px-4 py-1 text-xs font-bold uppercase rounded-bl-lg z-20 shadow-md">
+                        SMALL TOP UP
+                    </div>
+                    <h3 class="text-lg font-semibold text-white mb-2">5 Credits</h3>
+                    <div class="text-3xl font-bold text-white mb-4">£8.99</div>
+                    <ul class="space-y-3 mb-6 flex-grow">
+                        <li class="flex items-center">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-700 flex items-center justify-center mr-3">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <span class="text-white">5 additional papers</span>
+                        </li>
+                        <li class="flex items-center">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-700 flex items-center justify-center mr-3">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <span class="text-white">Never expire</span>
+                        </li>
+                        <li class="flex items-center">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-700 flex items-center justify-center mr-3">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <span class="text-white">£1.80 per paper</span>
+                        </li>
+                    </ul>
+                    <a href="#" data-amount="5" class="buy-credits-btn w-full py-3 px-4 text-center font-medium text-white bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 rounded-lg transition duration-200 shadow-lg transform hover:-translate-y-1">
+                        Buy Now
+                    </a>
+                </div>
+
+                <!-- 10 Credits Package (Most Popular) -->
+                <div class="bg-indigo-900 bg-opacity-30 border-2 border-purple-500 rounded-lg p-6 flex flex-col relative transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl" style="box-shadow: 0 0 30px rgba(79, 70, 229, 0.5);">
+                    <div class="absolute top-0 right-0 bg-gradient-to-r from-purple-600 to-pink-500 text-white px-4 py-1 text-xs font-bold uppercase rounded-bl-lg z-20 shadow-md">
+                        MOST POPULAR
+                    </div>
+                    <h3 class="text-lg font-semibold text-white mb-2">10 Credits</h3>
+                    <div class="text-3xl font-bold text-white mb-4">£15.99</div>
+                    <ul class="space-y-3 mb-6 flex-grow">
+                        <li class="flex items-center">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-700 flex items-center justify-center mr-3">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <span class="text-white">10 additional papers</span>
+                        </li>
+                        <li class="flex items-center">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-700 flex items-center justify-center mr-3">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <span class="text-white">Never expire</span>
+                        </li>
+                        <li class="flex items-center">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-700 flex items-center justify-center mr-3">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <span class="text-white">£1.60 per paper</span>
+                        </li>
+                        <li class="flex items-center">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-700 flex items-center justify-center mr-3">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <span class="text-white">10% savings</span>
+                        </li>
+                    </ul>
+                    <a href="#" data-amount="10" class="buy-credits-btn w-full py-3 px-4 text-center font-medium text-white bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 rounded-lg transition duration-200 shadow-lg transform hover:-translate-y-1">
+                        Buy Now
+                    </a>
+                </div>
+
+                <!-- 25 Credits Package (Best Value) -->
+                <div class="bg-indigo-900 bg-opacity-30 border-2 border-purple-500 rounded-lg p-6 flex flex-col relative transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl" style="box-shadow: 0 0 30px rgba(79, 70, 229, 0.5);">
+                    <div class="absolute top-0 right-0 bg-gradient-to-r from-purple-600 to-pink-500 text-white px-4 py-1 text-xs font-bold uppercase rounded-bl-lg z-20 shadow-md">
+                        BEST VALUE
+                    </div>
+                    <h3 class="text-lg font-semibold text-white mb-2">25 Credits</h3>
+                    <div class="text-3xl font-bold text-white mb-4">£34.99</div>
+                    <ul class="space-y-3 mb-6 flex-grow">
+                        <li class="flex items-center">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-700 flex items-center justify-center mr-3">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <span class="text-white">25 additional papers</span>
+                        </li>
+                        <li class="flex items-center">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-700 flex items-center justify-center mr-3">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <span class="text-white">Never expire</span>
+                        </li>
+                        <li class="flex items-center">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-700 flex items-center justify-center mr-3">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <span class="text-white">£1.40 per paper</span>
+                        </li>
+                        <li class="flex items-center">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-700 flex items-center justify-center mr-3">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <span class="text-white">25% savings</span>
+                        </li>
+                    </ul>
+                    <a href="#" data-amount="25" class="buy-credits-btn w-full py-3 px-4 text-center font-medium text-white bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 rounded-lg transition duration-200 shadow-lg transform hover:-translate-y-1">
+                        Buy Now
+                    </a>
+                </div>
+            </div>
+        </div>
+
+
+    </main>
+</div>
+{% endblock %}

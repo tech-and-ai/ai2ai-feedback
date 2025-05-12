@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}About Us - Lily AI Research Assistant{% endblock %}
+
+{% block content %}
+<!-- Background Orbs -->
+<div class="orb-container">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="orb orb-4"></div>
+    <div class="orb orb-5"></div>
+    <div class="orb orb-6"></div>
+    <div class="spotlight"></div>
+</div>
+
+<!-- Page Header -->
+<header class="glass-effect shadow">
+    <div class="container mx-auto px-4 py-6">
+        <div class="flex items-center justify-between">
+            <h1 class="text-2xl font-bold text-white">About Lily AI</h1>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<section class="py-8 relative z-10">
+    <div class="container mx-auto px-4 max-w-6xl">
+        <!-- Our Story Section -->
+        <div class="glass-effect rounded-xl p-6 mb-8">
+            <p class="text-gray-800 dark:text-gray-200 mb-4 text-base">
+                Our journey began at ResearchAssistant.uk with a vision to produce deep, comprehensive research that could compete with established players in the academic assistance space. However, as we evolved, we realized there was a more meaningful path forward.
+            </p>
+            <p class="text-gray-800 dark:text-gray-200 mb-4 text-base">
+                We listened carefully to students and researchers, understanding their true needs went beyond just receiving finished research papers. They needed guidance, suggestions, and a partner in their learning journey. This insight led to the birth of Lily AI.
+            </p>
+            <p class="text-gray-800 dark:text-gray-200 mb-4 text-base">
+                Lily AI represents our commitment to providing not just answers, but a complete learning experience. Unlike other providers who simply deliver finished work, we focus on deep research capabilities combined with personalized advice and suggestions that help improve your academic journey.
+            </p>
+            <p class="text-gray-800 dark:text-gray-200 mb-0 text-base">
+                Our platform is designed to be an assistant that grows with you, offering insights that enhance your understanding rather than replacing your critical thinking. We believe in empowering students and researchers with tools that complement their abilities and help them achieve their full potential.
+            </p>
+        </div>
+
+        <!-- Our Values Section -->
+        <div class="glass-effect rounded-xl p-6">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">Our Values</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Academic Integrity</h3>
+                    <p class="text-gray-800 dark:text-gray-200 mb-4 text-base">
+                        We believe in upholding the highest standards of academic integrity. Our AI is designed to assist research, not replace critical thinking or original work. All content generated includes proper citations and is designed to be a starting point for deeper exploration.
+                    </p>
+
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Accessibility</h3>
+                    <p class="text-gray-800 dark:text-gray-200 mb-0 text-base">
+                        We're committed to making high-quality research accessible to everyone, regardless of background or resources. Our tiered pricing model ensures that students and researchers at all levels can benefit from our platform.
+                    </p>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Innovation</h3>
+                    <p class="text-gray-800 dark:text-gray-200 mb-4 text-base">
+                        We continuously push the boundaries of what's possible with AI in academic research. Our team is dedicated to implementing the latest advancements in natural language processing and machine learning to improve our service.
+                    </p>
+
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">User Privacy</h3>
+                    <p class="text-gray-800 dark:text-gray-200 mb-0 text-base">
+                        We respect your privacy and handle your data with the utmost care. Your research topics and personal information are never shared with third parties, and we implement robust security measures to protect your data.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- Return to Home Button -->
+<div class="py-8 text-center sentry-bg">
+    <a href="/" class="inline-block py-3 px-6 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-medium rounded-lg transition duration-200 shadow-lg">
+        Return to Home
+    </a>
+</div>
+{% endblock %}

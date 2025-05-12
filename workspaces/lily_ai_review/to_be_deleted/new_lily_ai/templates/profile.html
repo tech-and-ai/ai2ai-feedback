@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - Lily AI{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="display-5 fw-bold">Your Profile</h1>
+        <p class="lead">Manage your account settings and subscription</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">Account Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <p class="form-control-static">{{ user.username }}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <p class="form-control-static">{{ user.email }}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Name</label>
+                    <p class="form-control-static">{{ user.name or "Not set" }}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Account Created</label>
+                    <p class="form-control-static">{{ user.created_at.strftime('%B %d, %Y') }}</p>
+                </div>
+                <a href="#" class="btn btn-primary">Edit Profile</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8 mb-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">Subscription</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Current Plan</label>
+                    <p class="form-control-static">{{ user.subscription_tier|title }}</p>
+                </div>
+                
+                {% if user.subscription_tier == "free" %}
+                <div class="alert alert-info">
+                    <strong>Free Plan:</strong> You have access to example papers only. Upgrade to Premium for full access.
+                </div>
+                <a href="/billing/subscription" class="btn btn-primary">Upgrade to Premium</a>
+                {% else %}
+                <div class="alert alert-success">
+                    <strong>Premium Plan:</strong> You have full access to all Lily AI features.
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Papers Limit</label>
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">2/10</div>
+                    </div>
+                </div>
+                <a href="/billing/manage" class="btn btn-primary">Manage Subscription</a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">Security</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <p class="form-control-static">••••••••</p>
+                </div>
+                <a href="#" class="btn btn-primary">Change Password</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

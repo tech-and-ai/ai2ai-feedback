@@ -1,0 +1,99 @@
+{# 
+   Reusable alert components
+   
+   This file contains reusable alert components for displaying messages, errors, and notifications.
+   
+   Usage:
+   {% include "components/alerts.html" with type="error" message=error %}
+   {% include "components/alerts.html" with type="success" message=message %}
+   {% include "components/alerts.html" with type="info" message=info_message %}
+   {% include "components/alerts.html" with type="warning" message=warning_message %}
+#}
+
+{# Error Alert #}
+{% macro error_alert(message) %}
+{% if message %}
+<div class="bg-red-900/20 border border-red-800 rounded-lg p-3">
+    <div class="flex items-center">
+        <svg class="h-5 w-5 text-red-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <p class="text-sm text-red-400">{{ message }}</p>
+    </div>
+</div>
+{% endif %}
+{% endmacro %}
+
+{# Success Alert #}
+{% macro success_alert(message) %}
+{% if message %}
+<div class="bg-green-900/20 border border-green-800 rounded-lg p-3">
+    <div class="flex items-center">
+        <svg class="h-5 w-5 text-green-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        <p class="text-sm text-green-400">{{ message }}</p>
+    </div>
+</div>
+{% endif %}
+{% endmacro %}
+
+{# Info Alert #}
+{% macro info_alert(message) %}
+{% if message %}
+<div class="bg-blue-900/20 border border-blue-800 rounded-lg p-3">
+    <div class="flex items-center">
+        <svg class="h-5 w-5 text-blue-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <p class="text-sm text-blue-400">{{ message }}</p>
+    </div>
+</div>
+{% endif %}
+{% endmacro %}
+
+{# Warning Alert #}
+{% macro warning_alert(message) %}
+{% if message %}
+<div class="bg-yellow-900/20 border border-yellow-800 rounded-lg p-3">
+    <div class="flex items-center">
+        <svg class="h-5 w-5 text-yellow-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <p class="text-sm text-yellow-400">{{ message }}</p>
+    </div>
+</div>
+{% endif %}
+{% endmacro %}
+
+{# Verification Alert #}
+{% macro verification_alert(email) %}
+{% if email %}
+<div class="bg-blue-900/20 border border-blue-800 rounded-lg p-3">
+    <div class="flex items-center">
+        <svg class="h-5 w-5 text-blue-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <p class="text-sm text-blue-400">
+            Didn't receive the verification email?
+            <a href="/auth/resend-verification?email={{ email }}" class="font-medium text-indigo-400 hover:text-indigo-300 underline">Resend verification email</a>
+        </p>
+    </div>
+</div>
+{% endif %}
+{% endmacro %}
+
+{# Generic Alert #}
+{% macro alert(type, message) %}
+{% if message %}
+    {% if type == "error" %}
+        {{ error_alert(message) }}
+    {% elif type == "success" %}
+        {{ success_alert(message) }}
+    {% elif type == "info" %}
+        {{ info_alert(message) }}
+    {% elif type == "warning" %}
+        {{ warning_alert(message) }}
+    {% endif %}
+{% endif %}
+{% endmacro %}
