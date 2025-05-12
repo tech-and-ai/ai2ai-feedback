@@ -9,6 +9,7 @@ import json
 import logging
 import asyncio
 import re
+import os
 from datetime import datetime
 from typing import Dict, List, Optional, Any, Tuple
 
@@ -18,6 +19,7 @@ from sqlalchemy.future import select
 from .database import async_session, Task
 from .task_management import ContextScaffold, ContextRefresher, TaskManager
 from .providers.factory import get_model_provider
+from .tools import FileOperations, ShellCommands
 
 # Configure logging
 logging.basicConfig(
@@ -39,6 +41,76 @@ def extract_json_from_markdown(text: str, block_type: str) -> Optional[Dict[str,
             logger.error(f"Failed to parse JSON from {block_type} block")
 
     return None
+
+def extract_tool_commands(text: str) -> List[Dict[str, Any]]:
+    """Extract tool commands from agent response"""
+    commands = []
+
+    # Extract file operations
+    file_read_pattern = r"```file-read\s*\n(.*?)\n\s*```"
+    file_write_pattern = r"```file-write\s*\n(.*?)\n\s*```"
+    file_list_pattern = r"```file-list\s*\n(.*?)\n\s*```"
+
+    # Extract shell commands
+    shell_pattern = r"```shell\s*\n(.*?)\n\s*```"
+    python_pattern = r"```python-run\s*\n(.*?)\n\s*```"
+
+    # Process file read commands
+    for match in re.finditer(file_read_pattern, text, re.DOTALL):
+        try:
+            data = json.loads(match.group(1))
+            commands.append({
+                "type": "file-read",
+                "data": data
+            })
+        except json.JSONDecodeError:
+            logger.error("Failed to parse JSON from file-read block")
+
+    # Process file write commands
+    for match in re.finditer(file_write_pattern, text, re.DOTALL):
+        try:
+            data = json.loads(match.group(1))
+            commands.append({
+                "type": "file-write",
+                "data": data
+            })
+        except json.JSONDecodeError:
+            logger.error("Failed to parse JSON from file-write block")
+
+    # Process file list commands
+    for match in re.finditer(file_list_pattern, text, re.DOTALL):
+        try:
+            data = json.loads(match.group(1))
+            commands.append({
+                "type": "file-list",
+                "data": data
+            })
+        except json.JSONDecodeError:
+            logger.error("Failed to parse JSON from file-list block")
+
+    # Process shell commands
+    for match in re.finditer(shell_pattern, text, re.DOTALL):
+        try:
+            data = json.loads(match.group(1))
+            commands.append({
+                "type": "shell",
+                "data": data
+            })
+        except json.JSONDecodeError:
+            logger.error("Failed to parse JSON from shell block")
+
+    # Process python run commands
+    for match in re.finditer(python_pattern, text, re.DOTALL):
+        try:
+            data = json.loads(match.group(1))
+            commands.append({
+                "type": "python-run",
+                "data": data
+            })
+        except json.JSONDecodeError:
+            logger.error("Failed to parse JSON from python-run block")
+
+    return commands
 
 def create_agent_task_prompt(agent_role: str, task: Dict[str, Any], context: Dict[str, Any]) -> str:
     """Create a prompt for an agent to start a task"""
@@ -113,6 +185,7 @@ You can:
 2. Delegate subtasks to other agents
 3. Add context entries to store information
 4. Provide an update on your progress
+5. Use tools to interact with the environment
 
 To complete the task:
 ```complete
@@ -139,6 +212,48 @@ To add a context entry:
   "value": "entry_value"
 }}
 ```
+
+AVAILABLE TOOLS:
+
+1. Read a file:
+```file-read
+{{
+  "path": "path/to/file.txt"
+}}
+```
+
+2. Write to a file:
+```file-write
+{{
+  "path": "path/to/file.txt",
+  "content": "File content goes here"
+}}
+```
+
+3. List directory contents:
+```file-list
+{{
+  "directory": "path/to/directory"
+}}
+```
+
+4. Execute a shell command:
+```shell
+{{
+  "command": "mkdir -p new_directory"
+}}
+```
+
+5. Run a Python script:
+```python-run
+{{
+  "script": "path/to/script.py",
+  "args": ["arg1", "arg2"]
+}}
+```
+
+You have a dedicated workspace where you can create and manipulate files. All file paths are relative to your workspace.
+You can create Python scripts, run tests, and execute shell commands to accomplish your task.
 
 Please start working on this task now. If you need more information, you can use the available tools.
 """
@@ -214,12 +329,133 @@ To add a context entry:
   "value": "entry_value"
 }}
 ```
+
+AVAILABLE TOOLS:
+
+1. Read a file:
+```file-read
+{{
+  "path": "path/to/file.txt"
+}}
+```
+
+2. Write to a file:
+```file-write
+{{
+  "path": "path/to/file.txt",
+  "content": "File content goes here"
+}}
+```
+
+3. List directory contents:
+```file-list
+{{
+  "directory": "path/to/directory"
+}}
+```
+
+4. Execute a shell command:
+```shell
+{{
+  "command": "mkdir -p new_directory"
+}}
+```
+
+5. Run a Python script:
+```python-run
+{{
+  "script": "path/to/script.py",
+  "args": ["arg1", "arg2"]
+}}
+```
+
+You have a dedicated workspace where you can create and manipulate files. All file paths are relative to your workspace.
+You can create Python scripts, run tests, and execute shell commands to accomplish your task.
 """
 
     return prompt
 
+async def execute_tool_command(agent_id: str, command: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Execute a tool command and return the result
+
+    Args:
+        agent_id: Agent ID
+        command: Tool command
+
+    Returns:
+        Dict: Command result
+    """
+    command_type = command["type"]
+    data = command["data"]
+
+    if command_type == "file-read":
+        if "path" not in data:
+            return {"success": False, "error": "Missing 'path' in file-read command"}
+
+        success, result = FileOperations.read_file(agent_id, data["path"])
+        return {"success": success, "result": result}
+
+    elif command_type == "file-write":
+        if "path" not in data or "content" not in data:
+            return {"success": False, "error": "Missing 'path' or 'content' in file-write command"}
+
+        success, result = FileOperations.write_file(agent_id, data["path"], data["content"])
+        return {"success": success, "result": result}
+
+    elif command_type == "file-list":
+        directory = data.get("directory", "")
+        success, result = FileOperations.list_directory(agent_id, directory)
+        return {"success": success, "result": result}
+
+    elif command_type == "shell":
+        if "command" not in data:
+            return {"success": False, "error": "Missing 'command' in shell command"}
+
+        success, stdout, stderr = ShellCommands.execute_command(agent_id, data["command"])
+        return {"success": success, "stdout": stdout, "stderr": stderr}
+
+    elif command_type == "python-run":
+        if "script" not in data:
+            return {"success": False, "error": "Missing 'script' in python-run command"}
+
+        args = data.get("args", [])
+        success, stdout, stderr = ShellCommands.run_python_script(agent_id, data["script"], args)
+        return {"success": success, "stdout": stdout, "stderr": stderr}
+
+    return {"success": False, "error": f"Unknown command type: {command_type}"}
+
 async def process_agent_response(db: AsyncSession, agent_id: str, task_id: str, response: str) -> None:
     """Process a response from an agent"""
+    # Check for tool commands
+    tool_commands = extract_tool_commands(response)
+    tool_results = []
+
+    for command in tool_commands:
+        result = await execute_tool_command(agent_id, command)
+        tool_results.append({
+            "command": command,
+            "result": result
+        })
+
+    # If tool commands were executed, add the results to the context
+    if tool_results:
+        # Add tool results to context
+        await ContextScaffold.add_context_entry(
+            db,
+            task_id,
+            f"tool_results_{datetime.utcnow().isoformat()}",
+            json.dumps(tool_results)
+        )
+
+        # Add update about tool usage
+        await ContextScaffold.add_task_update(
+            db,
+            task_id,
+            agent_id,
+            f"Executed {len(tool_results)} tool commands"
+        )
+
     # Check for special commands in the response
     if "```complete" in response:
         # Extract completion data

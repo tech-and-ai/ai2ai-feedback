@@ -26,6 +26,7 @@ from .database import init_db, get_db, create_session, get_session, add_message,
 from .multi_agent import router as multi_agent_router
 from .realtime_discussion import router as realtime_discussion_router
 from .unified_discussion import router as unified_discussion_router
+from .autonomous_api import router as autonomous_router
 from .models import (
     FeedbackRequest, FeedbackResponse,
     SessionCreateRequest, SessionCreateResponse,
@@ -63,6 +64,7 @@ app.add_middleware(
 app.include_router(multi_agent_router)
 app.include_router(realtime_discussion_router)
 app.include_router(unified_discussion_router)
+app.include_router(autonomous_router)
 
 # Mount static files directory
 static_dir = Path(__file__).parent.parent / "static"
@@ -130,6 +132,15 @@ async def get_discussion_client():
         return client_path.read_text()
 
     raise HTTPException(status_code=404, detail="Discussion client not found")
+
+@app.get("/autonomous-client", response_class=HTMLResponse)
+async def get_autonomous_client():
+    """Serve the autonomous agent client HTML page"""
+    client_path = static_dir / "autonomous_client.html"
+    if client_path.exists():
+        return client_path.read_text()
+
+    raise HTTPException(status_code=404, detail="Autonomous agent client not found")
 
 # Get available models
 @app.get("/models")

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evolve Hair Studio - Professional Hair Salon</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #f9f9f9;
+        }
+        
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem 0;
+            text-align: center;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: #34495e;
+            padding: 0.5rem 0;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            margin: 0 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        nav a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .hero {
+            background-image: url('https://example.com/modern-salon.jpg');
+            background-size: cover;
+            background-position: center;
+            height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        
+        .hero p {
+            font-size: 1.4rem;
+            margin-bottom: 2rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: #e74c3c;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background-color: #c0392b;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        section {
+            padding: 4rem 0;
+        }
+        
+        h2 {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: #2c3e50;
+            font-size: 2.5rem;
+            position: relative;
+        }
+        
+        h2::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 3px;
+            background-color: #e74c3c;
+            margin: 15px auto;
+        }
+        
+        .services {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .service {
+            border: none;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            transition: all 0.3s ease;
+            background-color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .service:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+        
+        .service h3 {
+            color: #e74c3c;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .service .price {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 1.2rem;
+            margin-top: 1rem;
+        }
+        
+        .stylists {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+        }
+        
+        .stylist {
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .stylist:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stylist img {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-bottom: 1.5rem;
+            border: 5px solid #e74c3c;
+            transition: all 0.3s ease;
+        }
+        
+        .stylist:hover img {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .testimonials {
+            background-color: #2c3e50;
+            padding: 5rem 0;
+            color: white;
+        }
+        
+        .testimonials h2 {
+            color: white;
+        }
+        
+        .testimonials h2::after {
+            background-color: white;
+        }
+        
+        .testimonial {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+            font-style: italic;
+        }
+        
+        .testimonial p {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+        }
+        
+        .testimonial .client {
+            font-weight: bold;
+            font-style: normal;
+            font-size: 1.1rem;
+        }
+        
+        footer {
+            background-color: #1a252f;
+            color: white;
+            text-align: center;
+            padding: 3rem 0;
+            margin-top: 2rem;
+        }
+        
+        .contact-info {
+            margin-bottom: 2rem;
+            line-height: 1.8;
+        }
+        
+        .social-links {
+            margin-top: 1.5rem;
+        }
+        
+        .social-links a {
+            color: white;
+            margin: 0 1rem;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .social-links a:hover {
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Evolve Hair Studio</h1>
+            <p>Where Style Meets Innovation</p>
+        </div>
+    </header>
+    
+    <nav>
+        <a href="#home">Home</a>
+        <a href="#services">Services</a>
+        <a href="#stylists">Our Team</a>
+        <a href="#testimonials">Reviews</a>
+        <a href="#contact">Contact</a>
+    </nav>
+    
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <h1>Redefine Your Style</h1>
+            <p>Cutting-edge techniques and personalized service</p>
+            <a href="#contact" class="btn">Book Now</a>
+        </div>
+    </section>
+    
+    <section id="services" class="container">
+        <h2>Our Services</h2>
+        <div class="services">
+            <div class="service">
+                <h3>Modern Cuts & Styling</h3>
+                <p>Precision cuts and contemporary styling tailored to your face shape and lifestyle. Our stylists stay on top of the latest trends.</p>
+                <p class="price">$55 - $85</p>
+            </div>
+            
+            <div class="service">
+                <h3>Creative Color</h3>
+                <p>From subtle balayage to bold fashion colors, our color specialists create custom looks that make a statement.</p>
+                <p class="price">$95 - $175</p>
+            </div>
+            
+            <div class="service">
+                <h3>Texture Transformation</h3>
+                <p>Smoothing treatments, permanent waves, and texture services that transform your hair while maintaining its health.</p>
+                <p class="price">$120 - $250</p>
+            </div>
+        </div>
+    </section>
+    
+    <section id="stylists" class="container">
+        <h2>Meet Our Team</h2>
+        <div class="stylists">
+            <div class="stylist">
+                <img src="https://example.com/stylist1.jpg" alt="Alex Rivera">
+                <h3>Alex Rivera</h3>
+                <p>Creative Director with 10+ years of experience specializing in avant-garde cuts and editorial styling. Featured in Vogue and Elle.</p>
+            </div>
+            
+            <div class="stylist">
+                <img src="https://example.com/stylist2.jpg" alt="Jordan Kim">
+                <h3>Jordan Kim</h3>
+                <p>Color specialist known for creating dimensional, lived-in color and balayage techniques. Certified in the latest color innovations.</p>
+            </div>
+            
+            <div class="stylist">
+                <img src="https://example.com/stylist3.jpg" alt="Taylor Morgan">
+                <h3>Taylor Morgan</h3>
+                <p>Texture expert who transforms curls, waves, and coils. Passionate about helping clients embrace their natural texture.</p>
+            </div>
+        </div>
+    </section>
+    
+    <section id="testimonials" class="testimonials">
+        <div class="container">
+            <h2>Client Love</h2>
+            <div class="testimonial">
+                <p>"Evolve completely transformed my look! Alex understood exactly what I wanted and created a style that works perfectly with my lifestyle. The atmosphere is so welcoming and the team is incredibly knowledgeable. I won't trust my hair to anyone else!"</p>
+                <p class="client">- Jamie Lawrence</p>
+            </div>
+        </div>
+    </section>
+    
+    <section id="contact" class="container">
+        <h2>Connect With Us</h2>
+        <div class="contact-info">
+            <p><strong>Location:</strong> 456 Urban Avenue, Trendville, NY 10001</p>
+            <p><strong>Phone:</strong> (212) 555-HAIR</p>
+            <p><strong>Email:</strong> hello@evolvehairstudio.com</p>
+            <p><strong>Hours:</strong> Tuesday-Friday: 10am-8pm | Saturday: 9am-6pm | Sunday: 11am-5pm | Monday: Closed</p>
+        </div>
+    </section>
+    
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Evolve Hair Studio. All rights reserved.</p>
+            <div class="social-links">
+                <a href="https://instagram.com/evolvehairstudio">Instagram</a>
+                <a href="https://tiktok.com/evolvehairstudio">TikTok</a>
+                <a href="https://pinterest.com/evolvehairstudio">Pinterest</a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

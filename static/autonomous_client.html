@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autonomous Agent System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 20px;
+        }
+        .agent-card {
+            margin-bottom: 20px;
+        }
+        .task-card {
+            margin-bottom: 15px;
+        }
+        .update-item {
+            padding: 5px 10px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+        }
+        .update-info {
+            background-color: #e3f2fd;
+        }
+        .update-warning {
+            background-color: #fff3cd;
+        }
+        .update-error {
+            background-color: #f8d7da;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .tab-content {
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">Autonomous Agent System</h1>
+        
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="agents-tab" data-bs-toggle="tab" data-bs-target="#agents" type="button" role="tab" aria-controls="agents" aria-selected="true">Agents</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tasks-tab" data-bs-toggle="tab" data-bs-target="#tasks" type="button" role="tab" aria-controls="tasks" aria-selected="false">Tasks</button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="myTabContent">
+            <!-- Agents Tab -->
+            <div class="tab-pane fade show active" id="agents" role="tabpanel" aria-labelledby="agents-tab">
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <h2>Create New Agent</h2>
+                        <form id="create-agent-form">
+                            <div class="mb-3">
+                                <label for="agent-name" class="form-label">Name</label>
+                                <input type="text" class="form-control" id="agent-name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="agent-role" class="form-label">Role</label>
+                                <input type="text" class="form-control" id="agent-role" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="agent-skills" class="form-label">Skills (comma-separated)</label>
+                                <input type="text" class="form-control" id="agent-skills" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="agent-model" class="form-label">Model</label>
+                                <input type="text" class="form-control" id="agent-model" value="anthropic/claude-3-opus-20240229" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Create Agent</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-12">
+                        <h2>Active Agents</h2>
+                        <button id="refresh-agents" class="btn btn-secondary mb-3">Refresh</button>
+                        <div id="agents-container" class="row">
+                            <!-- Agents will be displayed here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tasks Tab -->
+            <div class="tab-pane fade" id="tasks" role="tabpanel" aria-labelledby="tasks-tab">
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <h2>Create New Task</h2>
+                        <form id="create-task-form">
+                            <div class="mb-3">
+                                <label for="task-title" class="form-label">Title</label>
+                                <input type="text" class="form-control" id="task-title" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="task-description" class="form-label">Description</label>
+                                <textarea class="form-control" id="task-description" rows="3" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="task-skills" class="form-label">Required Skills (comma-separated)</label>
+                                <input type="text" class="form-control" id="task-skills">
+                            </div>
+                            <div class="mb-3">
+                                <label for="task-priority" class="form-label">Priority (1-10)</label>
+                                <input type="number" class="form-control" id="task-priority" min="1" max="10" value="5">
+                            </div>
+                            <div class="mb-3">
+                                <label for="task-parent" class="form-label">Parent Task ID (optional)</label>
+                                <input type="text" class="form-control" id="task-parent">
+                            </div>
+                            <div class="mb-3">
+                                <label for="task-context" class="form-label">Context (JSON)</label>
+                                <textarea class="form-control" id="task-context" rows="3" placeholder='{"key1": "value1", "key2": "value2"}'></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Create Task</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-12">
+                        <h2>Tasks</h2>
+                        <div class="mb-3">
+                            <label for="task-filter" class="form-label">Filter by Status</label>
+                            <select class="form-select" id="task-filter">
+                                <option value="all">All</option>
+                                <option value="pending">Pending</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="completed">Completed</option>
+                                <option value="failed">Failed</option>
+                            </select>
+                        </div>
+                        <button id="refresh-tasks" class="btn btn-secondary mb-3">Refresh</button>
+                        <div id="tasks-container">
+                            <!-- Tasks will be displayed here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Task Detail Modal -->
+    <div class="modal fade" id="taskDetailModal" tabindex="-1" aria-labelledby="taskDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="taskDetailModalLabel">Task Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="task-detail-content">
+                    <!-- Task details will be displayed here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // API endpoints
+        const API_BASE = '';
+        const AGENTS_ENDPOINT = `${API_BASE}/autonomous/agents`;
+        const TASKS_ENDPOINT = `${API_BASE}/autonomous/tasks`;
+        
+        // DOM elements
+        const agentsContainer = document.getElementById('agents-container');
+        const tasksContainer = document.getElementById('tasks-container');
+        const createAgentForm = document.getElementById('create-agent-form');
+        const createTaskForm = document.getElementById('create-task-form');
+        const refreshAgentsBtn = document.getElementById('refresh-agents');
+        const refreshTasksBtn = document.getElementById('refresh-tasks');
+        const taskFilter = document.getElementById('task-filter');
+        const taskDetailContent = document.getElementById('task-detail-content');
+        
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAgents();
+            loadTasks();
+            
+            createAgentForm.addEventListener('submit', createAgent);
+            createTaskForm.addEventListener('submit', createTask);
+            refreshAgentsBtn.addEventListener('click', loadAgents);
+            refreshTasksBtn.addEventListener('click', loadTasks);
+            taskFilter.addEventListener('change', loadTasks);
+        });
+        
+        // Load agents
+        async function loadAgents() {
+            try {
+                const response = await fetch(AGENTS_ENDPOINT);
+                const agents = await response.json();
+                
+                agentsContainer.innerHTML = '';
+                
+                if (agents.length === 0) {
+                    agentsContainer.innerHTML = '<div class="col-12"><p>No agents found. Create one to get started.</p></div>';
+                    return;
+                }
+                
+                agents.forEach(agent => {
+                    const agentCard = document.createElement('div');
+                    agentCard.className = 'col-md-4';
+                    agentCard.innerHTML = `
+                        <div class="card agent-card">
+                            <div class="card-body">
+                                <h5 class="card-title">${agent.name}</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">${agent.role}</h6>
+                                <p class="card-text">
+                                    <strong>Status:</strong> ${agent.status}<br>
+                                    <strong>Skills:</strong> ${agent.skills.join(', ')}<br>
+                                    <strong>Model:</strong> ${agent.model}
+                                </p>
+                                <button class="btn btn-danger btn-sm stop-agent" data-agent-id="${agent.agent_id}">Stop Agent</button>
+                            </div>
+                        </div>
+                    `;
+                    agentsContainer.appendChild(agentCard);
+                });
+                
+                // Add event listeners to stop buttons
+                document.querySelectorAll('.stop-agent').forEach(button => {
+                    button.addEventListener('click', stopAgent);
+                });
+            } catch (error) {
+                console.error('Error loading agents:', error);
+                agentsContainer.innerHTML = '<div class="col-12"><p class="text-danger">Error loading agents. Please try again.</p></div>';
+            }
+        }
+        
+        // Load tasks
+        async function loadTasks() {
+            try {
+                const status = taskFilter.value !== 'all' ? taskFilter.value : '';
+                const url = status ? `${TASKS_ENDPOINT}?status=${status}` : TASKS_ENDPOINT;
+                
+                const response = await fetch(url);
+                const tasks = await response.json();
+                
+                tasksContainer.innerHTML = '';
+                
+                if (tasks.length === 0) {
+                    tasksContainer.innerHTML = '<p>No tasks found. Create one to get started.</p>';
+                    return;
+                }
+                
+                tasks.forEach(task => {
+                    const taskCard = document.createElement('div');
+                    taskCard.className = 'card task-card';
+                    
+                    // Determine card color based on status
+                    let statusClass = '';
+                    switch (task.status) {
+                        case 'pending':
+                            statusClass = 'border-secondary';
+                            break;
+                        case 'in_progress':
+                            statusClass = 'border-primary';
+                            break;
+                        case 'completed':
+                            statusClass = 'border-success';
+                            break;
+                        case 'failed':
+                            statusClass = 'border-danger';
+                            break;
+                    }
+                    
+                    taskCard.classList.add(statusClass);
+                    
+                    taskCard.innerHTML = `
+                        <div class="card-body">
+                            <h5 class="card-title">${task.title}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Status: ${task.status}</h6>
+                            <p class="card-text">${task.description.substring(0, 100)}${task.description.length > 100 ? '...' : ''}</p>
+                            <button class="btn btn-info btn-sm view-task" data-task-id="${task.id}">View Details</button>
+                        </div>
+                    `;
+                    
+                    tasksContainer.appendChild(taskCard);
+                });
+                
+                // Add event listeners to view buttons
+                document.querySelectorAll('.view-task').forEach(button => {
+                    button.addEventListener('click', viewTaskDetails);
+                });
+            } catch (error) {
+                console.error('Error loading tasks:', error);
+                tasksContainer.innerHTML = '<p class="text-danger">Error loading tasks. Please try again.</p>';
+            }
+        }
+        
+        // Create agent
+        async function createAgent(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('agent-name').value;
+            const role = document.getElementById('agent-role').value;
+            const skills = document.getElementById('agent-skills').value.split(',').map(skill => skill.trim());
+            const model = document.getElementById('agent-model').value;
+            
+            try {
+                const response = await fetch(AGENTS_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name,
+                        role,
+                        skills,
+                        model
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                alert(`Agent created successfully! ID: ${result.agent_id}`);
+                
+                // Reset form and reload agents
+                createAgentForm.reset();
+                loadAgents();
+            } catch (error) {
+                console.error('Error creating agent:', error);
+                alert(`Error creating agent: ${error.message}`);
+            }
+        }
+        
+        // Create task
+        async function createTask(event) {
+            event.preventDefault();
+            
+            const title = document.getElementById('task-title').value;
+            const description = document.getElementById('task-description').value;
+            const skillsInput = document.getElementById('task-skills').value;
+            const skills = skillsInput ? skillsInput.split(',').map(skill => skill.trim()) : [];
+            const priority = parseInt(document.getElementById('task-priority').value);
+            const parentTaskId = document.getElementById('task-parent').value || null;
+            const contextInput = document.getElementById('task-context').value;
+            
+            let context = null;
+            if (contextInput) {
+                try {
+                    context = JSON.parse(contextInput);
+                } catch (error) {
+                    alert('Invalid JSON in context field');
+                    return;
+                }
+            }
+            
+            try {
+                const response = await fetch(TASKS_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title,
+                        description,
+                        required_skills: skills,
+                        priority,
+                        parent_task_id: parentTaskId,
+                        context
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                alert(`Task created successfully! ID: ${result.id}`);
+                
+                // Reset form and reload tasks
+                createTaskForm.reset();
+                loadTasks();
+            } catch (error) {
+                console.error('Error creating task:', error);
+                alert(`Error creating task: ${error.message}`);
+            }
+        }
+        
+        // Stop agent
+        async function stopAgent(event) {
+            const agentId = event.target.getAttribute('data-agent-id');
+            
+            if (confirm(`Are you sure you want to stop agent ${agentId}?`)) {
+                try {
+                    const response = await fetch(`${AGENTS_ENDPOINT}/${agentId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Error: ${response.status}`);
+                    }
+                    
+                    alert('Agent stopped successfully!');
+                    loadAgents();
+                } catch (error) {
+                    console.error('Error stopping agent:', error);
+                    alert(`Error stopping agent: ${error.message}`);
+                }
+            }
+        }
+        
+        // View task details
+        async function viewTaskDetails(event) {
+            const taskId = event.target.getAttribute('data-task-id');
+            
+            try {
+                const response = await fetch(`${TASKS_ENDPOINT}/${taskId}`);
+                const task = await response.json();
+                
+                // Format task details
+                let updatesHtml = '';
+                if (task.updates && task.updates.length > 0) {
+                    updatesHtml = '<h5>Updates</h5><div class="updates-list">';
+                    task.updates.forEach(update => {
+                        const levelClass = `update-${update.level}`;
+                        updatesHtml += `
+                            <div class="update-item ${levelClass}">
+                                <small>${new Date(update.timestamp).toLocaleString()}</small>
+                                <p>${update.content}</p>
+                            </div>
+                        `;
+                    });
+                    updatesHtml += '</div>';
+                }
+                
+                let resultHtml = '';
+                if (task.result) {
+                    resultHtml = '<h5>Result</h5>';
+                    
+                    if (typeof task.result === 'object') {
+                        if (task.result.structured) {
+                            // Display structured result
+                            resultHtml += '<h6>Analysis</h6>';
+                            resultHtml += `<div class="code-block">${task.result.structured.analysis || 'N/A'}</div>`;
+                            
+                            resultHtml += '<h6>Approach</h6>';
+                            resultHtml += `<div class="code-block">${task.result.structured.approach || 'N/A'}</div>`;
+                            
+                            resultHtml += '<h6>Solution</h6>';
+                            resultHtml += `<div class="code-block">${task.result.structured.solution || 'N/A'}</div>`;
+                            
+                            resultHtml += '<h6>Recommendations</h6>';
+                            resultHtml += `<div class="code-block">${task.result.structured.recommendations || 'N/A'}</div>`;
+                        } else {
+                            // Display raw result
+                            resultHtml += `<div class="code-block">${JSON.stringify(task.result, null, 2)}</div>`;
+                        }
+                    } else {
+                        resultHtml += `<div class="code-block">${task.result}</div>`;
+                    }
+                }
+                
+                // Display task details in modal
+                taskDetailContent.innerHTML = `
+                    <h4>${task.title}</h4>
+                    <p><strong>Status:</strong> ${task.status}</p>
+                    <p><strong>Created:</strong> ${new Date(task.created_at).toLocaleString()}</p>
+                    <p><strong>Last Updated:</strong> ${new Date(task.updated_at).toLocaleString()}</p>
+                    ${task.completed_at ? `<p><strong>Completed:</strong> ${new Date(task.completed_at).toLocaleString()}</p>` : ''}
+                    <p><strong>Priority:</strong> ${task.priority}</p>
+                    <p><strong>Assigned To:</strong> ${task.assigned_to || 'Not assigned'}</p>
+                    <p><strong>Required Skills:</strong> ${task.required_skills ? task.required_skills.join(', ') : 'None'}</p>
+                    
+                    <h5>Description</h5>
+                    <div class="code-block">${task.description}</div>
+                    
+                    ${updatesHtml}
+                    ${resultHtml}
+                `;
+                
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('taskDetailModal'));
+                modal.show();
+            } catch (error) {
+                console.error('Error loading task details:', error);
+                alert(`Error loading task details: ${error.message}`);
+            }
+        }
+    </script>
+</body>
+</html>

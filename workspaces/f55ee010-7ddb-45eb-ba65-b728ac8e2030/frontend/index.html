@@ -1,0 +1,43 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Task Tracking System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Task Tracking System</h1>
+
+    <div id="task-list">
+        <h2>Tasks</h2>
+        <ul>
+            <!-- Tasks will be dynamically added here -->
+        </ul>
+    </div>
+
+    <div id="create-task">
+        <h2>Create New Task</h2>
+        <form id="task-form">
+            <label for="title">Title:</label><br>
+            <input type="text" id="title" name="title"><br><br>
+
+            <label for="description">Description:</label><br>
+            <textarea id="description" name="description"></textarea><br><br>
+
+            <label for="due_date">Due Date:</label><br>
+            <input type="date" id="due_date" name="due_date"><br><br>
+
+            <label for="status">Status:</label><br>
+            <select id="status" name="status">
+                <option value="pending">Pending</option>
+                <option value="in_progress">In Progress</option>
+                <option value="completed">Completed</option>
+            </select><br><br>
+
+            <button type="submit">Create Task</button>
+        </form>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

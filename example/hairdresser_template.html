@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SALON_NAME - Professional Hair Salon</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: #SALON_PRIMARY_COLOR;
+            color: white;
+            padding: 1rem 0;
+            text-align: center;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: #SALON_SECONDARY_COLOR;
+            padding: 0.5rem 0;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            margin: 0 0.5rem;
+        }
+        
+        nav a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .hero {
+            background-image: url('SALON_HERO_IMAGE');
+            background-size: cover;
+            background-position: center;
+            height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: #SALON_PRIMARY_COLOR;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .btn:hover {
+            background-color: #SALON_SECONDARY_COLOR;
+        }
+        
+        section {
+            padding: 2rem 0;
+        }
+        
+        h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #SALON_PRIMARY_COLOR;
+        }
+        
+        .services {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .service {
+            border: 1px solid #ddd;
+            padding: 1.5rem;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .service h3 {
+            color: #SALON_PRIMARY_COLOR;
+        }
+        
+        .stylists {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        
+        .stylist {
+            text-align: center;
+        }
+        
+        .stylist img {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-bottom: 1rem;
+        }
+        
+        .testimonials {
+            background-color: #f9f9f9;
+            padding: 3rem 0;
+        }
+        
+        .testimonial {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+            font-style: italic;
+        }
+        
+        .testimonial p {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .testimonial .client {
+            font-weight: bold;
+            font-style: normal;
+        }
+        
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 2rem;
+        }
+        
+        .contact-info {
+            margin-bottom: 1rem;
+        }
+        
+        .social-links a {
+            color: white;
+            margin: 0 0.5rem;
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>SALON_NAME</h1>
+            <p>SALON_TAGLINE</p>
+        </div>
+    </header>
+    
+    <nav>
+        <a href="#home">Home</a>
+        <a href="#services">Services</a>
+        <a href="#stylists">Our Stylists</a>
+        <a href="#testimonials">Testimonials</a>
+        <a href="#contact">Contact</a>
+    </nav>
+    
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <h1>SALON_HERO_HEADING</h1>
+            <p>SALON_HERO_SUBHEADING</p>
+            <a href="#contact" class="btn">Book an Appointment</a>
+        </div>
+    </section>
+    
+    <section id="services" class="container">
+        <h2>Our Services</h2>
+        <div class="services">
+            <!-- REPLACE WITH 3-4 SERVICES -->
+            <div class="service">
+                <h3>SERVICE_1_NAME</h3>
+                <p>SERVICE_1_DESCRIPTION</p>
+                <p class="price">SERVICE_1_PRICE</p>
+            </div>
+            
+            <div class="service">
+                <h3>SERVICE_2_NAME</h3>
+                <p>SERVICE_2_DESCRIPTION</p>
+                <p class="price">SERVICE_2_PRICE</p>
+            </div>
+            
+            <div class="service">
+                <h3>SERVICE_3_NAME</h3>
+                <p>SERVICE_3_DESCRIPTION</p>
+                <p class="price">SERVICE_3_PRICE</p>
+            </div>
+        </div>
+    </section>
+    
+    <section id="stylists" class="container">
+        <h2>Meet Our Stylists</h2>
+        <div class="stylists">
+            <!-- REPLACE WITH 2-3 STYLISTS -->
+            <div class="stylist">
+                <img src="STYLIST_1_IMAGE" alt="STYLIST_1_NAME">
+                <h3>STYLIST_1_NAME</h3>
+                <p>STYLIST_1_BIO</p>
+            </div>
+            
+            <div class="stylist">
+                <img src="STYLIST_2_IMAGE" alt="STYLIST_2_NAME">
+                <h3>STYLIST_2_NAME</h3>
+                <p>STYLIST_2_BIO</p>
+            </div>
+        </div>
+    </section>
+    
+    <section id="testimonials" class="testimonials">
+        <div class="container">
+            <h2>What Our Clients Say</h2>
+            <!-- REPLACE WITH 1-2 TESTIMONIALS -->
+            <div class="testimonial">
+                <p>TESTIMONIAL_1_TEXT</p>
+                <p class="client">TESTIMONIAL_1_CLIENT</p>
+            </div>
+        </div>
+    </section>
+    
+    <section id="contact" class="container">
+        <h2>Contact Us</h2>
+        <div class="contact-info">
+            <p><strong>Address:</strong> SALON_ADDRESS</p>
+            <p><strong>Phone:</strong> SALON_PHONE</p>
+            <p><strong>Email:</strong> SALON_EMAIL</p>
+            <p><strong>Hours:</strong> SALON_HOURS</p>
+        </div>
+    </section>
+    
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 SALON_NAME. All rights reserved.</p>
+            <div class="social-links">
+                <a href="SALON_FACEBOOK">Facebook</a>
+                <a href="SALON_INSTAGRAM">Instagram</a>
+                <a href="SALON_TWITTER">Twitter</a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

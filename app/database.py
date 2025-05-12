@@ -6,10 +6,10 @@ including session management, message storage, and feedback storage.
 """
 
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional, Dict, Any
 
-from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, ForeignKey, Boolean, Float
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Boolean, Float, MetaData
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, backref
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
@@ -21,27 +21,32 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-# Get database URL from environment variables
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./ai2ai_feedback.db")
-# Convert to async URL for SQLite
-if DATABASE_URL.startswith("sqlite:///"):
-    DATABASE_URL = DATABASE_URL.replace("sqlite:///", "sqlite+aiosqlite:///")
+# Use SQLite database
+SQLITE_DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "ai2ai_feedback.db")
+print(f"Using SQLite database at: {SQLITE_DB_PATH}")
 
-# Create async engine
-engine = create_async_engine(DATABASE_URL, echo=os.getenv("DEBUG", "False").lower() == "true")
+# Create SQLite engine
+engine = create_async_engine(
+    f"sqlite+aiosqlite:///{SQLITE_DB_PATH}",
+    echo=os.getenv("DEBUG", "False").lower() == "true",
+    connect_args={"check_same_thread": False}
+)
+
+# Set the metadata without schema (SQLite doesn't support schemas)
+metadata = MetaData()
 
 # Create async session
 async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
-# Create base class for models
-Base = declarative_base()
+# Create base class for models with our schema
+Base = declarative_base(metadata=metadata)
 
 class Session(Base):
     """Session model for storing conversation sessions"""
     __tablename__ = "sessions"
 
     id = Column(String, primary_key=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     last_accessed_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     system_prompt = Column(Text, nullable=True)
     title = Column(String, nullable=True)
@@ -160,6 +165,8 @@ class Task(Base):
     result = Column(Text, nullable=True)
     parent_task_id = Column(String, ForeignKey("tasks.id", ondelete="CASCADE"), nullable=True)
     session_id = Column(String, ForeignKey("sessions.id", ondelete="CASCADE"), nullable=True)
+    priority = Column(Integer, default=1)
+    required_skills = Column(String, nullable=True)
 
     # Relationships
     subtasks = relationship("Task", backref=backref("parent", remote_side=[id]))
@@ -189,6 +196,7 @@ class TaskUpdate(Base):
     agent_id = Column(String, nullable=False)  # Agent that provided the update
     content = Column(Text, nullable=False)  # Update content
     timestamp = Column(DateTime, default=datetime.utcnow)
+    level = Column(String, default="info")  # Update level (info, warning, error)
 
     # Relationships
     task = relationship("Task", back_populates="updates")

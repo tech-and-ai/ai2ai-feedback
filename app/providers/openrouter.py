@@ -21,7 +21,7 @@ class OpenRouterProvider(ModelProvider):
             model: Model name (defaults to environment variable)
         """
         self.api_key = api_key or os.getenv("OPENROUTER_API_KEY", "")
-        self.model = model or os.getenv("DEFAULT_MODEL", "anthropic/claude-3-opus-20240229")
+        self.model = model or os.getenv("DEFAULT_MODEL", "deepseek-coder-v2:16b")
 
         if not self.api_key:
             raise ValueError("OpenRouter API key is required")
@@ -58,7 +58,7 @@ class OpenRouterProvider(ModelProvider):
         try:
             async with httpx.AsyncClient(timeout=60.0) as client:
                 response = await client.post(
-                    "https://openrouter.ai/api/v1/chat/completions",
+                    "http://192.168.0.77:111434/v1/chat/completions",
                     headers={
                         "Authorization": f"Bearer {self.api_key}",
                         "Content-Type": "application/json",
@@ -101,7 +101,7 @@ class OpenRouterProvider(ModelProvider):
             async with httpx.AsyncClient(timeout=120.0) as client:
                 async with client.stream(
                     "POST",
-                    "https://openrouter.ai/api/v1/chat/completions",
+                    "http://192.168.0.77:111434/v1/chat/completions",
                     headers={
                         "Authorization": f"Bearer {self.api_key}",
                         "Content-Type": "application/json",
