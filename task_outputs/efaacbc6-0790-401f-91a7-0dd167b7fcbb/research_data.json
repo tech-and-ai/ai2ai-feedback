@@ -1,0 +1,192 @@
+{
+  "\u201cLanding page design trends 2024 AI software\u201d": [],
+  "\u201cJavaScript parallax scrolling tutorial GSAP\u201d": [
+    {
+      "title": "GreenSock: Parallax Animation | Free JavaScript Tutorial",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.nobledesktop.com%2Flearn%2Fjavascript%2Fgreensock%2Dparallax%2Danimation&rut=8346787b75053c2b8e131c4c1c5d30bd2c91fe1495c3d325e68dc3477863a914",
+      "content": "Dive into this comprehensive tutorial on creating a parallax scrolling animation using JavaScript, getting hands-on experience with topics such as setting up HTML, styling parallax layers, adding depth information, and leveraging GSAP."
+    },
+    {
+      "title": "Multilayer Parallax Scroll Animation with HTML and GSAP",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3Dtk3ivPgOwpc&rut=678a3641bf6dfd2347e0c03c6b7eaff1f951c2355729ab40562b11935a83647a",
+      "content": "In this video, with the topic Multilayer Parallax Scroll Animation with HTML and GSAP, I will guide everyone to create a multi-layer scroll animation effect with HTML and GSAP, taking the idea of ..."
+    },
+    {
+      "title": "Parallax Scroll Animations with Intersection Observer and GSAP3 ...",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fmedium.com%2Felegant%2Dseagulls%2Fparallax%2Dand%2Dscroll%2Dtriggered%2Danimations%2Dwith%2Dthe%2Dintersection%2Dobserver%2Dapi%2Dand%2Dgsap3%2D53b58c80b2fa&rut=08893e6c9d0e9233cd8a339ef10fdde1fa8d55f6451db4860053bae0f5e39611",
+      "content": "How to create parallax animations without ScrollMagic or other Scroll-Interaction libraries using Intersection Observer API and GreenSock's GSAP v3."
+    },
+    {
+      "title": "javascript - Parallax effect with GSAP - Stack Overflow",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fstackoverflow.com%2Fquestions%2F65620266%2Fparallax%2Deffect%2Dwith%2Dgsap&rut=ff808bd44934a5466946d530acfb173aa574b63609736ed6f2d277abcd99a4f4",
+      "content": "I have a question for you, hopefully you can help me. I am building myself a parallax effect using GSAP, -ScrollTrigger v3.5.1 and have built myself a function called parallax(). I want to animate"
+    },
+    {
+      "title": "JavaScript Parallax Scrolling \u2014 CodePel",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fcodepel.com%2Fvanilla%2Djavascript%2Fjavascript%2Dparallax%2Dscrolling%2F&rut=da0288538667800abd713f981532267f58eec8a219bdf8e6e2bce2be7d741ad8",
+      "content": "This JavaScript code snippet helps you to create parallax scrolling. It uses the GSAP (GreenSock Animation Platform) library to create animations on a web page that is triggered by scrolling. The first line registers the ScrollTrigger plugin with GSAP. The variable \"speed\" is set to 100 to control the animation speed. The code creates different scenes using the timeline () method of GSAP ..."
+    }
+  ],
+  "\u201cResponsive design best practices CSS media queries\u201d": [
+    {
+      "title": "Responsive design - Learn web development | MDN - MDN Web Docs",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fdeveloper.mozilla.org%2Fen%2DUS%2Fdocs%2FLearn_web_development%2FCore%2FCSS_layout%2FResponsive_Design&rut=33b55ae6489cb2d719cff8fd2eaf216d712fc7a355d1c30179374a3b4ede421b",
+      "content": "Media queries allow us to run a series of tests (for example, whether the user's screen is greater than a certain width or resolution) and apply CSS selectively to style the page appropriately for the user's needs.. For example, the following media query tests to see if the current web page is being displayed as screen media (therefore not a printed document) and the viewport is at least 80rem ..."
+    },
+    {
+      "title": "Responsive Design and Best Practices - CSS Tutorial",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.mergesociety.com%2Fcss%2Fcss%2Dresponsive%2Ddesign&rut=ba4da3d68962a1dc80a776ae3d981d792246681ffa715ddc3b440f39afc1e653",
+      "content": "Learn the key principles and best practices of responsive design. This tutorial covers fluid layouts, media queries, flexible images, mobile-first design, and more. Perfect for mastering CSS responsive design techniques for all devices."
+    },
+    {
+      "title": "Designing Responsive Web Pages with CSS Media Queries: A Complete Guide ...",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fmedium.com%2F%40mallikarjunpasupuleti%2Fdesigning%2Dresponsive%2Dweb%2Dpages%2Dwith%2Dcss%2Dmedia%2Dqueries%2Da%2Dcomplete%2Dguide%2Dfor%2Dmodern%2Dweb%2Ddevelopment%2D8a971f6d5cb9&rut=a4c50eabb42b073b2eacc0f56e388b5d508c946d648fae96743dc62920157839",
+      "content": "1. Mobile-First Approach with Media Queries. A mobile-first design approach starts with styling for the smallest screens (mobile devices) and gradually adjusts the layout as the screen size increases."
+    },
+    {
+      "title": "Mastering CSS Media Queries: Responsive Design for All Devices",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.codingeasypeasy.com%2Fblog%2Fmastering%2Dcss%2Dmedia%2Dqueries%2Dresponsive%2Ddesign%2Dfor%2Dall%2Ddevices&rut=18dc9fba0a362a752030a7df00d24b621a54d5b931b0cd4b7dda5c51515efaff",
+      "content": "Let's break down each component: @media: This is the CSS at-rule that initiates the media query.; media-type: Specifies the broad category of media the styles should be applied to.Common media types include: all: Applies to all media types.; screen: Targets computer screens, tablets, and smartphones.This is the most commonly used media type. print: Targets printers and print preview mode."
+    },
+    {
+      "title": "Mastering Responsive Web Designs with CSS Media Queries",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fdev.to%2Fclean17%2Fmastering%2Dresponsive%2Dweb%2Ddesigns%2Dwith%2Dcss%2Dmedia%2Dqueries%2Da4h&rut=d120e35b6353ad212a90e5f2d1c69fbf1a04d2e1b3bc9e2487f84455584b7c01",
+      "content": "In today's digital landscape, the diversity of devices used to access websites demands flexible and adaptive design solutions. Responsive web design, achieved through CSS media queries, empowers developers to craft websites that seamlessly adjust their layout and content based on the user's device characteristics."
+    }
+  ],
+  "\u201cPricing tier design examples SaaS\u201d": [
+    {
+      "title": "Orb | Tiered pricing examples for SaaS growth in 2025",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.withorb.com%2Fblog%2Ftiered%2Dpricing%2Dexamples&rut=2cfb42a582848d99947f383b96d005e3c595bae37f3115013b730f2201fdce48",
+      "content": "SaaS pricing models are evolving fast, and finding the right strategy is key for growth in 2025. Tiered pricing has become increasingly popular in the SaaS industry. Research indicates that the average SaaS company offers around 3.5 pricing tiers to cater to various user segments.. This post explores tiered pricing examples and best practices to help you unlock your SaaS growth in 2025."
+    },
+    {
+      "title": "SaaS Pricing: Strategy | Models | Examples - The ... - The Strategy Story",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fthestrategystory.com%2Fblog%2Fsaas%2Dpricing%2Dstrategy%2Dmodels%2Dexamples%2F&rut=2d53a80a1d2b728ebcc29025a2b92c06a9ae7cb90ab314fac3faa29b4c08618c",
+      "content": "SaaS Pricing model examples. Here are some examples of SaaS companies and the pricing models they use: Flat Rate Pricing. Example: Basecamp Description: Basecamp charges a flat rate of $99 monthly for unlimited users and projects. Advantages: Simple and easy to understand for customers. Disadvantages: Does not scale with different usage levels or customer sizes."
+    },
+    {
+      "title": "SaaS Tiered Billing & Three-Tier Pricing Strategy Guide - Maxio",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.maxio.com%2Fblog%2Ftiered%2Dpricing%2Dexamples%2Dfor%2Dsaas%2Dbusinesses&rut=3a5ac62a21bed8363a8cb5675bc4d3c61b4b57f2b42de7ab39f1684f08e7818f",
+      "content": "Canva. Canva is a design website that helps everyone create professional-looking marketing material. Its pricing tier structure is both user-count and feature-based. Canva Free provides users with a short list of great features that help them design all types of professional marketing collateral"
+    },
+    {
+      "title": "A Definitive Guide To SaaS Pricing Models (with Examples)",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Ftheproductmanager.com%2Ftopics%2Fsaas%2Dpricing%2Dmodels%2F&rut=2a46299b6d5a24846e263adb8e20fb6c18a6ad7cc88e240fcf992e6279eff511",
+      "content": "Building and running a SaaS startup can take time and effort. More so, if you start going deeper into the SaaS pricing models, they are another world to explore."
+    },
+    {
+      "title": "Guide To Configure Tiered Pricing For SaaS Product - Togai",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.togai.com%2Fblog%2Ftiered%2Dpricing%2Dwith%2Dexamples%2F&rut=4a98d5ed9ada6496086a3e342730091fe7cf7121ff0404a7ce9a9c39968db15e",
+      "content": "Learn how to create tiered pricing for your SaaS product. Discover strategies to attract diverse customers, increase revenue, and boost customer retention."
+    }
+  ],
+  "\u201cWCAG 2.1 accessibility guidelines for web animations\u201d": [
+    {
+      "title": "Web Content Accessibility Guidelines (WCAG) 2.1",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.w3.org%2FTR%2FWCAG21%2F&rut=cd79c4eb5e09e4f35228987335cb74c4f9b20c61f8433291b441a1fae87b5ea0",
+      "content": "Abstract Web Content Accessibility Guidelines (WCAG) 2.1 covers a wide range of recommendations for making web content more accessible. Following these guidelines will make content more accessible to a wider range of people with disabilities, including accommodations for blindness and low vision, deafness and hearing loss, limited movement, speech disabilities, photosensitivity, and ..."
+    },
+    {
+      "title": "Understanding WCAG 2.2 - Service Manual - GOV.UK",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.gov.uk%2Fservice%2Dmanual%2Fhelping%2Dpeople%2Dto%2Duse%2Dyour%2Dservice%2Funderstanding%2Dwcag&rut=6734b62fbf2d97cf4049c316c1bc7f9fb207d567e344c67d35b82ba346369147",
+      "content": "This is an overview of WCAG 2.2 level AA. It does not replace the WCAG 2.2 guidelines, which provide a full explanation of all principles and requirements."
+    },
+    {
+      "title": "WCAG 2 Overview | Web Accessibility Initiative (WAI) | W3C",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.w3.org%2FWAI%2Fstandards%2Dguidelines%2Fwcag%2F&rut=37c0c72df8a896d2745fcfdac54a6eedc28e4026bc25a6a35a08c739ab0e70a1",
+      "content": "Introduces the Web Content Accessibility Guidelines (WCAG) international standard, including WCAG 2.0, WCAG 2.1, and WCAG 2.2. WCAG documents explain how to make web content more accessible to people with disabilities."
+    },
+    {
+      "title": "Web Content Accessibility Guidelines (WCAG)",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Faccessibility%2Dmanual.dwp.gov.uk%2Faccessibility%2Dlaw%2Fweb%2Dcontent%2Daccessibility%2Dguidelines&rut=6abfe59140bff993f9c726231bbda84029706105246ac60b3bdc6ffe4af10ad1",
+      "content": "Web Content Accessibility Guidelines (WCAG) The Web Content Accessibility Guidelines (WCAG) are a list of criteria your website or mobile application need to meet in order to be legally compliant. In order for your website or application to be legally compliant, it needs to meet the level of AA. This is outlined in the accessibility regulations. The latest published version of WCAG is WCAG 2.2 ..."
+    },
+    {
+      "title": "WCAG overview - Accessibility manual",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Faccessibility.education.gov.uk%2Fknowledge%2Dhub%2Fwcag&rut=0e6e6932fe3bf2f7179ca9182cac80b51972a4fef889aea96204db7894d76c32",
+      "content": "WCAG overview The Web Content Accessibility Guidelines (WCAG) 2.2 are a set of recommendations designed to make web content more accessible to people with disabilities. These guidelines are aimed at improving the user experience for people with various impairments, including visual, auditory, physical, speech, cognitive, language, learning, and neurological disabilities. Main principles WCAG 2 ..."
+    }
+  ],
+  "\u201cCreating interactive elements with JavaScript HTML CSS\u201d": [
+    {
+      "title": "Creating Interactive Uis with HTML, CSS, JavaScript, by John Kavanagh",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fjohnkavanagh.co.uk%2Farticles%2Fcreating%2Dinteractive%2Duser%2Dinterfaces%2Dwith%2Dhtml%2Dcss%2Dand%2Djs%2F&rut=9e1e0e57a5e3b39a0ba7f828d25a08fbe377feb35769ea31e47a44e1698bfeb8",
+      "content": "Improving User Experience with CSS Animations. CSS animations make interfaces feel more polished and engaging. Smooth transitions and effects provide users with immediate visual feedback, reinforcing interactions. Here's a simple hover effect that changes a button's background color:"
+    },
+    {
+      "title": "8 CSS Snippets for Creating Interactive Web Elements",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fspeckyboy.com%2Finteractive%2Delements%2Dthat%2Dyou%2Dcan%2Dbuild%2Dwith%2Dhtml%2Dcss%2F&rut=a10af56309302bf321df3897084cd1f4316fedf08bcc2577ee1a8d0bf391c2e5",
+      "content": "Written by Eric Karkovack. Eric Karkovack is a web designer and WordPress expert with over two decades of experience. You can visit his business site here.He recently started a writing service for WordPress products: WP Product Writeup.He also has an opinion on just about every subject."
+    },
+    {
+      "title": "Building Interactive Websites with JavaScript and HTML/CSS",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.apescript.com%2Ffrontend%2Fwebsites%2Dwith%2Djavascript%2Dand%2Dhtml%2F&rut=2867819711a0991c221da77fc5bdc32a935bf50ecf7655b06dd1f32ab264dec4",
+      "content": "Next, we will add some CSS to style the elements on our web page. We will be using CSS to change the color and font of the elements, and to position the elements on the page."
+    },
+    {
+      "title": "How to Build Interactive Elements with JavaScript - Squash",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.squash.io%2Fconstructing%2Dinteractive%2Delements%2Dwith%2Djavascript%2F&rut=9a7ce1d1e2f62cf76e5e470c57a2ae969b3b8e6b96e93764a011e185f9acb2e0",
+      "content": "Event Listeners. Event listeners are an essential part of constructing interactive elements with JavaScript. They allow you to listen for specific events, such as user actions or system events, and execute a function in response."
+    },
+    {
+      "title": "Creating Interactive User Interfaces with JavaScript and CSS",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fmayvenstudios.com%2Fblog%2Fcreating%2Dinteractive%2Duser%2Dinterfaces%2Djavascript%2Dcss&rut=7835d6c29d58962cc31aaceeea28d67d88a6c5cf1d9ac2e384f2cb1b331703a1",
+      "content": "When it comes to web development, designing interactive user interfaces (UIs) is a vital aspect of capturing and retaining user attention. But how exactly can this be achieved?"
+    }
+  ],
+  "\u201cCSS Grid layout tutorial complex layouts\u201d": [
+    {
+      "title": "How to Use CSS Grid for Complex Layouts - PixelFreeStudio Blog",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fblog.pixelfreestudio.com%2Fhow%2Dto%2Duse%2Dcss%2Dgrid%2Dfor%2Dcomplex%2Dlayouts%2F&rut=cf9b90d20b08c5ceae55fed39272061dd2e7b450dac3aa20e38062a1eed81ec2",
+      "content": "Practical Tips for Using CSS Grid Start with a Sketch. Before you start coding, sketch out your grid layout on paper or use a design tool. This helps you visualize the structure and plan the grid areas, lines, and item placements."
+    },
+    {
+      "title": "Complete CSS Grid Guide for Building Complex Layouts - codedamn",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fcodedamn.com%2Fnews%2Ffrontend%2Fcss%2Dgrid%2Dultimate%2Dguide&rut=36c7e85ba4b078e2461481005eb2be6df6b87de0f74825d9f34698a47eb11fd3",
+      "content": "In this example, a 20px gap is added between rows and columns using the gap property, and the items are centered within their cells using the align-items and justify-items properties.. Nested Grids and Complex Layouts. One powerful feature of CSS Grid is the ability to create nested grids, allowing you to build complex layouts with ease."
+    },
+    {
+      "title": "How To Create Complex CSS Grid Layouts | by Defita F. C. P - Medium",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fmedium.com%2F%40aicontentpace%2Fhow%2Dto%2Dcreate%2Dcomplex%2Dcss%2Dgrid%2Dlayouts%2D0aaef9b91ec9&rut=3c59a714f1dd8c92cfeb540d54aba03ef993967407a19a97deaeebe0b7be44d2",
+      "content": "In the vast realm of web design, CSS Grid stands as a modern and powerful layout system. Unlike its predecessors, such as floats and Flexbox, CSS Grid allows you to construct intricate grid-based ..."
+    },
+    {
+      "title": "How to Create Complex Grid Layouts with CSS Grid",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fblog.pixelfreestudio.com%2Fhow%2Dto%2Dcreate%2Dcomplex%2Dgrid%2Dlayouts%2Dwith%2Dcss%2Dgrid%2F&rut=f19c1d1ff3d7795d39b6cca4aa9a38ddc412b4a5b91f736f10ef6c6de3946d6a",
+      "content": "Enhancing Grid Layouts with CSS Properties Using Fractional Units (fr) CSS Grid's fractional units (fr) are incredibly useful for creating flexible layouts.The fr unit represents a fraction of the available space in the grid container, allowing you to distribute space proportionally..grid-container {display: grid; grid-template-columns: 1fr 2fr 1fr;"
+    },
+    {
+      "title": "How to Use CSS Grid for Complex Web Layouts: A Step-by-Step Guide",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fdev.to%2Frowsanali%2Fhow%2Dto%2Duse%2Dcss%2Dgrid%2Dfor%2Dcomplex%2Dweb%2Dlayouts%2Da%2Dstep%2Dby%2Dstep%2Dguide%2D3fk9&rut=22971de61663af989c658ab7809f859398d3c6a782409b97fa68ebeaad08a9c0",
+      "content": "Here, item2 overlaps item1 by positioning it in the same grid cells. Join our free newsletter, to get information delivered to your inbox.. Conclusion CSS Grid is a versatile and powerful tool for creating complex web layouts. By mastering its features, you can design responsive, maintainable, and visually appealing websites."
+    }
+  ],
+  "\"SaaS website design trends 2024\"": [
+    {
+      "title": "Best SaaS Website Designs - Trends and Inspirations for 2024",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fprateekshawebdesign.com%2Fblog%2Fbest%2Dsaas%2Dwebsite%2Ddesigns%2Dtrends%2Dand%2Dinspirations%2Dfor%2D2024&rut=650bca9544cf509e85457fcfec8af50713fe052942c72c22fe5e4b09f643329a",
+      "content": "Table of Contents: Introduction: Why SaaS Website Design Matters in 2024; Trend 1: Minimalism with a Purpose; Trend 2: Personalization Through AI and Machine Learning; Trend 3: Microinteractions for Enhanced User Engagement; Trend 4: Bold Typography as a Design Element; Trend 5: Dark Mode and Adaptive Themes; Trend 6: Enhanced Accessibility Features; Trend 7: Data Visualization and Interactive ..."
+    },
+    {
+      "title": "14+ SaaS Website Design Ideas & Inspirations for 2025 - ColorWhistle",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fcolorwhistle.com%2Fsaas%2Dwebsite%2Ddesign%2Dideas%2F&rut=510dd25ab20770d33e50b8519814b073dd6a489a8bcfcf420c60e8ee6affd6c2",
+      "content": "As more businesses depend on software as a service (SaaS) solution, the need for a quality website design has never been more important. A well-designed SaaS website plays a dominant role in every SasS digital marketing strategy, i.e. from lead generation to content marketing.Hence, your SaaS website must not only be about eye-catchy design, it must help to convert visitors into leads."
+    },
+    {
+      "title": "Breaking Boundaries: Best SaaS Website Design Trends to know in 2025",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.webdew.com%2Fblog%2Fsaas%2Dwebsite%2Ddesign&rut=1247353c67d60181f16d72bcc5bae063f170a273a1b637f651c759ef59114fba",
+      "content": "Discover top SaaS website design trends of 2025 that push boundaries and elevate user experiences. Stay ahead with the latest innovations in SaaS design."
+    },
+    {
+      "title": "The 42 Best SaaS Websites in 2025 (Design Inspiration) - FounderJar",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.founderjar.com%2Finspiration%2Fsaas%2Dwebsites%2F&rut=09f75662aa14a4bb67c6e2810920ebdc9c9a24b06e9b79a4d2505d5895664b6a",
+      "content": "SellX is the first modern sales engagement platform, effectively creating pipelines and helping close more deals in the marketspace. One of the top e-commerce platforms, the SellX B2B SaaS website is unique, displaying all its content in a consistent black-and-white color scheme.. An arrow icon is visible and pinned to the right-hand corner of the homepage, attached with a progress indicator ..."
+    },
+    {
+      "title": "Top SaaS Design Trends for 2024 - SaaS Metrics",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fsaasmetrics.co%2Ftop%2Dsaas%2Ddesign%2Dtrends%2Dfor%2D2024%2F&rut=dcf258b83f40a179819e092205472de8c3b810f8b12613d9cc82d2e24e6b505b",
+      "content": "Would you believe that we are three months into 2024 already? Now, web designers for SaaS made their predictions of what to expect from the industry way before New Year's. Most of them were on point, like AI and blockchain, but I want to focus solely on the SaaS design trends that are dominating this year currently."
+    }
+  ]
+}

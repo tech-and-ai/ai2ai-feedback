@@ -68,19 +68,8 @@ class TaskProcessor:
 
     def get_next_task(self):
         """Get the next available task from the queue."""
-        # First, check for tasks with a specific assigned_agent_id
         self.cursor.execute(
-            'SELECT t.*, a.id as agent_id, a.name as agent_name FROM tasks t JOIN agents a ON t.assigned_agent_id = a.id WHERE t.status = "not_started" AND a.status = "available" ORDER BY t.priority DESC, t.created_at ASC LIMIT 1'
-        )
-        task = self.cursor.fetchone()
-
-        if task:
-            logger.info(f"Found task {task['id']} with pre-assigned agent {task['agent_id']} ({task['agent_name']})")
-            return task
-
-        # If no tasks with assigned_agent_id, get the next task based on priority and creation time
-        self.cursor.execute(
-            'SELECT * FROM tasks WHERE status = "not_started" AND (assigned_agent_id IS NULL OR assigned_agent_id = "") ORDER BY priority DESC, created_at ASC LIMIT 1'
+            'SELECT * FROM tasks WHERE status = "not_started" ORDER BY priority DESC, created_at ASC LIMIT 1'
         )
         return self.cursor.fetchone()
 
@@ -95,18 +84,6 @@ class TaskProcessor:
     def assign_task_to_agent(self, task_id, agent_id):
         """Assign a task to an agent and update statuses."""
         try:
-            # Check if the task already has an assigned agent
-            self.cursor.execute(
-                'SELECT assigned_agent_id FROM tasks WHERE id = ?',
-                (task_id,)
-            )
-            task = self.cursor.fetchone()
-
-            # If the task already has an assigned agent, use that agent
-            if task and task['assigned_agent_id'] and task['assigned_agent_id'] != agent_id:
-                logger.info(f"Task {task_id} already has an assigned agent: {task['assigned_agent_id']}. Using that agent instead of {agent_id}.")
-                agent_id = task['assigned_agent_id']
-
             # Update task
             self.cursor.execute(
                 'UPDATE tasks SET assigned_agent_id = ?, status = "design", updated_at = ? WHERE id = ?',
@@ -321,18 +298,6 @@ class TaskProcessor:
             "gemma3:4b": "gemma3:1b",
             "deepseek-coder-v2:16b": "gemma3:1b"
         }
-
-        # Special handling for DeepSeek Coder model
-        if model == "deepseek-coder-v2:16b":
-            # Modify the prompt to explicitly request HTML code
-            if "landing page" in prompt.lower() or "html" in prompt.lower():
-                if system_prompt:
-                    system_prompt += "\nYou are a web developer. Generate actual HTML, CSS, and JavaScript code, not just descriptions or explanations. The output should be fully functional code that can be directly used in a web page."
-                else:
-                    system_prompt = "You are a web developer. Generate actual HTML, CSS, and JavaScript code, not just descriptions or explanations. The output should be fully functional code that can be directly used in a web page."
-
-                # Add explicit instructions to the prompt
-                prompt += "\n\nIMPORTANT: Your response should be actual HTML, CSS, and JavaScript code, not just descriptions or explanations. Generate fully functional code that can be directly used in a web page."
 
         payload = {
             "model": model,
@@ -760,87 +725,43 @@ class TaskProcessor:
         if not output_formats:
             output_formats = ["markdown"]
 
-        # Check if this is a landing page task
-        is_landing_page = "landing page" in task['title'].lower() or "landing page" in task['description'].lower()
-        is_html_task = "html" in task['title'].lower() or "html" in task['description'].lower()
-
         # Create execution prompt
-        if is_landing_page or is_html_task:
-            execution_prompt = f"""
-            # Task Execution
+        execution_prompt = f"""
+        # Task Execution
 
-            ## Task Details
-            - Title: {task['title']}
-            - Description: {task['description']}
+        ## Task Details
+        - Title: {task['title']}
+        - Description: {task['description']}
 
-            ## Task Plan
-            {plan_content}
+        ## Task Plan
+        {plan_content}
 
-            ## Research Summary
-            {research_summary[:10000]}  # Limit size to avoid token limits
+        ## Research Summary
+        {research_summary[:10000]}  # Limit size to avoid token limits
 
-            ## Instructions
-            Based on the task details, plan, and research above, create a complete HTML landing page with CSS and JavaScript.
+        ## Instructions
+        Based on the task details, plan, and research above, create the complete output for this task.
 
-            Follow these guidelines:
-            1. Generate actual HTML, CSS, and JavaScript code, not just descriptions or explanations
-            2. The output should be fully functional code that can be directly used in a web page
-            3. Include all required elements from the task description (hero section, pricing section, features section, footer, etc.)
-            4. Incorporate animations using JavaScript as specified in the task
-            5. Ensure the page is responsive and works on mobile and desktop
-            6. Include comments in the code explaining key components
-            7. Use modern HTML5, CSS3, and ES6+ JavaScript features
+        Follow these guidelines:
+        1. Adhere strictly to the output structure defined in the plan
+        2. Incorporate key findings from the research summary
+        3. Ensure all content is accurate, well-organized, and comprehensive
+        4. Use proper citations when referencing external sources
+        5. Include all required elements (introduction, body, conclusion, etc.)
+        6. Maintain a professional, authoritative tone throughout
+        7. Format the content appropriately with headings, subheadings, lists, etc.
 
-            ## Output Format
-            The primary output should be complete HTML code with embedded CSS and JavaScript:
-            - Start with <!DOCTYPE html> and include all necessary HTML structure
-            - Include CSS in a <style> tag in the head section
-            - Include JavaScript in a <script> tag at the end of the body section
-            - Make sure all code is properly formatted and indented
-            - Include comments explaining key components and functionality
-            - The code should be fully functional without requiring any backend
-            """
-        else:
-            execution_prompt = f"""
-            # Task Execution
-
-            ## Task Details
-            - Title: {task['title']}
-            - Description: {task['description']}
-
-            ## Task Plan
-            {plan_content}
-
-            ## Research Summary
-            {research_summary[:10000]}  # Limit size to avoid token limits
-
-            ## Instructions
-            Based on the task details, plan, and research above, create the complete output for this task.
-
-            Follow these guidelines:
-            1. Adhere strictly to the output structure defined in the plan
-            2. Incorporate key findings from the research summary
-            3. Ensure all content is accurate, well-organized, and comprehensive
-            4. Use proper citations when referencing external sources
-            5. Include all required elements (introduction, body, conclusion, etc.)
-            6. Maintain a professional, authoritative tone throughout
-            7. Format the content appropriately with headings, subheadings, lists, etc.
-
-            ## Output Format
-            The primary output should be in markdown format with:
-            - Clear, hierarchical heading structure (# for main headings, ## for subheadings, etc.)
-            - Proper formatting for emphasis, lists, tables, and code blocks if needed
-            - Citations in a consistent format
-            - Well-structured paragraphs with clear topic sentences
-            - Logical flow between sections
-            """
+        ## Output Format
+        The primary output should be in markdown format with:
+        - Clear, hierarchical heading structure (# for main headings, ## for subheadings, etc.)
+        - Proper formatting for emphasis, lists, tables, and code blocks if needed
+        - Citations in a consistent format
+        - Well-structured paragraphs with clear topic sentences
+        - Logical flow between sections
+        """
 
         # Query LLM for primary output
-        if is_landing_page or is_html_task:
-            system_prompt = "You are an expert web developer with extensive experience in creating modern, responsive, and interactive websites. You excel at writing clean, well-structured HTML, CSS, and JavaScript code that follows best practices and is fully functional without requiring any backend."
-        else:
-            system_prompt = "You are an expert content creator with extensive experience in producing high-quality, comprehensive outputs across various domains. Your writing is clear, well-structured, authoritative, and tailored to the specific requirements of each task."
-
+        system_prompt = "You are an expert content creator with extensive experience in producing high-quality, comprehensive outputs across various domains. Your writing is clear, well-structured, authoritative, and tailored to the specific requirements of each task."
         primary_output = self.query_llm(model, execution_prompt, system_prompt, max_tokens=8000)
 
         if not primary_output:
@@ -859,18 +780,7 @@ class TaskProcessor:
         output_files = [primary_file]
 
         # Convert to HTML if needed
-        if is_landing_page or is_html_task:
-            # For landing page tasks, save the primary output directly as HTML
-            html_file = self.save_output_file(output_dir, "output.html", primary_output)
-            output_files.append(html_file)
-
-            # Also save the raw HTML to a separate file for easy access
-            landing_page_file = self.save_output_file(output_dir, "landing_page.html", primary_output)
-            output_files.append(landing_page_file)
-
-            self.create_task_update(task_id, agent_id, "progress_update", "Generated HTML landing page")
-        elif "html" in output_formats or "HTML" in output_formats:
-            # For other tasks, convert markdown to HTML
+        if "html" in output_formats or "HTML" in output_formats:
             html_content = self.generate_html_from_markdown(primary_output)
             html_file = self.save_output_file(output_dir, "output.html", html_content)
             output_files.append(html_file)
@@ -1118,38 +1028,6 @@ class TaskProcessor:
         agent_id = agent['id']
         model = agent['model']
 
-        # Check if the task has a pre-assigned agent
-        if 'assigned_agent_id' in task and task['assigned_agent_id'] and task['assigned_agent_id'] != agent_id:
-            logger.warning(f"Task {task_id} was pre-assigned to {task['assigned_agent_id']} but is being processed by {agent_id}")
-
-            # Get the pre-assigned agent
-            self.cursor.execute(
-                'SELECT * FROM agents WHERE id = ?',
-                (task['assigned_agent_id'],)
-            )
-            pre_assigned_agent = self.cursor.fetchone()
-
-            if pre_assigned_agent:
-                logger.info(f"Switching to pre-assigned agent {pre_assigned_agent['id']} - {pre_assigned_agent['name']}")
-
-                # Update the agent status to busy
-                self.cursor.execute(
-                    'UPDATE agents SET status = "busy", last_active = ? WHERE id = ?',
-                    (datetime.now().isoformat(), pre_assigned_agent['id'])
-                )
-                self.conn.commit()
-
-                # Update the agent that was originally assigned to available
-                self.cursor.execute(
-                    'UPDATE agents SET status = "available", last_active = ? WHERE id = ?',
-                    (datetime.now().isoformat(), agent_id)
-                )
-                self.conn.commit()
-
-                agent = pre_assigned_agent
-                agent_id = agent['id']
-                model = agent['model']
-
         logger.info(f"Processing task {task_id} with agent {agent_id} using model {model}")
 
         # Create output directory
@@ -1216,26 +1094,11 @@ class TaskProcessor:
                     if task:
                         logger.info(f"Found task: {task['id']} - {task['title']}")
 
-                        # Check if task already has an assigned agent
-                        if 'agent_id' in task and 'agent_name' in task:
-                            # Task has a pre-assigned agent that is available
-                            agent_id = task['agent_id']
-
-                            # Get the agent details
-                            self.cursor.execute(
-                                'SELECT * FROM agents WHERE id = ?',
-                                (agent_id,)
-                            )
-                            agent = self.cursor.fetchone()
-
-                            logger.info(f"Using pre-assigned agent: {agent['id']} - {agent['name']}")
-                        else:
-                            # Get available agent
-                            agent = self.get_available_agent(task['complexity'])
+                        # Get available agent
+                        agent = self.get_available_agent(task['complexity'])
 
                         if agent:
-                            if 'agent_id' not in task and 'agent_name' not in task:
-                                logger.info(f"Found available agent: {agent['id']} - {agent['name']}")
+                            logger.info(f"Found available agent: {agent['id']} - {agent['name']}")
 
                             # Assign task to agent
                             if self.assign_task_to_agent(task['id'], agent['id']):

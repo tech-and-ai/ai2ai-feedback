@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI2AI Discussion Monitor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .message {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .message-content {
+            white-space: pre-wrap;
+        }
+        .agent1-message {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196F3;
+        }
+        .agent2-message {
+            background-color: #f3e5f5;
+            border-left: 4px solid #9c27b0;
+        }
+        .human-message {
+            background-color: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+        .controls {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        input, button, select {
+            padding: 8px;
+            margin-right: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        code {
+            background-color: #f5f5f5;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI2AI Discussion Monitor</h1>
+
+        <div class="controls">
+            <h2>Discussion Status</h2>
+            <div id="status">
+                <p>Task ID: <span id="task-id">test_landing_page</span></p>
+                <p>Status: <span id="discussion-status">Active</span></p>
+                <p>Agents: <span id="agents">DeepSeek Coder, Human</span></p>
+            </div>
+        </div>
+
+        <div class="controls">
+            <h2>Send Message</h2>
+            <textarea id="message-input" rows="4" style="width: 100%; margin-bottom: 10px;" placeholder="Enter your message here..."></textarea>
+            <select id="sender-select">
+                <option value="human">Human</option>
+                <option value="agent1">DeepSeek Coder</option>
+                <option value="agent2">Agent 2</option>
+            </select>
+            <button id="send-btn">Send Message</button>
+            <button id="refresh-btn">Refresh Messages</button>
+        </div>
+
+        <h2>Discussion</h2>
+        <div id="message-container">
+            <!-- Messages will be displayed here -->
+        </div>
+    </div>
+
+    <script>
+        // Discussion data will be fetched from the server
+        let discussionData = {
+            messages: []
+        };
+
+        // Function to display messages
+        function displayMessages() {
+            const container = document.getElementById('message-container');
+            container.innerHTML = '';
+
+            discussionData.messages.forEach(message => {
+                const messageElem = document.createElement('div');
+                messageElem.className = `message ${message.agent_id}-message`;
+
+                const header = document.createElement('div');
+                header.className = 'message-header';
+
+                const sender = document.createElement('span');
+                sender.textContent = message.agent_id === 'agent1' ? 'DeepSeek Coder' :
+                                    message.agent_id === 'agent2' ? 'Agent 2' : 'Human';
+
+                const time = document.createElement('span');
+                time.textContent = new Date(message.timestamp).toLocaleString();
+
+                header.appendChild(sender);
+                header.appendChild(time);
+
+                const content = document.createElement('div');
+                content.className = 'message-content';
+                content.innerHTML = formatMessage(message.content);
+
+                messageElem.appendChild(header);
+                messageElem.appendChild(content);
+
+                container.appendChild(messageElem);
+            });
+        }
+
+        // Function to format message content (handle code blocks, etc.)
+        function formatMessage(content) {
+            // Replace code blocks with formatted HTML
+            content = content.replace(/```(\w*)([\s\S]*?)```/g, function(match, language, code) {
+                return `<pre><code class="language-${language}">${code.trim()}</code></pre>`;
+            });
+
+            // Replace line breaks with <br>
+            content = content.replace(/\n/g, '<br>');
+
+            return content;
+        }
+
+        // Function to fetch discussion data from the server
+        async function fetchDiscussion() {
+            try {
+                const response = await fetch('http://localhost:8080/api/discussion');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                discussionData = data;
+                displayMessages();
+            } catch (error) {
+                console.error('Error fetching discussion data:', error);
+            }
+        }
+
+        // Function to add a new message
+        async function addMessage() {
+            const content = document.getElementById('message-input').value.trim();
+            const sender = document.getElementById('sender-select').value;
+
+            if (!content) {
+                alert('Please enter a message');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:8080/api/message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        agent_id: sender,
+                        content: content
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                // Fetch updated discussion data
+                await fetchDiscussion();
+
+                // Clear input
+                document.getElementById('message-input').value = '';
+            } catch (error) {
+                console.error('Error sending message:', error);
+            }
+        }
+
+        // Function to auto-refresh the discussion
+        function startAutoRefresh() {
+            setInterval(fetchDiscussion, 5000); // Refresh every 5 seconds
+        }
+
+        // Event listeners
+        document.getElementById('send-btn').addEventListener('click', addMessage);
+        document.getElementById('refresh-btn').addEventListener('click', fetchDiscussion);
+
+        // Initial fetch and display
+        fetchDiscussion();
+
+        // Start auto-refresh
+        startAutoRefresh();
+    </script>
+</body>
+</html>
