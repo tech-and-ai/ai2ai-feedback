@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autonomous Agent System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            background-color: #343a40;
+        }
+        .sidebar {
+            background-color: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+            height: calc(100vh - 56px);
+            position: sticky;
+            top: 56px;
+            overflow-y: auto;
+        }
+        .main-content {
+            padding: 20px;
+        }
+        .card {
+            margin-bottom: 20px;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        .agent-card {
+            transition: transform 0.2s;
+        }
+        .agent-card:hover {
+            transform: translateY(-5px);
+        }
+        .task-card {
+            border-left: 5px solid #6c757d;
+        }
+        .task-card.design {
+            border-left-color: #007bff;
+        }
+        .task-card.build {
+            border-left-color: #28a745;
+        }
+        .task-card.test {
+            border-left-color: #ffc107;
+        }
+        .task-card.review {
+            border-left-color: #17a2b8;
+        }
+        .task-card.complete {
+            border-left-color: #6c757d;
+        }
+        .progress {
+            height: 10px;
+        }
+        .badge-complexity {
+            background-color: #6c757d;
+        }
+        .badge-complexity.low {
+            background-color: #28a745;
+        }
+        .badge-complexity.medium {
+            background-color: #ffc107;
+        }
+        .badge-complexity.high {
+            background-color: #dc3545;
+        }
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .status-available {
+            background-color: #28a745;
+        }
+        .status-busy {
+            background-color: #ffc107;
+        }
+        .status-offline {
+            background-color: #dc3545;
+        }
+        .alert-info {
+            background-color: rgba(13, 202, 240, 0.1);
+            border-color: rgba(13, 202, 240, 0.2);
+        }
+        .working-on-task {
+            border-left: 3px solid #0dcaf0;
+            padding-left: 10px;
+        }
+        .working-badge {
+            background-color: #0d6efd;
+            color: white;
+            font-weight: normal;
+            padding: 0.35em 0.65em;
+        }
+        .workflow-badges {
+            display: flex;
+            gap: 5px;
+        }
+        .workflow-badges.small .badge {
+            font-size: 0.65em;
+            padding: 0.25em 0.4em;
+        }
+        .text-white-50 {
+            color: rgba(255, 255, 255, 0.5) !important;
+        }
+        .agent-card {
+            transition: all 0.3s ease;
+            border: 1px solid #dee2e6;
+        }
+        .agent-card:hover {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            transform: translateY(-5px);
+        }
+        .agent-card .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .agent-card .card-footer {
+            background-color: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-robot"></i> Autonomous Agent System
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" id="dashboard-link">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="tasks-link">Tasks</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="agents-link">Agents</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="discussions-link">Discussions</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Quick Actions</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTaskModal">
+                                    <i class="bi bi-plus-circle"></i> Create Task
+                                </button>
+                                <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#createAgentModal">
+                                    <i class="bi bi-robot"></i> Add Agent
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">System Status</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Active Agents
+                                    <span class="badge bg-primary rounded-pill" id="active-agents-count">0</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Pending Tasks
+                                    <span class="badge bg-warning rounded-pill" id="pending-tasks-count">0</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Completed Tasks
+                                    <span class="badge bg-success rounded-pill" id="completed-tasks-count">0</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <!-- Dashboard View -->
+                <div id="dashboard-view">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Dashboard</h2>
+                        <div>
+                            <button class="btn btn-sm btn-outline-secondary" id="refresh-dashboard">
+                                <i class="bi bi-arrow-clockwise"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">All Agents</h5>
+                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createAgentModal">
+                                <i class="bi bi-robot"></i> Add Agent
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div id="all-agents-container" class="row">
+                                <div class="text-center py-5">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Recent Tasks</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="recent-tasks-container">
+                                        <div class="text-center py-5">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tasks View -->
+                <div id="tasks-view" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Tasks</h2>
+                        <div>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTaskModal">
+                                <i class="bi bi-plus-circle"></i> Create Task
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control" id="task-search" placeholder="Search tasks...">
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select" id="task-status-filter">
+                                        <option value="">All Statuses</option>
+                                        <option value="not_started">Not Started</option>
+                                        <option value="design">Design</option>
+                                        <option value="build">Build</option>
+                                        <option value="test">Test</option>
+                                        <option value="review">Review</option>
+                                        <option value="complete">Complete</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select" id="task-complexity-filter">
+                                        <option value="">All Complexities</option>
+                                        <option value="1-3">Low (1-3)</option>
+                                        <option value="4-7">Medium (4-7)</option>
+                                        <option value="8-10">High (8-10)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-outline-secondary w-100" id="reset-task-filters">
+                                        Reset
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="tasks-container">
+                                <div class="text-center py-5">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agents View -->
+                <div id="agents-view" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Agents</h2>
+                        <div>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createAgentModal">
+                                <i class="bi bi-robot"></i> Add Agent
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control" id="agent-search" placeholder="Search agents...">
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select" id="agent-status-filter">
+                                        <option value="">All Statuses</option>
+                                        <option value="available">Available</option>
+                                        <option value="busy">Busy</option>
+                                        <option value="offline">Offline</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select" id="agent-model-filter">
+                                        <option value="">All Models</option>
+                                        <option value="gemma3-4b">Gemma 3 4B</option>
+                                        <option value="gemma3-1b">Gemma 3 1B</option>
+                                        <option value="deepseek-coder-v2-16b">DeepSeek Coder v2 16B</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-outline-secondary w-100" id="reset-agent-filters">
+                                        Reset
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="agents-container">
+                                <div class="text-center py-5">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Discussions View -->
+                <div id="discussions-view" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Discussions</h2>
+                        <div>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createDiscussionModal">
+                                <i class="bi bi-chat-dots"></i> New Discussion
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control" id="discussion-search" placeholder="Search discussions...">
+                                </div>
+                                <div class="col-md-4">
+                                    <select class="form-select" id="discussion-status-filter">
+                                        <option value="">All Statuses</option>
+                                        <option value="active">Active</option>
+                                        <option value="archived">Archived</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-outline-secondary w-100" id="reset-discussion-filters">
+                                        Reset
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="discussions-container">
+                                <div class="text-center py-5">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Task Modal -->
+    <div class="modal fade" id="createTaskModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Task</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="create-task-form">
+                        <div class="mb-3">
+                            <label for="task-title" class="form-label">Title</label>
+                            <input type="text" class="form-control" id="task-title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="task-description" class="form-label">Description</label>
+                            <textarea class="form-control" id="task-description" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="task-complexity" class="form-label">Complexity (1-10)</label>
+                            <input type="range" class="form-range" id="task-complexity" min="1" max="10" value="5">
+                            <div class="d-flex justify-content-between">
+                                <span>Simple</span>
+                                <span id="complexity-value">5</span>
+                                <span>Complex</span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="task-priority" class="form-label">Priority (1-10)</label>
+                            <input type="range" class="form-range" id="task-priority" min="1" max="10" value="5">
+                            <div class="d-flex justify-content-between">
+                                <span>Low</span>
+                                <span id="priority-value">5</span>
+                                <span>High</span>
+                            </div>
+                        </div>
+
+                        <hr>
+                        <h6 class="mb-3">Advanced Options</h6>
+
+                        <div class="mb-3">
+                            <label for="task-research-likelihood" class="form-label">Research Likelihood</label>
+                            <select class="form-select" id="task-research-likelihood">
+                                <option value="">None</option>
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Output Formats</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="zip" id="format-zip">
+                                <label class="form-check-label" for="format-zip">ZIP</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="pdf" id="format-pdf">
+                                <label class="form-check-label" for="format-pdf">PDF</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="docx" id="format-docx">
+                                <label class="form-check-label" for="format-docx">DOCX</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="jpg" id="format-jpg">
+                                <label class="form-check-label" for="format-jpg">JPG</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="markdown" id="format-markdown" checked>
+                                <label class="form-check-label" for="format-markdown">Markdown</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Allowed Tools</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="fal_image_generation" id="tool-fal-image">
+                                <label class="form-check-label" for="tool-fal-image">Image Generation (Fal.ai)</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="duckduckgo_search" id="tool-duckduckgo" checked>
+                                <label class="form-check-label" for="tool-duckduckgo">Web Search (DuckDuckGo)</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="ai2ai_discussion" id="tool-ai2ai" checked>
+                                <label class="form-check-label" for="tool-ai2ai">AI-to-AI Discussion</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="email" id="tool-email">
+                                <label class="form-check-label" for="tool-email">Email</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="allow-collaboration">
+                                <label class="form-check-label" for="allow-collaboration">Allow Agent Collaboration</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 collaboration-settings" style="display: none;">
+                            <label for="max-collaborators" class="form-label">Maximum Collaborators</label>
+                            <input type="number" class="form-control" id="max-collaborators" min="1" max="5" value="2">
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="human-review-required" checked>
+                                <label class="form-check-label" for="human-review-required">Human Review Required</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="task-deadline" class="form-label">Deadline (Optional)</label>
+                            <input type="datetime-local" class="form-control" id="task-deadline">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="create-task-btn">Create Task</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Agent Modal -->
+    <div class="modal fade" id="createAgentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Agent</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="create-agent-form">
+                        <div class="mb-3">
+                            <label for="agent-name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="agent-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="agent-model" class="form-label">Model</label>
+                            <select class="form-select" id="agent-model" required>
+                                <option value="gemma3-4b">Gemma 3 4B</option>
+                                <option value="gemma3-1b">Gemma 3 1B</option>
+                                <option value="deepseek-coder-v2-16b">DeepSeek Coder v2 16B</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="agent-endpoint" class="form-label">Endpoint</label>
+                            <select class="form-select" id="agent-endpoint" required>
+                                <option value="http://localhost:11434">localhost:11434</option>
+                                <option value="http://ruocco.uk:11434">ruocco.uk:11434</option>
+                                <option value="http://192.168.0.39:11434">192.168.0.39:11434</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Complexity Range</label>
+                            <div class="row">
+                                <div class="col">
+                                    <label for="agent-min-complexity" class="form-label">Min</label>
+                                    <input type="number" class="form-control" id="agent-min-complexity" min="1" max="10" value="1" required>
+                                </div>
+                                <div class="col">
+                                    <label for="agent-max-complexity" class="form-label">Max</label>
+                                    <input type="number" class="form-control" id="agent-max-complexity" min="1" max="10" value="5" required>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="create-agent-btn">Add Agent</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Agent Modal -->
+    <div class="modal fade" id="editAgentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Agent</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-agent-form">
+                        <input type="hidden" id="edit-agent-id">
+                        <div class="mb-3">
+                            <label for="edit-agent-name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="edit-agent-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-agent-model" class="form-label">Model</label>
+                            <select class="form-select" id="edit-agent-model" required>
+                                <option value="gemma3-4b">Gemma 3 4B</option>
+                                <option value="gemma3-1b">Gemma 3 1B</option>
+                                <option value="deepseek-coder-v2-16b">DeepSeek Coder v2 16B</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-agent-endpoint" class="form-label">Endpoint</label>
+                            <select class="form-select" id="edit-agent-endpoint" required>
+                                <option value="http://localhost:11434">localhost:11434</option>
+                                <option value="http://ruocco.uk:11434">ruocco.uk:11434</option>
+                                <option value="http://192.168.0.39:11434">192.168.0.39:11434</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Complexity Range</label>
+                            <div class="row">
+                                <div class="col">
+                                    <label for="edit-agent-min-complexity" class="form-label">Min</label>
+                                    <input type="number" class="form-control" id="edit-agent-min-complexity" min="1" max="10" required>
+                                </div>
+                                <div class="col">
+                                    <label for="edit-agent-max-complexity" class="form-label">Max</label>
+                                    <input type="number" class="form-control" id="edit-agent-max-complexity" min="1" max="10" required>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="update-agent-btn">Update Agent</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Discussion Modal -->
+    <div class="modal fade" id="createDiscussionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">New Discussion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="create-discussion-form">
+                        <div class="mb-3">
+                            <label for="discussion-title" class="form-label">Title</label>
+                            <input type="text" class="form-control" id="discussion-title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="discussion-system-prompt" class="form-label">System Prompt (Optional)</label>
+                            <textarea class="form-control" id="discussion-system-prompt" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="discussion-tags" class="form-label">Tags (Comma-separated)</label>
+                            <input type="text" class="form-control" id="discussion-tags" placeholder="e.g., important, design, feature">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="create-discussion-btn">Create Discussion</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/agent_dashboard.js"></script>
+</body>
+</html>

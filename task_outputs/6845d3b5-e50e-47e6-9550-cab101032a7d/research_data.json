@@ -1,0 +1,192 @@
+{
+  "\u201cGSAP animation examples responsive design\u201d": [
+    {
+      "title": "47 GSAP Demo, Code Snippets And Examples \u039e \u2102\ud835\udd60\ud835\udd55\ud835\udd56\ud835\udd44\ud835\udd6a\ud835\udd4c\ud835\udd40",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fcodemyui.com%2Ftag%2Fgsap%2F&rut=accf24abb2d67c3c678215df5212300b776e161126b3857a778e429faa4d2662",
+      "content": "Handpicked GSAP Demo, Code Snippets and Examples that you can use to find inspiration for your next web project."
+    },
+    {
+      "title": "[ \u23f0 5 Minute Tutorial ] | GSAP Responsive Animation Techniques",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3D0m9q8deOADE&rut=36c7729566d4a4f738f2ca2c6ba8781de232420eb50799640817936544886205",
+      "content": "Welcome to our quick and easy tutorial on making your GSAP animations responsive in just 5 minutes! Whether you're a beginner or a seasoned developer, this g..."
+    },
+    {
+      "title": "How to Create Smooth, Reusable Animations in React with GSAP",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fthelinuxcode.com%2Fhow%2Dto%2Dcreate%2Dsmooth%2Dreusable%2Danimations%2Din%2Dreact%2Dwith%2Dgsap%2F&rut=07a99f27e7bb0da16022498fb3d442896002ff592cce5833b79f1d170d0407a0",
+      "content": "However, crafting performant animations can be tricky. CSS animations are limited in complexity while dated libraries like jQuery can hurt performance. This is where the GreenSock Animation Platform (GSAP) shines for React development. In this comprehensive tutorial, you'll learn: How to leverage GSAP as a fast, full-featured React animation toolkit Techniques for building reusable ..."
+    },
+    {
+      "title": "s-babaeizadeh/gsap-animation-examples - GitHub",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fgithub.com%2Fs%2Dbabaeizadeh%2Fgsap%2Danimation%2Dexamples&rut=2dd2f0c21546e5cc0154523815b4179460783cb804f8aa065903bf4133dc6c3e",
+      "content": "This repository is dedicated to showcasing a collection of examples utilizing GSAP (GreenSock Animation Platform). Here, you'll find a variety of demonstrations that illustrate the powerful capabilities of GSAP for creating high-performance animations and interactive web experiences. Whether you are a beginner looking to learn the basics or an experienced developer seeking inspiration for ..."
+    },
+    {
+      "title": "React & GSAP | GSAP | Docs & Learning",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fgsap.com%2Fresources%2FReact%2F&rut=6a5ac0b02211a8a5d0f85a1e4a747cd3fbae7fe369bc863c751bc53548433c8a",
+      "content": "Since GSAP is framework-agnostic, your animation superpowers transfer to ANY project; Vanilla JS, React, Vue, Angular, Webflow, whatever. You don't need to learn a React-specific library and then a completely different one for other projects. GSAP can be your trusted toolset wherever you go."
+    }
+  ],
+  "\u201cCSS Grid Layout tutorial interactive\u201d": [
+    {
+      "title": "CSS Grid Layout Tutorials : A Step-by-Step Journey from Beginner to ...",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fdesignbeep.com%2F2025%2F04%2F25%2Fcss%2Dgrid%2Dtutorial%2F&rut=a8a636f979eacf04657e84b686e15bad492ac3c135332c912d1fc9f9cf309419",
+      "content": "This tutorial teaches you CSS Grid through 14 interactive screencasts. You'll learn all the key concepts while building three awesome layouts: a website, an image grid, and an article. Plus, you'll learn how to combine CSS Grid with Flexbox. Ultimate CSS Grid Tutorial. This CSS Grid Layout tutorial will include specific interactive demos ..."
+    },
+    {
+      "title": "CSS Grid Layout Module - W3Schools",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.w3schools.com%2Fcss%2Fcss_grid.asp&rut=e2d7ece07a2d5627605cd7289a635e09b0fe96cde9b7b925bbac2c5cb660395b",
+      "content": "CSS Grid Layout. The Grid Layout Module offers a grid-based layout system, with rows and columns. The Grid Layout Module allows developers to easily create complex web layouts. The Grid Layout Module makes it easier to design a responsive layout structure, without using float or positioning. The CSS grid properties are supported in all modern ..."
+    },
+    {
+      "title": "CSS Grid Layout Guide - CSS-Tricks",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fcss%2Dtricks.com%2Fsnippets%2Fcss%2Fcomplete%2Dguide%2Dgrid%2F&rut=00c225f27aabf28de166ae3628c5e7de2d52cbdefb6a39f7c21c2b58bc37b8fb",
+      "content": "CSS Grid Layout (aka \"Grid\" or \"CSS Grid\"), is a two-dimensional grid-based layout system that, compared to any web layout system of the past, completely changes the way we design user interfaces. CSS has always been used to layout our web pages, but it's never done a very good job of it. First, we used tables, then floats ..."
+    },
+    {
+      "title": "Mastering CSS Grid: A Step-by-Step Guide to Layout Mastery",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fcodezup.com%2Fmastering%2Dcss%2Dgrid%2Da%2Dstep%2Dby%2Dstep%2Dguide%2Dto%2Dlayout%2Dmastery%2F&rut=d99b6be2af3b28a3f4944de8320f5cf34a137f7d0ca9e1c57dfa1ca5fc98e221",
+      "content": "Grid Cells: The invisible boxes that make up the grid layout. Grid Tracks: The lines that define the grid cell boundaries. Grid Lines: The lines that separate the grid cells. CSS Grid works by using a grid container that defines the grid layout. The grid container can be thought of as a canvas with rows and columns, where grid items are placed ..."
+    },
+    {
+      "title": "An Interactive Guide to CSS Grid - Josh W Comeau",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.joshwcomeau.com%2Fcss%2Finteractive%2Dguide%2Dto%2Dgrid%2F&rut=65435111f145c8467f7b88a35a3c3a5ab70655675dcb4fe70cd42c202c55c2ea",
+      "content": "CSS Grid is an incredibly powerful tool for building layouts on the web, but like all powerful tools, there's a significant learning curve. In this tutorial, we'll build a mental model for how CSS Grid works and how we can use it effectively. I'll share the biggest \ud83d\udca1 lightbulb moments I've had in my own learning journey."
+    }
+  ],
+  "\u201cLottie animation performance optimization\u201d": [
+    {
+      "title": "Animating with Lottie: Simple like Never Before",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fmedium.com%2Fdesign%2Dbootcamp%2Fanimating%2Dwith%2Dlottie%2Dsimple%2Dlike%2Dnever%2Dbefore%2De9ccf7527ae7&rut=81abacebf5bd99580f17500080e0a08440c28bb497eb56a619cc881336d009a8",
+      "content": "Best Practices for Using Lottie. To get the most out of Lottie, follow these tips: Optimize file sizes \u2014 Remove unnecessary layers in After Effects before exporting.; Use vector-based animations ..."
+    },
+    {
+      "title": "Optimize Lottie animations for faster load times - LottieFiles",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Flottiefiles.com%2Ffeatures%2Foptimize%2Dlottie&rut=5fc909c1e99867225423a8909864d1334c7bdc830d60978e4b5c570b94e4b54b",
+      "content": "Optimize and reduce the file size of your Lottie animations. Enjoy faster load times for apps and websites, better user experience and higher conversion rates."
+    },
+    {
+      "title": "Improving Site Performance by Optimizing Lottie Animations",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fjaredstanley.medium.com%2Fimproving%2Dsite%2Dperformance%2Dby%2Doptimizing%2Dlottie%2Danimations%2D9f032972d338&rut=d0a195e65d7ccb9278324dd4c93c0611f35a54c44da4a631fb1e8a0fcb1cf625",
+      "content": "Performance is score is 79/100. Could be better. Sidenote: I couldn't find a good way to test how many elements there were in a Lottie animation, so here's what I ended up doing: Generate a demo file from Bodymovin and run it in a browser. Then in the console, type document.querySelectorAll(\"*\").length; This gives you the total elements in that animation."
+    },
+    {
+      "title": "Optimize Lottie animations on your website - LottieFiles",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Flottiefiles.com%2Foptimize%2Dyour%2Dlottie%2Danimation%2Dpages&rut=f9b764ae50cf86a685e6d0088e3e6f8b98a7edf3cc53a540696599bac62da7e2",
+      "content": "Optimize your website's Lottie animations with Lottie Optimizer. Drop a URL to explore how much it can reduce your Lottie animation's file size for improved page load time."
+    },
+    {
+      "title": "Everything you need to know about Lottie animations",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fdesign.tutsplus.com%2Farticles%2Feverything%2Dyou%2Dneed%2Dto%2Dknow%2Dabout%2Dlottie%2Danimations%2D%2Dcms%2D109142&rut=917c07ff4dbf975321c98323d1c6c3deb5ae1262db2d6f17cf1c4722514d598c",
+      "content": "Lottie animations are hands down one of the coolest things to happen in digital design. If you've ever used an app with a slick little loading animation, tapped a button that subtly morphs, or seen a website with a super clean animated text or icon, chances are you've already encountered a Lottie animation.. What you'll learn in this article"
+    }
+  ],
+  "\u201cARIA attributes website accessibility best practices\u201d": [
+    {
+      "title": "WAI-ARIA Overview | Web Accessibility Initiative (WAI) | W3C",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.w3.org%2FWAI%2Fstandards%2Dguidelines%2Faria%2F&rut=4840a4cd8d8767d542dac63fc8328eced50bbe6f66c83f54a57df519376655f8",
+      "content": "Accessibility resources free online from the international standards organization: W3C Web Accessibility Initiative (WAI)."
+    },
+    {
+      "title": "Understanding accessibility requirements for public sector bodies",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.gov.uk%2Fguidance%2Faccessibility%2Drequirements%2Dfor%2Dpublic%2Dsector%2Dwebsites%2Dand%2Dapps&rut=07aad3b9b9a33009b3871f33b679fafa539c25afa2d6aefcb3d7e0621cf6c927",
+      "content": "Example 1. You might be able to argue it's a disproportionate burden to meet all the requirements if doing so would use up most of your organisation's budget for the year and leave you unable ..."
+    },
+    {
+      "title": "Meet the requirements of equality and accessibility regulations",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.gov.uk%2Fguidance%2Fmeet%2Dthe%2Drequirements%2Dof%2Dequality%2Dand%2Daccessibility%2Dregulations&rut=f1bb1658b97c27b6888611dc0f18708fc2bafe181ad11881415ad2bdf35de9bb",
+      "content": "All digital or technology activity must be in full compliance with the Public Sector Bodies Accessibility Regulations 2018 and the Equality Act 2010"
+    },
+    {
+      "title": "Guidance and tools for digital accessibility - GOV.UK",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.gov.uk%2Fguidance%2Fguidance%2Dand%2Dtools%2Dfor%2Ddigital%2Daccessibility&rut=1f9f14755525d7dc710865362fe9ffd6183f3dcf03faffb81277e72e15dd5d17",
+      "content": "Government activity Departments. Departments, agencies and public bodies. News. News stories, speeches, letters and notices. Guidance and regulation"
+    },
+    {
+      "title": "ARIA Practices Guide | Web Accessibility Initiative (WAI) | W3C",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwai%2Daria%2Dpractices.netlify.app%2Faria%2Dpractices%2F&rut=5252f27588e05aa9b2bef7123973768ce113c340df5a73c50dc47beab27ee7d2",
+      "content": "1. Introduction. This section is informative.. WAI-ARIA Authoring Practices is a guide for understanding how to use WAI-ARIA 1.2 to create an accessible Rich Internet Application. It provides guidance on the appropriate application of WAI-ARIA, describes recommended WAI-ARIA usage patterns, and explains concepts behind them.. Languages used to create rich and dynamic web sites, e.g., HTML ..."
+    }
+  ],
+  "\u201cHTML5 semantic elements responsive design examples\u201d": [
+    {
+      "title": "HTML Semantic Elements - W3Schools",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.w3schools.com%2Fhtml%2Fhtml5_semantic_elements.asp&rut=436b018b45fe2dfeea09daf915f63252ca496f20c1883c6fe54c98cac80260ed",
+      "content": "W3Schools offers free online tutorials, references and exercises in all the major languages of the web. Covering popular subjects like HTML, CSS, JavaScript, Python, SQL, Java, and many, many more."
+    },
+    {
+      "title": "Mastering HTML5 Semantic Elements: A Comprehensive Guide with Examples",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.codingeasypeasy.com%2Fblog%2Fmastering%2Dhtml5%2Dsemantic%2Delements%2Da%2Dcomprehensive%2Dguide%2Dwith%2Dexamples&rut=ff5eb844e681491877f0e287ebee9af22240631185f9f1c33dd5379acef70a77",
+      "content": "Distinguishing <section> from <article>:. The key difference is whether the content is self-contained and independently distributable. If the content makes sense on its own and could be syndicated (like a blog post), use <article>.If it's simply a thematic section of a larger document, use <section>.. 8."
+    },
+    {
+      "title": "Semantic HTML5 Elements Explained - freeCodeCamp.org",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.freecodecamp.org%2Fnews%2Fsemantic%2Dhtml5%2Delements%2F&rut=41ef1bacd394399d9fd133cfabb0894d08aec8719f8344db6f5192221f0bc4a9",
+      "content": "Semantic HTML elements are those that clearly describe their meaning in a human- and machine-readable way. Elements such as <header>, <footer> and <article> are all considered semantic because they accurately describe the purpose of the element and ..."
+    },
+    {
+      "title": "HTML 5 Semantic Elements",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.learn%2Dhtml%2Dcss.com%2Flearn%2Dto%2Dcode%2Dhtml%2Fhtml%2D5%2Dsemantic%2Delements%2F&rut=2710686676f43994d9292f58f74701e2a25306fb43d3fd4e94da67a69d0ef9a6",
+      "content": "Explore HTML5 semantic elements for more meaningful web page structure. Enhance accessibility and SEO with semantic tags."
+    },
+    {
+      "title": "Semantic HTML5: A Comprehensive Guide to Elements and Best Practices",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.palvdm.com%2Fblog%2Fsemantic%2Dhtml5&rut=22cab7faa03f05eec1a1d2d8f1643cc6d8a5bb22d27dd263b2d43047ae8e16c1",
+      "content": "Semantic HTML5 is like the secret sauce for web developers. It makes websites more meaningful and easier for browsers to understand. Unlike old-school HTML, which was all about looks, semantic HTML5 focuses on structure and meaning."
+    }
+  ],
+  "\u201cCSS transitions and animations smooth scrolling\u201d": [
+    {
+      "title": "How To Create a Smooth Scrolling Effect - W3Schools",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.w3schools.com%2Fhowto%2Fhowto_css_smooth_scroll.asp&rut=eba1fd9b7d6941b233e6a00df3bf691ebdae9f3db6088aaf65e6bb0f83296f16",
+      "content": "Learn how to create a smooth scrolling effect using CSS and JavaScript with this tutorial."
+    },
+    {
+      "title": "CSS Animation Scroll Trigger Best Practices for Smooth Animations",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fthedailyfrontend.com%2Fcss%2Danimation%2Dscroll%2Dtrigger%2Dbest%2Dpractices%2Dfor%2Dsmooth%2Danimations%2F&rut=65c812b86e8dce4becf433474c0d41df34f70db0ec8818756d65f1b8fd4cc241",
+      "content": "\"Trigger stunning CSS animations as users scroll, enhancing user experience and engagement with scrolling animation effects.\""
+    },
+    {
+      "title": "Master CSS Transitions for Smooth Animations - YouTube",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DYEBoYZkNlC0&rut=a2e49e29a459fa7738f91a628881b4888514d5db935c9bf9dd1051d15d06efd4",
+      "content": "Learn how to create smooth CSS transitions by animating multiple properties like height, color, and more. We'll cover key timing functions (ease, linear, ease-in, ease-out) and show practical ..."
+    },
+    {
+      "title": "15 CSS Scroll Animations - ForFrontend",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fforfrontend.com%2Fcss%2Dscroll%2Danimations%2F&rut=c884aa82d9f0b96bda14d9110ae2360e532382f82515030d55e014582dba208a",
+      "content": "Explore 15 CSS scroll animations to enhance your website's interactivity. Easy to implement and customize, these animations make your site dynamic and engaging."
+    },
+    {
+      "title": "Smooth Scroll with CSS Animation: A Step-by-Step Tutorial",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fthedailyfrontend.com%2Fsmooth%2Dscroll%2Dwith%2Dcss%2Danimation%2Da%2Dstep%2Dby%2Dstep%2Dtutorial%2F&rut=0702a3d70adb963c875ee28d0f598dec884aa5630c0f2d6b9273f92d6f4b0b34",
+      "content": "Enhance your user experience with smooth CSS animation scrolling, providing a seamless transition between website sections and pages."
+    }
+  ],
+  "\u201cFlexbox tutorial responsive image layouts\u201d \u2013 *This query combines learning Flexbox, a layout system, with the specific need for responsive image layouts, a frequently encountered challenge.*": [
+    {
+      "title": "CSS Responsive Flexbox - W3Schools",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.w3schools.com%2Fcss%2Fcss3_flexbox_responsive.asp&rut=792e96dfa90976a27d63bde25f7cee1e1831c91d2aa76e088f5d6f0e211a3d04",
+      "content": "Learn Machine Learning Tutorial Learn DSA ... /* Responsive layout - makes a one column layout instead of a two-column layout */ ... flex: 100%; }} Try it Yourself \u00bb Responsive Image Gallery using Flexbox. Use flexbox to create a responsive image gallery that varies between four, two or full-width images, depending on screen size:"
+    },
+    {
+      "title": "How to create a responsive image gallery with CSS flexbox",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fblog.logrocket.com%2Fresponsive%2Dimage%2Dgallery%2Dcss%2Dflexbox%2F&rut=3ebd2e408896ffa67b0b9688e11182dd92d995ecc706fc5a932108ceb90ad54e",
+      "content": "Editor's note: This article was last updated by Rahul Chhodde on 19 June 2024 to incorporate practices for optimizing the display of responsive CSS image galleries using properties like aspect-ratio and object-fit.It also now includes live CodePen demos of the responsive galleries created. Galleries are an effective way to display collections of high-quality images."
+    },
+    {
+      "title": "Responsive Layout Using CSS Flex (With Examples) - Programiz",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.programiz.com%2Fcss%2Fresponsive%2Dlayout%2Dusing%2Dcss%2Dflex&rut=e58fb036541ae0b8ab9c1ee550db1e4d8dea3cf07c950b89f4cb864d83e1e95c",
+      "content": "Responsive Web Design; CSS Media Query: @media; Mobile First Design; CSS Transition, Transform, and Animations ... The responsive layout allows the webpage to reshape and resize based on the size of the screen it's viewed on. This ensures a consistent user experience. Flexbox is ideal for responsive layouts due to its automatic container ..."
+    },
+    {
+      "title": "Build a Responsive Image Gallery Using Flexbox and Grid",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fdev.to%2Fhexshift%2Fbuild%2Da%2Dresponsive%2Dimage%2Dgallery%2Dusing%2Dflexbox%2Dand%2Dgrid%2D464b&rut=ec61c9c29553e75e8b5229ee2c03adafaf2827a82f881f8e98880890e0df2564",
+      "content": "Looking for a clean, responsive image gallery for your portfolio or project? In this tutorial, we'll walk through how to build one using just HTML and CSS \u2014 no JavaScript, no libraries, just layout magic. We'll combine the power of Flexbox for structure and CSS Grid for responsive image placement. Step 1: Set Up the Basic HTML"
+    },
+    {
+      "title": "Building a Responsive Image Gallery with CSS Grid & Flexbox",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Ftemplatesjungle.com%2Fbuilding%2Da%2Dresponsive%2Dimage%2Dgallery%2Dwith%2Dcss%2Dgrid%2Dflexbox%2F&rut=9ef826dbaa98c965bdf093fc53e50ce3ba16929d2bd6961f74260373c8be2052",
+      "content": "Creating a responsive image gallery is a must-have skill for web developers. With CSS Grid and Flexbox, you can build a flexible and visually appealing gallery that adjusts seamlessly across different screen sizes. In this tutorial, we'll walk through how to build a modern, responsive image gallery using these two powerful CSS layout techniques."
+    }
+  ],
+  "\u201cHTML5 animation techniques performance benchmarks\u201d": []
+}

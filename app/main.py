@@ -27,6 +27,8 @@ from .multi_agent import router as multi_agent_router
 from .realtime_discussion import router as realtime_discussion_router
 from .unified_discussion import router as unified_discussion_router
 from .autonomous_api import router as autonomous_router
+from .project_api import router as project_router
+from .job_manager_api import router as job_manager_router
 from .models import (
     FeedbackRequest, FeedbackResponse,
     SessionCreateRequest, SessionCreateResponse,
@@ -52,12 +54,24 @@ app = FastAPI(
 )
 
 # Add CORS middleware
+# Configure CORS with more specific settings
+origins = [
+    "http://localhost",
+    "http://localhost:8000",
+    "http://localhost:8001",
+    "http://127.0.0.1",
+    "http://127.0.0.1:8000",
+    "http://127.0.0.1:8001",
+    "*"  # Allow all origins for development
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["Content-Type", "X-Requested-With", "Authorization"],
 )
 
 # Include routers
@@ -65,19 +79,66 @@ app.include_router(multi_agent_router)
 app.include_router(realtime_discussion_router)
 app.include_router(unified_discussion_router)
 app.include_router(autonomous_router)
+app.include_router(project_router, prefix="/projects", tags=["projects"])
+app.include_router(job_manager_router, tags=["job-manager"])
 
 # Mount static files directory
 static_dir = Path(__file__).parent.parent / "static"
 static_dir.mkdir(exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
+# Mount app static files directory
+app_static_dir = Path(__file__).parent / "static"
+app_static_dir.mkdir(exist_ok=True)
+app.mount("/app/static", StaticFiles(directory=str(app_static_dir)), name="app_static")
+
+# Import controller and worker initialization
+from .controller_init import start_controller_agent, stop_controller_agent
+from .worker_init import start_worker_agents, stop_worker_agents
+
 # Startup event
 @app.on_event("startup")
 async def startup_event():
-    """Initialize the database on startup"""
+    """Initialize the database and controller agent on startup"""
     logger.info("Initializing database...")
     await init_db()
     logger.info("Database initialized")
+
+    # Start controller agent
+    logger.info("Starting controller agent...")
+    success = await start_controller_agent()
+    if success:
+        logger.info("Controller agent started successfully")
+    else:
+        logger.warning("Failed to start controller agent")
+
+    # Start worker agents
+    logger.info("Starting worker agents...")
+    success = await start_worker_agents()
+    if success:
+        logger.info("Worker agents started successfully")
+    else:
+        logger.warning("Failed to start worker agents")
+
+# Shutdown event
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Stop the agents on shutdown"""
+    # Stop controller agent
+    logger.info("Stopping controller agent...")
+    success = await stop_controller_agent()
+    if success:
+        logger.info("Controller agent stopped successfully")
+    else:
+        logger.warning("Failed to stop controller agent")
+
+    # Stop worker agents
+    logger.info("Stopping worker agents...")
+    success = await stop_worker_agents()
+    if success:
+        logger.info("Worker agents stopped successfully")
+    else:
+        logger.warning("Failed to stop worker agents")
 
 # Root endpoint - API information
 @app.get("/", response_class=HTMLResponse)
@@ -141,6 +202,15 @@ async def get_autonomous_client():
         return client_path.read_text()
 
     raise HTTPException(status_code=404, detail="Autonomous agent client not found")
+
+@app.get("/job-manager", response_class=HTMLResponse)
+async def get_job_manager():
+    """Serve the job manager UI page"""
+    client_path = Path(__file__).parent / "static" / "job_manager.html"
+    if client_path.exists():
+        return client_path.read_text()
+
+    raise HTTPException(status_code=404, detail="Job manager UI not found")
 
 # Get available models
 @app.get("/models")

@@ -1,0 +1,192 @@
+{
+  "\u201cGSAP animation performance optimization tutorial\u201d": [
+    {
+      "title": "Optimizing Animation Performance with GSAP Techniques",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.kodeblog.com%2Foptimizing%2Danimation%2Dperformance%2Dwith%2Dgsap%2Dtechniques%2F&rut=b6230eda24b60d78f2b410e975c0dc9ec4a86869d85997dfd4fb10beaa8fa5dd",
+      "content": "Animation plays a crucial role in enhancing user experience in modern web development. GSAP (GreenSock Animation Platform) is known for its exceptional capability in creating high-performance animations. In this article, we will explore various techniques to improve and optimize animation performance using GSAP."
+    },
+    {
+      "title": "Optimizing GSAP & Canvas for Smooth, Responsive Design",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.augustinfotech.com%2Fblogs%2Foptimizing%2Dgsap%2Dand%2Dcanvas%2Dfor%2Dsmooth%2Dperformance%2Dand%2Dresponsive%2Ddesign%2F&rut=a10be52233d8a0ecd03caf82a19569131f7179cf4a9bb31655ab43f51c54eb57",
+      "content": "Learn how to boost performance in GSAP & Canvas animations with smart optimization techniques for smoother & responsive web experiences."
+    },
+    {
+      "title": "GSAP Performance Analysis and Improvement Strategies for Animation",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.kodeblog.com%2Fgsap%2Dperformance%2Danalysis%2Dand%2Dimprovement%2Dstrategies%2Dfor%2Danimation%2F&rut=4db0d480d813c591c49c020af0c2161ad77735514e823d296bd9295c0902095a",
+      "content": "The Importance of Animation Performance In web animation development, performance is a critical factor that determines user experience. Fast and smooth animations enhance the overall impression of a site and provide immersion. GSAP offers various tools and features for performance optimization, allowing animations to be implemented smoothly and effectively."
+    },
+    {
+      "title": "Optimizing Animation Performance in GSAP | RUSTCODE",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.rustcodeweb.com%2F2024%2F04%2Foptimizing%2Danimation%2Dperformance%2Din%2Dgsap.html&rut=802015da7726f017e0aa60d7f0f3a616d6a47eccf753143d1a7fd4cf6d5032cb",
+      "content": "Optimizing animation performance in GSAP is crucial for delivering smooth and efficient animations that enhance the user experience. By minimizing DOM manipulation, batching animations, leveraging hardware acceleration, debouncing complex animations, and testing performance rigorously, you can create high-quality animations that perform well ..."
+    },
+    {
+      "title": "Animation Optimization Techniques in Modern Web Applications Using GSAP ...",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.kodeblog.com%2Fanimation%2Doptimization%2Dtechniques%2Din%2Dmodern%2Dweb%2Dapplications%2Dusing%2Dgsap%2F&rut=77466b4349f643a80158fecc1f7bf42504f63d7d6f189479a2dd64459c0156d6",
+      "content": "The Necessity of Animation Optimization In modern web applications, animation is a vital element that captures users' attention and enhances usability. However, optimizing animations is essential for effective production. Basic Setup of GSAP GSAP (GreenSock Animation Platform) is a high-performance JavaScript animation library."
+    }
+  ],
+  "\u201cAnime.js hover effects examples responsive\u201d \u2013 *This query seeks practical examples of hover animations implemented with Anime.js, specifically considering responsive design implementation.*": [
+    {
+      "title": "Button hover animation with anime.js - Stack Overflow",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fstackoverflow.com%2Fquestions%2F54474398%2Fbutton%2Dhover%2Danimation%2Dwith%2Danime%2Djs&rut=1e6a36b20c57762c60b439a255dd2f4a5e485c474c6b7ca4e4c1ac5bddad9904",
+      "content": "But the second, and the main problem: if I hover on the button, and then I leave the button, and then quckliy hover again this button, the animation start the first position. But I don't want this untill the first hover animation it still takes on the SVG arrow is animating. I hope I have written it down clearly :)"
+    },
+    {
+      "title": "28 Best Anime.JS Animation Examples 2025 - uiCookies",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fuicookies.com%2Fanime%2Djs%2Dexample%2F&rut=08ca97b8d9b8cd1052296f217d9908e5937baeae9209447cfe2d2b4811179006",
+      "content": "The creator has used HTML cards to add extra detail and animation to take it to the next level. For starters, CSS has defined each character's color schemes, font styles, width, and margin. But the stunning transition is what takes the cake! Using anime.js effects, the card flips in a full 3D 180 flip, revealing the content behind it."
+    },
+    {
+      "title": "anime.js hover effect - CodePen",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fcodepen.io%2Falexchantastic%2Fpen%2FXgXbgz&rut=3881fcab1e35868c4c8846e40474dcba770deae5465d7fe524190b244a757710",
+      "content": "Hover effect using anime.js and jquery to create a beautiful letter effect when hovering the button."
+    },
+    {
+      "title": "How to use anime.js for hover effects | anime.js tutorial",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3D3ySEuGLMGI4&rut=5752893104dfb200cc39c92688fa75f821a9a329a45af720b1f1de3cefe7fb7f",
+      "content": "What's up, guys! Today I've got a quick hover animation created with anime.js. I recently stumbled upon this shot on Dribbble and thought I'd share it with y..."
+    },
+    {
+      "title": "hover animation with animejs - CodePen",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fcodepen.io%2FcodewithJahid%2Fpen%2FRJoygb&rut=6f8c2d1eb96f41d680439ffa982168981dd48b0adea9beed1e8186b8fe3ef8b4",
+      "content": "About External Resources. You can apply CSS to your Pen from any stylesheet on the web. Just put a URL to it here and we'll apply it, in the order you have them, before the CSS in the Pen itself."
+    }
+  ],
+  "\"CSS media queries parallax animation\u201d \u2013 *This query focuses on techniques for combining CSS media queries with parallax animations, a common design pattern.*": [
+    {
+      "title": "31 CSS Parallax Effects | FreeFrontend",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Ffreefrontend.com%2Fcss%2Dparallax%2F&rut=399383f52368e62d543164380ef2bf4c40c83085fda571e086c1a3b0bcf4726e",
+      "content": "Discover pure CSS parallax effects - multi-layer scrolling, depth animations, and 3D perspective tricks. All implemented without JavaScript for smooth, performant depth experiences."
+    },
+    {
+      "title": "25 Mind-Blowing CSS Parallax Effects (Free Code + Demos)",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fdevsnap.me%2Fcss%2Dparallax&rut=fd7b009ff41841e9b95e5aa473a0b32a21adb5833fd876baa2778e50bbec2345",
+      "content": "Enjoy this 100% free and open source collection of HTML, CSS and JavaScript parallax effect code examples. Some are pure CSS, and others are more complex."
+    },
+    {
+      "title": "Animated Media Queries - CSS-Tricks",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fcss%2Dtricks.com%2Fanimated%2Dmedia%2Dqueries%2F&rut=1945b05ae0a7031f0d48b6b08576ed94e1ec45f069c8d4a49b50811884a07700",
+      "content": "Likewise, if a new media query takes affect, and that media query has something in it that changes that property on that element, it will transition. As such, there really isn't a such thing as an \"animated media query\" so much as elements that just transition as expected when a new media query starts affecting the page. Simple Example"
+    },
+    {
+      "title": "How To Create a Parallax Scrolling Effect - W3Schools",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.w3schools.com%2Fhowto%2Fhowto_css_parallax.asp&rut=fb5a194ba0f927e8af8c523c13f5bb539b164c027696e136a8f618525e096951",
+      "content": "How To Create a Parallax Scrolling Effect Use a container element and add a background image to the container with a specific height. Then use the background-attachment: fixed to create the actual parallax effect. The other background properties are used to center and scale the image perfectly:"
+    },
+    {
+      "title": "Design Like A Pro: CSS Parallax Examples For Modern Websites",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.sliderrevolution.com%2Fresources%2Fcss%2Dparallax%2F&rut=906ce2389c22dcfbe392ad07f6cb0d823246a6e0e5a00fb2e2f0df3be3c0c97f",
+      "content": "Bring your website to life with our collection of stunning CSS parallax examples. From subtle effects to full-screen animations."
+    }
+  ],
+  "\u201cWCAG animation accessibility guidelines alternative text\u201d \u2013 *This query directly addresses accessibility concerns related to animations, focusing on the crucial role of alternative text for images.*": [
+    {
+      "title": "Resources on Alternative Text for Images - World Wide Web Consortium (W3C)",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.w3.org%2FWAI%2Falt%2F&rut=f505823b9e72e028e2ac10d5408d346e90b400392e59936856e795690efffd46",
+      "content": "The Web Content Accessibility Guidelines (WCAG) 2.0 is a comprehensive set of recommendations for making content accessible to a broad range of people with disabilities. Guideline 1.1.1 covers the accessibility of all Non-text Content, including images, form controls, media and sensory content."
+    },
+    {
+      "title": "WCAG 2 Overview | Web Accessibility Initiative (WAI) | W3C",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.w3.org%2FWAI%2Fstandards%2Dguidelines%2Fwcag%2F&rut=37c0c72df8a896d2745fcfdac54a6eedc28e4026bc25a6a35a08c739ab0e70a1",
+      "content": "The Web Content Accessibility Guidelines (WCAG) standards are referenceable when they are published as a 'W3C Recommendation' web standard. WCAG 2.0 was published on 11 December 2008. WCAG 2.1 was published on 5 June 2018, and updates were published on 21 September 2023, 12 December 2024, and 6 May 2025."
+    },
+    {
+      "title": "Guidance and tools for digital accessibility - GOV.UK",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.gov.uk%2Fguidance%2Fguidance%2Dand%2Dtools%2Dfor%2Ddigital%2Daccessibility&rut=1f9f14755525d7dc710865362fe9ffd6183f3dcf03faffb81277e72e15dd5d17",
+      "content": "9 August 2021. Link added to guidance on how to meet WCAG 2.1 principles and success criteria. 27 July 2021. Links added to online resources including how to make technology and communications ..."
+    },
+    {
+      "title": "Accessible Web Animation: The WCAG on Animation Explained",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fcss%2Dtricks.com%2Faccessible%2Dweb%2Danimation%2Dthe%2Dwcag%2Don%2Danimation%2Dexplained%2F&rut=688ec0031fae19ec6edcbe6c350e42077c12fad877b8dba8198eb66c358beaef",
+      "content": "It's true, web animation can be accessible! Sometimes it just takes a little extra effort to make sure that it is. There are strategic things we can do to make sure our animations have a positive impact on accessibility, like planning how they contribute to the overall UX and ease of use of our site. There are also more tactical considerations for making sure the animations on our site are ..."
+    },
+    {
+      "title": "Understanding WCAG 2.2 - Service Manual - GOV.UK",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.gov.uk%2Fservice%2Dmanual%2Fhelping%2Dpeople%2Dto%2Duse%2Dyour%2Dservice%2Funderstanding%2Dwcag&rut=6734b62fbf2d97cf4049c316c1bc7f9fb207d567e344c67d35b82ba346369147",
+      "content": "The WCAG 2.2 design principles are supported by 13 guidelines. Each of these is broken down into specific requirements (or 'success criteria') that your service needs to meet."
+    }
+  ],
+  "\u201cSass variables CSS animation properties\u201d \u2013 *This query seeks guidance on utilizing Sass variables to manage animation properties, promoting reusability and maintainability in the CSS.*": [
+    {
+      "title": "Animatable CSS properties - CSS: Cascading Style Sheets | MDN",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fdeveloper.mozilla.org%2Fen%2DUS%2Fdocs%2FWeb%2FCSS%2FCSS_animated_properties&rut=deddeaa29ead07e474059ba9795512568cfda624dd91ef07053ccc0629797d77",
+      "content": "CSS Animations and Transitions rely on the concept of animatable properties, and all CSS properties are animatable unless otherwise specified. Each property's animation type determines how values combine - interpolate, add, or accumulate - for this property. Transitions only involve interpolation, whereas animations may use all three combination methods."
+    },
+    {
+      "title": "Mastering CSS Animations with Variables: A Comprehensive Guide",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fmedium.com%2F%40paul.laskar%2Fmastering%2Dcss%2Danimations%2Dwith%2Dvariables%2Da%2Dcomprehensive%2Dguide%2D187ef3ace2d0&rut=64cf5e88efbe64cfb27fc8db45cbe34d455fca9d4a953d2e0e73afb073923e59",
+      "content": "Bring your UIs to life with performant, maintainable animations \u2014 leveraging CSS custom properties, advanced techniques, and dynamic updates. Defining custom properties makes your animations\u2026"
+    },
+    {
+      "title": "Why can't I animate custom properties (aka CSS variables)?",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fstackoverflow.com%2Fquestions%2F54594167%2Fwhy%2Dcant%2Di%2Danimate%2Dcustom%2Dproperties%2Daka%2Dcss%2Dvariables&rut=7179f1ff3bcdca1ca265f28c358b207e4d7db7c2e0a9906a41a1b6c4c813b4ce",
+      "content": "Since then, CSS Houdini have put together the CSS Properties and Values API specification. This specification extends [css-variables], allowing the registration of properties that have a value type, an initial value, and a defined inheritance behaviour, via two methods: A JS API, the registerProperty() method. A CSS at-rule, the @property rule"
+    },
+    {
+      "title": "CSS Custom Properties With Transitions, Transforms, and Animations",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fvanseodesign.com%2Fcss%2Fcustom%2Dproperties%2Dand%2Danimations%2F&rut=502e82f4fc55db400e2c18b0c7d4d2cc3d3ee9e8ac4518b4a5f678dd01f732cd",
+      "content": "The custom properties are used as attributes in the HTML to set the color of different parts of the SVG. The custom properties are then redefined and given new values for svg:hover. CSS Custom Properties and Click Events. Redefining custom properties on pseudo elements isn't the only way to make changes. Click events can also be used."
+    },
+    {
+      "title": "Using css variables to create smooth animations",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fdev.to%2Fcydstumpel%2Fusing%2Dcss%2Dvariables%2Dto%2Dcreate%2Dsmooth%2Danimations%2D5164&rut=d3f7d79350de562b7abf2c776f2fa47a1abcb8e060f504f61c27bb9bfcff784b",
+      "content": "Create animations with setProperty and custom css properties!. Tagged with cssvariables, customproperties, javascript, css. ... They're also insinuating that all css variables are custom properties, but not all custom properties are css vars. ... # css # animation # beginners # tutorial. 4 things in web development I've learned in 2020, so far ..."
+    }
+  ],
+  "\u201cJavaScript animation libraries comparison GSAP Anime.js Lottie\u201d": [
+    {
+      "title": "gsap vs animejs vs velocity-animate | JavaScript Animation Libraries ...",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fnpm%2Dcompare.com%2Fanimejs%2Cgsap%2Cvelocity%2Danimate&rut=c7a780de777d56af78763d908f1156588c868408651bc0212bf75b7a7258e23a",
+      "content": "Comprehensive comparison of gsap, animejs, velocity-animate npm packages, including features, npm download trends, ecosystem, popularity, and performance."
+    },
+    {
+      "title": "Homepage | GSAP",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fgsap.com%2F&rut=0b15b8ccd979ea8a5812a86456d8725e6840ed10989537aad047a66ef5743330",
+      "content": "GSAP is an industry standard JavaScript animation library from GreenSock that lets you craft high-performance animations that work in every major browser."
+    },
+    {
+      "title": "JavaScript Animation Libraries: GreenSock vs. Anime.js",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fjsquicktips.com%2Fjavascript%2Danimation%2Dlibraries%2Dgreensock%2Dvs%2Danime%2Djs%2F&rut=3fb18b42f55ffe1fbe6ffbd4b5ece4cf2108703653dcfc93287f75218fe5663e",
+      "content": "JavaScript Animation Libraries: GreenSock vs. Anime.js In the realm of web development, **JavaScript animation libraries** have become indispensable tools for creating engaging and dynamic user experiences. Among the myriad of options available, **GreenSock (GSAP)** and **Anime.js** stand out as two of the most popular and powerful libraries. This article delves into a comparative analysis of"
+    },
+    {
+      "title": "Detailed Comparison of JavaScript Animation Libraries",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fnelkodev.com%2Fen%2Fblog%2Fjavascript%2Danimation%2Dlibraries%2Da%2Ddetailed%2Dcomparison%2F&rut=208bfc8cea6fad7cb255ed15c0ab1d8a40f2ac3cea2969c760898a38c1297ace",
+      "content": "GreenSock Animation Platform (GSAP) When it comes to power and reliability, GreenSock Animation Platform (GSAP) It is one of the most outstanding options. One of its greatest strengths is performance. GSAP is known for handling complex and smooth animations on a wide range of browsers and devices, including those with limited capabilities."
+    },
+    {
+      "title": "Using JavaScript to Create Interactive Animations with GSAP",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fcodezup.com%2Fjavascript%2Dgsap%2Danimations%2F&rut=cd5ac0c79da6de84f781d7f95e1ce48df1f7c78fe2ad13cc117ed2623f351cf1",
+      "content": "Discover how to create stunning, interactive animations with JavaScript and GSAP, a powerful animation library."
+    }
+  ],
+  "\u201cCreating responsive landing page layouts CSS frameworks\u201d \u2013 *This query targets the broader task of creating responsive landing page structures, leveraging CSS frameworks for efficiency.*": [
+    {
+      "title": "Responsive Landing Page Using HTML and CSS | by Arhaan Ali - Medium",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Farhaanali.medium.com%2Fresponsive%2Dlanding%2Dpage%2Dusing%2Dhtml%2Dand%2Dcss%2D9686451e4d6c&rut=ce9509af678d14e88639ca865343cc8ec9897de2f5d05b9c139ddc5c85c09ecb",
+      "content": "Responsive Landing Page Using HTML and CSS. let's look at the steps we need to follow on it to create a responsive landing page, basically, when you design a landing page you've an idea about it. Then you will able to design the the professional layouts. Step 1: Plan your layout. Before you start coding, it's essential to plan your layout."
+    },
+    {
+      "title": "Create a Responsive Landing Page using HTML CSS & JS",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fdev.to%2Fananiket%2Fcreate%2Da%2Dresponsive%2Dlanding%2Dpage%2Dusing%2Dhtml%2Dcss%2Djs%2Db7m&rut=5ddd55c10b761f53024a156bc46e84d058ecbf75573fb4fba734849ae59838aa",
+      "content": "\ud83d\udc4b Hello, Dear developers \ud83d\udc69\u200d\ud83d\udcbb\ud83d\udc68\u200d\ud83d\udcbb, Today we'll see, how we can easily create another Responsive Landing page using HTML, CSS, and JS with GreenSock Animation library for creating those animations. Making a landing page with HTML & CSS is a pretty easy & simple task, but did you know what makes our post more interesting!"
+    },
+    {
+      "title": "How to Build a Responsive Landing Page Layout with HTML and CSS",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fmedium.com%2F%40graphicboon7%2Fhow%2Dto%2Dbuild%2Da%2Dresponsive%2Dlanding%2Dpage%2Dlayout%2Dwith%2Dhtml%2Dand%2Dcss%2D149c28f41077&rut=5b7394ec575fedf4bcc19c6cdd32e6c3214e5bfaf5c7964983985269ac11177e",
+      "content": "Here is an example of how you can use CSS media queries to make your landing page responsive: @media screen and (max-width: 768px) nav { width: 100%; } nav li { display: block; } }"
+    },
+    {
+      "title": "Web Development Project - How to Make a Landing Page with HTML, CSS ...",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.freecodecamp.org%2Fnews%2Fhow%2Dto%2Dmake%2Da%2Dlanding%2Dpage%2Dwith%2Dhtml%2Dcss%2Dand%2Djavascript%2F&rut=81782b8fbb71915d389777962c2a9c6dbff8e578fb48d42f9c4320dc7ca9b7c5",
+      "content": "How to Make the Landing Page Responsive. The landing page is not responsive yet, so we should fix that. To make the landing page responsive, we need to make a hamburger menu for smaller devices, inside a media query. We will also use Flexbox and Grid once again to make the sections stack on top of one another. How to Make a Hamburger Menu for ..."
+    },
+    {
+      "title": "30 Free Landing Page Templates - HTML, CSS, and JavaScript",
+      "url": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.codewithfaraz.com%2Farticle%2F127%2F30%2Dfree%2Dlanding%2Dpage%2Dtemplates%2Dhtml%2Dcss%2Dand%2Djavascript&rut=e76eb688bfa18b76d6e70adbfa70ddbecbdef0b8ac28a3d7cf17cc9e8ea14b3f",
+      "content": "Introduce your app to the world with the App Landing Page template. Developed using HTML and CSS, this template ensures a sleek and responsive platform to highlight your app's features and benefits. Whether it's for mobile or desktop, this landing page is designed to attract attention, convey information effectively, and drive user downloads."
+    }
+  ],
+  "\u201cOptimizing JavaScript animation speed performance\u201d \u2013 *This query specifically targets techniques for fine-tuning animation speeds to avoid performance bottlenecks and ensure a smooth user experience.*": []
+}

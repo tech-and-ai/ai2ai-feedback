@@ -69,6 +69,15 @@ class Agent(Base):
     role = Column(String, nullable=True)
     model = Column(String, nullable=True)
 
+    # New fields for controller architecture
+    agent_id = Column(String, nullable=True)  # UUID for autonomous agents
+    agent_type = Column(String, nullable=True, default="worker")  # controller, designer, developer, tester, etc.
+    skills = Column(String, nullable=True)  # JSON string of skills
+    status = Column(String, nullable=True, default="idle")  # idle, running, stopped
+    performance_metrics = Column(String, nullable=True, default="{}")  # JSON string of metrics
+    current_workload = Column(Integer, nullable=True, default=0)  # Number of active tasks
+    max_workload = Column(Integer, nullable=True, default=3)  # Maximum number of concurrent tasks
+
     # Relationships
     session = relationship("Session", back_populates="agents")
     messages = relationship("Message", back_populates="agent")
@@ -167,6 +176,15 @@ class Task(Base):
     session_id = Column(String, ForeignKey("sessions.id", ondelete="CASCADE"), nullable=True)
     priority = Column(Integer, default=1)
     required_skills = Column(String, nullable=True)
+
+    # New fields for controller architecture
+    project_id = Column(String, nullable=True)  # Group tasks by project
+    task_type = Column(String, nullable=True)  # design, development, testing, etc.
+    dependencies = Column(String, nullable=True, default='[]')  # JSON string of task IDs
+    estimated_effort = Column(Integer, nullable=True)  # Estimated effort in hours
+    deadline = Column(DateTime, nullable=True)  # Optional deadline
+    progress = Column(Integer, nullable=True, default=0)  # Progress percentage (0-100)
+    blockers = Column(String, nullable=True, default='[]')  # JSON string of blockers
 
     # Relationships
     subtasks = relationship("Task", backref=backref("parent", remote_side=[id]))

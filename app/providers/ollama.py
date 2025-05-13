@@ -19,8 +19,17 @@ class OllamaProvider(ModelProvider):
             endpoint: Ollama API endpoint (defaults to environment variable)
             model: Model name (defaults to environment variable)
         """
-        self.endpoint = endpoint or os.getenv("OLLAMA_ENDPOINT", "http://ruocco.uk:11434")
-        self.model = model or os.getenv("DEFAULT_MODEL", "gemma3:4b")
+        # Use the provided endpoint if available
+        if endpoint:
+            # Make sure the endpoint has the http:// prefix
+            if not endpoint.startswith("http://") and not endpoint.startswith("https://"):
+                endpoint = f"http://{endpoint}"
+            self.endpoint = endpoint
+        else:
+            # Default endpoint
+            self.endpoint = os.getenv("OLLAMA_ENDPOINT", "http://localhost:11434")
+
+        self.model = model or os.getenv("DEFAULT_MODEL", "gemma3:1b")
 
         # Remove trailing slash if present
         if self.endpoint.endswith("/"):

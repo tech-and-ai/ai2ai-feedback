@@ -19,7 +19,7 @@ from sqlalchemy.future import select
 from .database import async_session, Task
 from .task_management import ContextScaffold, ContextRefresher, TaskManager
 from .providers.factory import get_model_provider
-from .tools import FileOperations, ShellCommands
+from .tools import FileOperations, ShellCommands, SearchTools
 
 # Configure logging
 logging.basicConfig(
@@ -54,6 +54,10 @@ def extract_tool_commands(text: str) -> List[Dict[str, Any]]:
     # Extract shell commands
     shell_pattern = r"```shell\s*\n(.*?)\n\s*```"
     python_pattern = r"```python-run\s*\n(.*?)\n\s*```"
+
+    # Extract search commands
+    search_pattern = r"```search\s*\n(.*?)\n\s*```"
+    fetch_pattern = r"```fetch\s*\n(.*?)\n\s*```"
 
     # Process file read commands
     for match in re.finditer(file_read_pattern, text, re.DOTALL):
@@ -109,6 +113,28 @@ def extract_tool_commands(text: str) -> List[Dict[str, Any]]:
             })
         except json.JSONDecodeError:
             logger.error("Failed to parse JSON from python-run block")
+
+    # Process search commands
+    for match in re.finditer(search_pattern, text, re.DOTALL):
+        try:
+            data = json.loads(match.group(1))
+            commands.append({
+                "type": "search",
+                "data": data
+            })
+        except json.JSONDecodeError:
+            logger.error("Failed to parse JSON from search block")
+
+    # Process fetch commands
+    for match in re.finditer(fetch_pattern, text, re.DOTALL):
+        try:
+            data = json.loads(match.group(1))
+            commands.append({
+                "type": "fetch",
+                "data": data
+            })
+        except json.JSONDecodeError:
+            logger.error("Failed to parse JSON from fetch block")
 
     return commands
 
@@ -252,8 +278,24 @@ AVAILABLE TOOLS:
 }}
 ```
 
+6. Search the internet (DuckDuckGo):
+```search
+{{
+  "query": "Your search query here",
+  "num_results": 5
+}}
+```
+
+7. Fetch content from a webpage:
+```fetch
+{{
+  "url": "https://example.com/page"
+}}
+```
+
 You have a dedicated workspace where you can create and manipulate files. All file paths are relative to your workspace.
 You can create Python scripts, run tests, and execute shell commands to accomplish your task.
+If you get stuck or need information, you can search the internet using the search tool.
 
 Please start working on this task now. If you need more information, you can use the available tools.
 """
@@ -369,8 +411,24 @@ AVAILABLE TOOLS:
 }}
 ```
 
+6. Search the internet (DuckDuckGo):
+```search
+{{
+  "query": "Your search query here",
+  "num_results": 5
+}}
+```
+
+7. Fetch content from a webpage:
+```fetch
+{{
+  "url": "https://example.com/page"
+}}
+```
+
 You have a dedicated workspace where you can create and manipulate files. All file paths are relative to your workspace.
 You can create Python scripts, run tests, and execute shell commands to accomplish your task.
+If you get stuck or need information, you can search the internet using the search tool.
 """
 
     return prompt
@@ -422,6 +480,21 @@ async def execute_tool_command(agent_id: str, command: Dict[str, Any]) -> Dict[s
         args = data.get("args", [])
         success, stdout, stderr = ShellCommands.run_python_script(agent_id, data["script"], args)
         return {"success": success, "stdout": stdout, "stderr": stderr}
+
+    elif command_type == "search":
+        if "query" not in data:
+            return {"success": False, "error": "Missing 'query' in search command"}
+
+        num_results = data.get("num_results", 5)
+        success, results = SearchTools.duckduckgo_search(data["query"], num_results)
+        return {"success": success, "results": results}
+
+    elif command_type == "fetch":
+        if "url" not in data:
+            return {"success": False, "error": "Missing 'url' in fetch command"}
+
+        success, content = SearchTools.fetch_webpage_content(data["url"])
+        return {"success": success, "content": content}
 
     return {"success": False, "error": f"Unknown command type: {command_type}"}
 
