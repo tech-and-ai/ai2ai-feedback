@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI2AI Discussion Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+        .container {
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        h1, h2 {
+            color: #e0e0e0;
+        }
+        .message {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #2d2d2d;
+            border-left: 4px solid #555;
+        }
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .message-content {
+            white-space: pre-wrap;
+        }
+        .claude-message {
+            border-left-color: #9c27b0;
+        }
+        .deepseek-message, .deepseek-coder-message {
+            border-left-color: #2196F3;
+        }
+        .gemma-message {
+            border-left-color: #4caf50;
+        }
+        .human-message {
+            border-left-color: #ff9800;
+        }
+        .chair-message {
+            border-left-color: #f44336;
+        }
+        .input-area {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #2d2d2d;
+            border-radius: 8px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #3d3d3d;
+            color: #e0e0e0;
+            border: 1px solid #555;
+            border-radius: 4px;
+            resize: vertical;
+        }
+        button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .status {
+            margin-top: 10px;
+            font-style: italic;
+            color: #999;
+        }
+        code {
+            background-color: #2d2d2d;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        pre {
+            background-color: #2d2d2d;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI2AI Discussion Viewer</h1>
+        
+        <div class="input-area">
+            <h3>Enter Discussion ID</h3>
+            <input type="text" id="discussion-id" placeholder="Enter discussion ID" value="1f7a4379-2b14-4f97-ba7d-c74ea08a0584">
+            <button id="load-button">Load Discussion</button>
+            <div class="status" id="status"></div>
+        </div>
+        
+        <div id="discussion">
+            <!-- Messages will be added here -->
+        </div>
+        
+        <div class="input-area">
+            <h3>Send Message</h3>
+            <textarea id="message-input" placeholder="Type your message here..."></textarea>
+            <div>
+                <button id="send-button">Send Message</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_URL = 'http://localhost:8002';
+        let sessionId = null;
+        
+        // DOM elements
+        const discussionElement = document.getElementById('discussion');
+        const discussionIdInput = document.getElementById('discussion-id');
+        const loadButton = document.getElementById('load-button');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const statusElement = document.getElementById('status');
+        
+        // Load discussion
+        async function loadDiscussion() {
+            try {
+                sessionId = discussionIdInput.value.trim();
+                
+                if (!sessionId) {
+                    statusElement.textContent = 'Please enter a discussion ID';
+                    return;
+                }
+                
+                statusElement.textContent = 'Loading discussion...';
+                
+                const response = await fetch(`${API_URL}/discussion/${sessionId}/messages`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const messages = await response.json();
+                
+                // Clear discussion
+                discussionElement.innerHTML = '';
+                
+                // Add messages
+                messages.forEach(message => {
+                    addMessageToUI(message);
+                });
+                
+                statusElement.textContent = `Loaded discussion: ${sessionId}`;
+                
+                // Start polling for new messages
+                startPolling();
+            } catch (error) {
+                console.error('Error loading discussion:', error);
+                statusElement.textContent = `Error: ${error.message}`;
+            }
+        }
+        
+        // Start polling for new messages
+        function startPolling() {
+            // Clear any existing polling
+            if (window.pollInterval) {
+                clearInterval(window.pollInterval);
+            }
+            
+            // Poll every 5 seconds
+            window.pollInterval = setInterval(pollMessages, 5000);
+        }
+        
+        // Poll for new messages
+        async function pollMessages() {
+            if (!sessionId) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/discussion/${sessionId}/messages`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const messages = await response.json();
+                
+                // Clear discussion
+                discussionElement.innerHTML = '';
+                
+                // Add messages
+                messages.forEach(message => {
+                    addMessageToUI(message);
+                });
+            } catch (error) {
+                console.error('Error polling messages:', error);
+            }
+        }
+        
+        // Send message
+        async function sendMessage() {
+            if (!sessionId) {
+                statusElement.textContent = 'No discussion loaded. Please load a discussion first.';
+                return;
+            }
+            
+            const content = messageInput.value.trim();
+            
+            if (!content) {
+                statusElement.textContent = 'Please enter a message';
+                return;
+            }
+            
+            try {
+                statusElement.textContent = 'Sending message...';
+                
+                const response = await fetch(`${API_URL}/discussion/message`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        content: content,
+                        sender: 'human'
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                // Clear input
+                messageInput.value = '';
+                
+                statusElement.textContent = 'Message sent';
+                
+                // Poll for new messages
+                pollMessages();
+            } catch (error) {
+                console.error('Error sending message:', error);
+                statusElement.textContent = `Error: ${error.message}`;
+            }
+        }
+        
+        // Add message to UI
+        function addMessageToUI(message) {
+            const messageElement = document.createElement('div');
+            
+            // Determine message class
+            let messageClass = 'message';
+            if (message.sender.toLowerCase().includes('claude')) {
+                messageClass += ' claude-message';
+            } else if (message.sender.toLowerCase().includes('deepseek')) {
+                messageClass += ' deepseek-message';
+            } else if (message.sender.toLowerCase().includes('gemma')) {
+                messageClass += ' gemma-message';
+            } else if (message.sender.toLowerCase() === 'human') {
+                messageClass += ' human-message';
+            } else if (message.sender.toLowerCase() === 'chair') {
+                messageClass += ' chair-message';
+            }
+            
+            messageElement.className = messageClass;
+            
+            const formattedContent = formatMessageContent(message.content);
+            
+            messageElement.innerHTML = `
+                <div class="message-header">
+                    <span>${message.sender}</span>
+                    <span>${new Date(message.timestamp).toLocaleTimeString()}</span>
+                </div>
+                <div class="message-content">${formattedContent}</div>
+            `;
+            
+            discussionElement.appendChild(messageElement);
+            
+            // Scroll to bottom
+            discussionElement.scrollTop = discussionElement.scrollHeight;
+        }
+        
+        // Format message content
+        function formatMessageContent(content) {
+            // Replace code blocks
+            content = content.replace(/```(\w*)([\s\S]*?)```/g, function(match, language, code) {
+                return `<pre><code class="language-${language}">${code}</code></pre>`;
+            });
+            
+            // Replace inline code
+            content = content.replace(/`([^`]+)`/g, '<code>$1</code>');
+            
+            // Replace newlines with <br>
+            content = content.replace(/\n/g, '<br>');
+            
+            return content;
+        }
+        
+        // Event listeners
+        loadButton.addEventListener('click', loadDiscussion);
+        
+        sendButton.addEventListener('click', sendMessage);
+        
+        messageInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        // Load discussion on page load if ID is provided
+        if (discussionIdInput.value.trim()) {
+            loadDiscussion();
+        }
+    </script>
+</body>
+</html>

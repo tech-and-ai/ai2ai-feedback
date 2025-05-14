@@ -91,9 +91,10 @@
         <div class="controls">
             <h2>Discussion Status</h2>
             <div id="status">
-                <p>Task ID: <span id="task-id">test_landing_page</span></p>
+                <p>Discussion ID: <span id="task-id">test_landing_page</span></p>
                 <p>Status: <span id="discussion-status">Active</span></p>
                 <p>Agents: <span id="agents">DeepSeek Coder, Human</span></p>
+                <button id="create-discussion-btn">Create New Discussion</button>
             </div>
         </div>
 
@@ -107,6 +108,7 @@
             </select>
             <button id="send-btn">Send Message</button>
             <button id="refresh-btn">Refresh Messages</button>
+            <button id="clear-btn">Clear Conversation</button>
         </div>
 
         <h2>Discussion</h2>
@@ -116,10 +118,16 @@
     </div>
 
     <script>
-        // Discussion data will be fetched from the server
-        let discussionData = {
+        // Load saved messages from localStorage if available
+        let savedData = localStorage.getItem('discussionData');
+        let discussionData = savedData ? JSON.parse(savedData) : {
             messages: []
         };
+
+        // Function to save discussion data to localStorage
+        function saveDiscussionData() {
+            localStorage.setItem('discussionData', JSON.stringify(discussionData));
+        }
 
         // Function to display messages
         function displayMessages() {
@@ -170,16 +178,78 @@
         // Function to fetch discussion data from the server
         async function fetchDiscussion() {
             try {
-                const response = await fetch('http://localhost:8080/api/discussion');
+                // Try to get a list of discussions from the API
+                const response = await fetch('http://localhost:8001/api/v1/discussions');
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-                discussionData = data;
-                displayMessages();
+
+                // If we have discussions, use the first one
+                if (data && data.length > 0) {
+                    // Update the discussion status
+                    document.getElementById('task-id').textContent = data[0].id;
+                    document.getElementById('discussion-status').textContent = data[0].status;
+
+                    // Fetch messages for this discussion
+                    await fetchMessages(data[0].id);
+                } else {
+                    // No discussions found, use sample data
+                    useSampleData();
+                }
             } catch (error) {
                 console.error('Error fetching discussion data:', error);
+                // Use sample data if API fails
+                useSampleData();
             }
+        }
+
+        // Function to fetch messages for a discussion
+        async function fetchMessages(discussionId) {
+            try {
+                const response = await fetch(`http://localhost:8001/api/v1/discussions/${discussionId}/messages`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const messages = await response.json();
+
+                // Format messages for our UI
+                discussionData.messages = messages.map(msg => ({
+                    id: msg.id,
+                    agent_id: msg.sender_type === 'agent' ? `agent${msg.sender_id}` : 'human',
+                    content: msg.content,
+                    timestamp: msg.created_at
+                }));
+
+                displayMessages();
+            } catch (error) {
+                console.error('Error fetching messages:', error);
+                useSampleData();
+            }
+        }
+
+        // Function to use sample data when API is not available
+        function useSampleData() {
+            // Check if we have saved data in localStorage
+            const savedData = localStorage.getItem('discussionData');
+            if (savedData) {
+                discussionData = JSON.parse(savedData);
+            } else {
+                // Initialize with a welcome message
+                discussionData = {
+                    messages: [
+                        {
+                            id: "1",
+                            agent_id: "agent1",
+                            content: "Hello! I'm Claude, an AI assistant. I'm here to help you with any questions or tasks you might have. Feel free to ask me anything!",
+                            timestamp: new Date().toISOString()
+                        }
+                    ]
+                };
+                // Save to localStorage
+                localStorage.setItem('discussionData', JSON.stringify(discussionData));
+            }
+            displayMessages();
         }
 
         // Function to add a new message
@@ -192,29 +262,99 @@
                 return;
             }
 
+            // Get the current discussion ID
+            const discussionId = document.getElementById('task-id').textContent;
+
             try {
-                const response = await fetch('http://localhost:8080/api/message', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
+                // If we have a valid discussion ID (not the default)
+                if (discussionId && discussionId !== 'test_landing_page') {
+                    // Send message to the API
+                    const response = await fetch(`http://localhost:8001/api/v1/discussions/${discussionId}/messages`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            content: content,
+                            sender_type: sender === 'human' ? 'human' : 'agent',
+                            sender_id: sender === 'human' ? '1' : sender.replace('agent', '')
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    // Fetch updated discussion data
+                    await fetchMessages(discussionId);
+                } else {
+                    // Add message to sample data
+                    const newMessage = {
+                        id: String(discussionData.messages.length + 1),
                         agent_id: sender,
-                        content: content
-                    })
-                });
+                        content: content,
+                        timestamp: new Date().toISOString()
+                    };
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    discussionData.messages.push(newMessage);
+
+                    // Save to localStorage
+                    localStorage.setItem('discussionData', JSON.stringify(discussionData));
+
+                    displayMessages();
+
+                    // If the message is from a human, simulate a response from Claude
+                    if (sender === 'human') {
+                        setTimeout(() => {
+                            const responseMessage = {
+                                id: String(discussionData.messages.length + 1),
+                                agent_id: "agent1",
+                                content: "I'm processing your message. As Claude, I'll respond to you directly in this interface. What else would you like to discuss?",
+                                timestamp: new Date().toISOString()
+                            };
+
+                            discussionData.messages.push(responseMessage);
+                            localStorage.setItem('discussionData', JSON.stringify(discussionData));
+                            displayMessages();
+                        }, 1000);
+                    }
                 }
-
-                // Fetch updated discussion data
-                await fetchDiscussion();
 
                 // Clear input
                 document.getElementById('message-input').value = '';
             } catch (error) {
                 console.error('Error sending message:', error);
+
+                // Add message to sample data as fallback
+                const newMessage = {
+                    id: String(discussionData.messages.length + 1),
+                    agent_id: sender,
+                    content: content,
+                    timestamp: new Date().toISOString()
+                };
+
+                discussionData.messages.push(newMessage);
+                localStorage.setItem('discussionData', JSON.stringify(discussionData));
+                displayMessages();
+
+                // If the message is from a human, simulate a response from Claude
+                if (sender === 'human') {
+                    setTimeout(() => {
+                        const responseMessage = {
+                            id: String(discussionData.messages.length + 1),
+                            agent_id: "agent1",
+                            content: "I'm processing your message. As Claude, I'll respond to you directly in this interface. What else would you like to discuss?",
+                            timestamp: new Date().toISOString()
+                        };
+
+                        discussionData.messages.push(responseMessage);
+                        localStorage.setItem('discussionData', JSON.stringify(discussionData));
+                        displayMessages();
+                    }, 1000);
+                }
+
+                // Clear input
+                document.getElementById('message-input').value = '';
             }
         }
 
@@ -223,9 +363,69 @@
             setInterval(fetchDiscussion, 5000); // Refresh every 5 seconds
         }
 
+        // Function to create a new discussion
+        async function createDiscussion() {
+            try {
+                const response = await fetch('http://localhost:8001/api/v1/discussions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: 'AI Agent Discussion',
+                        system_prompt: 'You are AI agents participating in a collaborative discussion. Introduce yourselves, your capabilities, and how you can work together to solve problems.'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Update the UI with the new discussion
+                document.getElementById('task-id').textContent = data.id;
+                document.getElementById('discussion-status').textContent = data.status || 'Active';
+
+                // Clear any existing messages
+                discussionData.messages = [];
+                displayMessages();
+
+                alert('New discussion created successfully!');
+            } catch (error) {
+                console.error('Error creating discussion:', error);
+                alert('Failed to create discussion. See console for details.');
+            }
+        }
+
+        // Function to clear the conversation
+        function clearConversation() {
+            if (confirm('Are you sure you want to clear the entire conversation? This cannot be undone.')) {
+                // Reset discussion data
+                discussionData = {
+                    messages: [
+                        {
+                            id: "1",
+                            agent_id: "agent1",
+                            content: "Hello! I'm Claude, an AI assistant. I'm here to help you with any questions or tasks you might have. Feel free to ask me anything!",
+                            timestamp: new Date().toISOString()
+                        }
+                    ]
+                };
+
+                // Save to localStorage
+                localStorage.setItem('discussionData', JSON.stringify(discussionData));
+
+                // Update display
+                displayMessages();
+            }
+        }
+
         // Event listeners
         document.getElementById('send-btn').addEventListener('click', addMessage);
         document.getElementById('refresh-btn').addEventListener('click', fetchDiscussion);
+        document.getElementById('create-discussion-btn').addEventListener('click', createDiscussion);
+        document.getElementById('clear-btn').addEventListener('click', clearConversation);
 
         // Initial fetch and display
         fetchDiscussion();
